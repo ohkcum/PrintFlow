@@ -1,0 +1,75 @@
+/*
+ * This file is part of the PrintFlowLite project <https://www.PrintFlowLite.org>.
+ * Copyright (c) 2020 Datraverse B.V.
+ * Author: Rijk Ravestein.
+ *
+ * SPDX-FileCopyrightText: © 2020 Datraverse B.V. <info@datraverse.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For more information, please contact Datraverse B.V. at this
+ * address: info@datraverse.com
+ */
+package org.printflow.lite.server.pages;
+
+import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.printflow.lite.server.helpers.HtmlButtonEnum;
+
+/**
+ *
+ * @author Rijk Ravestein
+ *
+ */
+public final class UserPasswordReset extends AbstractAuthPage {
+
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
+
+    /** */
+    private static final Integer MAX_PASSWORD_LENGTH = 32;
+
+    /**
+     * @return {@code null} if no limit.
+     */
+    public static Integer getMaxPasswordLength() {
+        return MAX_PASSWORD_LENGTH;
+    }
+
+    /**
+     * @param parameters
+     *            The page parameters.
+     */
+    public UserPasswordReset(final PageParameters parameters) {
+        super(parameters);
+
+        this.add(PasswordPanel.createPopulate("user-pw-reset-panel",
+                "user-pw-reset", getMaxPasswordLength()));
+
+        this.add(PasswordPanel.createPopulate("user-pw-reset-confirm-panel",
+                "user-pw-reset-confirm", getMaxPasswordLength()));
+
+        final MarkupHelper helper = new MarkupHelper(this);
+
+        helper.addButton("button-apply", HtmlButtonEnum.APPLY);
+        helper.addButton("button-cancel", HtmlButtonEnum.CANCEL);
+    }
+
+    @Override
+    protected boolean needMembership() {
+        return false;
+    }
+}

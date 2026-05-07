@@ -1,0 +1,474 @@
+/*
+ * This file is part of the PrintFlowLite project <https://printflowlite.local>.
+ * Copyright (c) 2011-2020 Datraverse B.V.
+ * Author: Rijk Ravestein.
+ *
+ * SPDX-FileCopyrightText: 2011-2020 Datraverse B.V. <info@datraverse.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For more information, please contact Datraverse B.V. at this
+ * address: info@datraverse.com
+ */
+package org.printflow.lite.core.dao;
+
+import java.util.Date;
+import java.util.List;
+
+import org.printflow.lite.core.dao.enums.ACLRoleEnum;
+import org.printflow.lite.core.dao.enums.ReservedUserGroupEnum;
+import org.printflow.lite.core.dao.helpers.DaoBatchCommitter;
+import org.printflow.lite.core.jpa.Account;
+import org.printflow.lite.core.jpa.DocLog;
+import org.printflow.lite.core.jpa.User;
+import org.printflow.lite.core.jpa.UserAttr;
+import org.printflow.lite.core.jpa.UserGroupAttr;
+
+/**
+ *
+ * @author Rijk Ravestein
+ *
+ */
+public interface UserDao extends GenericDao<User> {
+
+    /**
+     * The reserved internal userid for the administrator. This user is NOT part
+     * of the database.
+     */
+    String INTERNAL_ADMIN_USERID = "admin";
+
+    /**
+     * Field identifiers used for select and sort.
+     */
+    enum Field {
+        USERID, NAME, EMAIL, LAST_ACTIVITY
+    }
+
+    /** */
+    class ACLFilter {
+
+        /**
+         * User role: can be {@code null}.
+         */
+        private ACLRoleEnum aclRole;
+
+        /**
+         * Database keys of users who are assigned {@code ACLRoleEnum} ad-hoc.
+         * List can be {@code null} or empty. This attribute is relevant when
+         * aclRole is not null.
+         */
+        private List<Long> aclRoleUsersExt;
+
+        /**
+         * If {@code true}, Internal Users must be included.
+         */
+        private boolean aclUserInternal;
+
+        /**
+         * If {@code true}, External Users must be included.
+         */
+        private boolean aclUserExternal;
+
+        /**
+         * @return User role: can be {@code null}.
+         */
+        public ACLRoleEnum getAclRole() {
+            return aclRole;
+        }
+
+        /**
+         *
+         * @param aclRole
+         *            User role: can be {@code null}.
+         */
+        public void setAclRole(ACLRoleEnum aclRole) {
+            this.aclRole = aclRole;
+        }
+
+        /**
+         * @return Database keys of users who are assigned {@code ACLRoleEnum}
+         *         ad-hoc. List can be {@code null} or empty. This attribute is
+         *         relevant when aclRole is not null.
+         */
+        public List<Long> getAclRoleUsersExt() {
+            return aclRoleUsersExt;
+        }
+
+        /**
+         * @param aclRoleUsersExt
+         *            Database keys of users who are assigned
+         *            {@code ACLRoleEnum} ad-hoc. List can be {@code null} or
+         *            empty. This attribute is relevant when aclRole is not
+         *            null.
+         */
+        public void setAclRoleUsersExt(List<Long> aclRoleUsersExt) {
+            this.aclRoleUsersExt = aclRoleUsersExt;
+        }
+
+        /**
+         * @return {@code true} if Internal Users must be included.
+         */
+        public boolean isAclUserInternal() {
+            return aclUserInternal;
+        }
+
+        /**
+         * @param aclUserInternal
+         *            If {@code true}, Internal Users must be included.
+         */
+        public void setAclUserInternal(boolean aclUserInternal) {
+            this.aclUserInternal = aclUserInternal;
+        }
+
+        /**
+         *
+         * @return {@code true} if External Users must be included.
+         */
+        public boolean isAclUserExternal() {
+            return aclUserExternal;
+        }
+
+        /**
+         * @param aclUserExternal
+         *            If {@code true}, External Users must be included.
+         */
+        public void setAclUserExternal(boolean aclUserExternal) {
+            this.aclUserExternal = aclUserExternal;
+        }
+
+    }
+
+    /** */
+    class ListFilter {
+
+        private Long userGroupId;
+        private String containingIdText;
+        private String containingNameText;
+        private String containingNameOrIdText;
+        private String containingEmailText;
+        private Boolean internal;
+        private Boolean admin;
+        private Boolean person;
+        private Boolean disabled;
+        private Boolean deleted;
+        private Boolean registration;
+
+        /**
+         * The {@link ACLRoleEnum} as present in ({@link UserAttr} or in any
+         * {@link UserGroupAttr} where user is member of.
+         */
+        private ACLFilter aclFilter;
+
+        public Long getUserGroupId() {
+            return userGroupId;
+        }
+
+        public void setUserGroupId(Long userGroupId) {
+            this.userGroupId = userGroupId;
+        }
+
+        public String getContainingIdText() {
+            return containingIdText;
+        }
+
+        public void setContainingIdText(String containingIdText) {
+            this.containingIdText = containingIdText;
+        }
+
+        public String getContainingNameText() {
+            return containingNameText;
+        }
+
+        public void setContainingNameText(String containingNameText) {
+            this.containingNameText = containingNameText;
+        }
+
+        public String getContainingNameOrIdText() {
+            return containingNameOrIdText;
+        }
+
+        public void setContainingNameOrIdText(String containingNameOrIdText) {
+            this.containingNameOrIdText = containingNameOrIdText;
+        }
+
+        public String getContainingEmailText() {
+            return containingEmailText;
+        }
+
+        public void setContainingEmailText(String containingEmailText) {
+            this.containingEmailText = containingEmailText;
+        }
+
+        public Boolean getInternal() {
+            return internal;
+        }
+
+        public void setInternal(Boolean internal) {
+            this.internal = internal;
+        }
+
+        public Boolean getAdmin() {
+            return admin;
+        }
+
+        public void setAdmin(Boolean admin) {
+            this.admin = admin;
+        }
+
+        public Boolean getPerson() {
+            return person;
+        }
+
+        public void setPerson(Boolean person) {
+            this.person = person;
+        }
+
+        public Boolean getDisabled() {
+            return disabled;
+        }
+
+        public void setDisabled(Boolean disabled) {
+            this.disabled = disabled;
+        }
+
+        public Boolean getDeleted() {
+            return deleted;
+        }
+
+        public void setDeleted(Boolean deleted) {
+            this.deleted = deleted;
+        }
+
+        public Boolean getRegistration() {
+            return registration;
+        }
+
+        public void setRegistration(Boolean registration) {
+            this.registration = registration;
+        }
+
+        public ACLFilter getAclFilter() {
+            return aclFilter;
+        }
+
+        public void setAclFilter(ACLFilter aclFilter) {
+            this.aclFilter = aclFilter;
+        }
+    }
+
+    /**
+     *
+     * @param filter
+     * @return
+     */
+    long getListCount(ListFilter filter);
+
+    /**
+     * <p>
+     * BEWARE that, in case of an email filter, the {@link User#getEmails()} is
+     * filled with the selected UserEmail objects only!
+     * </p>
+     *
+     * @param filter
+     *            The filter.
+     * @param startPosition
+     *            The zero-based start position of the chunk related to the
+     *            total number of rows. If {@code null} the chunk starts with
+     *            the first row.
+     * @param maxResults
+     *            The maximum number of rows in the chunk. If {@code null}, then
+     *            ALL (remaining rows) are returned.
+     * @param orderBy
+     *            The sort field.
+     * @param sortAscending
+     *            {@code true} when sorted ascending.
+     * @return The chunk.
+     */
+    List<User> getListChunk(ListFilter filter, Integer startPosition,
+            Integer maxResults, Field orderBy, boolean sortAscending);
+
+    /**
+     * Finds the active {@link User} and locks pessimistic. See
+     * {@link #findActiveUserByUserId(String)}.
+     *
+     * @param userId
+     *            The unique user id.
+     * @return {@code null} when not found (or logically deleted).
+     */
+    User lockByUserId(String userId);
+
+    /**
+     * Finds an active (i.e. not logically deleted) {@link User} by id, when not
+     * found (or logically deleted) {@code null} is returned.
+     *
+     * @param id
+     *            The primary id of the user.
+     * @return The {@link User} instance, or {@code null} when not found (or
+     *         logically deleted).
+     */
+    User findActiveUserById(Long id);
+
+    /**
+     * Finds an active (i.e. not logically deleted) {@link User} by user id,
+     * when not found (or logically deleted) {@code null} is returned.
+     *
+     * @param userId
+     *            The unique user id of the user.
+     * @return The {@link User} instance, or {@code null} when not found (or
+     *         logically deleted).
+     */
+    User findActiveUserByUserId(String userId);
+
+    /**
+     * Finds an active (i.e. not logically deleted) {@link User} by user id,
+     * when not found (or logically deleted) the user is persisted as active
+     * user into the database.
+     * <p>
+     * NOTE: when {@link User#getUserId()} is a reserved name like 'admin',
+     * {@code null} is returned.
+     * </p>
+     *
+     * @param userId
+     *            The unique user id of the user.
+     * @return The {@link User} instance or {@code null} when user was NOT
+     *         inserted.
+     */
+    User findActiveUserByUserIdInsert(String userId);
+
+    /**
+     * Finds an active (i.e. not logically deleted) {@link User} by user id,
+     * when not found (or logically deleted) the user is persisted as active
+     * user into the database.
+     * <p>
+     * NOTE: when {@link User#getUserId()} is a reserved name like 'admin',
+     * {@code null} is returned.
+     * </p>
+     *
+     * @param user
+     *            The {@link User} containing the unique user id.
+     * @param insertDate
+     *            The date.
+     * @param insertedBy
+     *            The actor.
+     * @return The {@link User} instance or {@code null} when user was NOT
+     *         inserted.
+     */
+    User findActiveUserByUserIdInsert(User user, Date insertDate,
+            String insertedBy);
+
+    /**
+     * Checks the active (i.e. not logically deleted) {@link User} by user id.
+     * When not found (or logically deleted) an empty list is returned.
+     * <p>
+     * NOTE: A returned list with more than one (1) element signals an
+     * <b>inconsistent</b> state.
+     * </p>
+     *
+     * @param userId
+     *            The unique user id.
+     * @return The list of active users found.
+     */
+    List<User> checkActiveUserByUserId(String userId);
+
+    /**
+     * Finds a User by primary key of his {@link Account}.
+     *
+     * @param accountId
+     *            Primary key of {@link Account}.
+     * @return {@code null} when not found.
+     */
+    User findByAccount(Long accountId);
+
+    /**
+     * Finds the logically deleted {@link User} objects by user id.
+     *
+     * @param userId
+     *            The unique user id of the user.
+     * @return The list of users.
+     */
+    List<User> findDeletedUsersByUserId(String userId);
+
+    /**
+     * Resets the jobs, bytes and sheets totals to zero for all {@link User}
+     * instances.
+     *
+     * @param resetDate
+     *            The reset date.
+     * @param resetBy
+     *            The actor.
+     */
+    void resetTotals(Date resetDate, String resetBy);
+
+    /**
+     * Removes (cascade delete) logically deleted {@link User} objects, who do
+     * not have any related {@link DocLog}.
+     *
+     * @param batchCommitter
+     *            The {@link DaoBatchCommitter}.
+     *
+     * @return The number of removed users.
+     */
+    int pruneUsers(DaoBatchCommitter batchCommitter);
+
+    /**
+     * Counts the number of active users.
+     * <p>
+     * NOTE: logically deleted users are excluded from the count.
+     * </p>
+     *
+     * @return the number of active users.
+     */
+    long countActiveUsers();
+
+    /**
+     * Counts the number of active users in a {@link ReservedUserGroupEnum}.
+     * <p>
+     * NOTE: logically deleted users are excluded from the count.
+     * </p>
+     *
+     * @param userGroupEnum
+     *            The {@link ReservedUserGroupEnum}.
+     * @return the number of active users.
+     */
+    long countActiveUsers(ReservedUserGroupEnum userGroupEnum);
+
+    /**
+     * Counts number of expired User Registrations.
+     *
+     * @param expiryDay
+     *            Expiration date.
+     * @return count
+     */
+    long countRegistrationsExpired(Date expiryDay);
+
+    /**
+     * Counts number of pending User Registrations.
+     *
+     * @param expiryDate
+     *            Expiration date.
+     * @return count
+     */
+    long countRegistrationsPending(Date expiryDate);
+
+    /**
+     * Logically deletes expired User Registration.
+     *
+     * @param expiryDate
+     *            Expiration date.
+     * @return number of logical deletes
+     */
+    long deleteRegistrationsExpired(Date expiryDate);
+
+}

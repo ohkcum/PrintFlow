@@ -1,0 +1,131 @@
+/*
+ * This file is part of the PrintFlowLite project <https://www.PrintFlowLite.org>.
+ * Copyright (c) 2020 Datraverse B.V.
+ * Author: Rijk Ravestein.
+ *
+ * SPDX-FileCopyrightText: © 2020 Datraverse B.V. <info@datraverse.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For more information, please contact Datraverse B.V. at this
+ * address: info@datraverse.com
+ */
+package org.printflow.lite.server.pages.user;
+
+import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.printflow.lite.core.config.ConfigManager;
+import org.printflow.lite.core.config.IConfigProp.Key;
+import org.printflow.lite.core.dao.enums.ACLRoleEnum;
+import org.printflow.lite.core.i18n.NounEnum;
+import org.printflow.lite.core.i18n.PrintOutNounEnum;
+import org.printflow.lite.core.services.AccessControlService;
+import org.printflow.lite.core.services.ServiceContext;
+import org.printflow.lite.core.services.helpers.PrintScalingClashEnum;
+import org.printflow.lite.server.helpers.HtmlButtonEnum;
+import org.printflow.lite.server.pages.MarkupHelper;
+import org.printflow.lite.server.pages.NumberUpPreviewPanel;
+import org.printflow.lite.server.pages.TooltipPanel;
+import org.printflow.lite.server.session.SpSession;
+
+/**
+ *
+ * @author Rijk Ravestein
+ *
+ */
+public class PrinterSettings extends AbstractUserPage {
+
+    /** */
+    private static final long serialVersionUID = 1L;
+
+    /** */
+    private static final AccessControlService ACCESS_CONTROL_SERVICE =
+            ServiceContext.getServiceFactory().getAccessControlService();
+
+    /** */
+    private static final String WICKET_ID_NUMBER_UP_PREVIEW =
+            "number-up-preview";
+
+    /** */
+    private static final String WICKET_ID_LABEL_LANDSCAPE = "label-landscape";
+
+    /** */
+    private static final String WICKET_ID_TOOLTIP_LANDSCAPE_COPY =
+            "tooltip-flipswitch-landscape-copy";
+    /** */
+    private static final String WICKET_ID_TOOLTIP_LANDSCAPE_PRINT =
+            "tooltip-flipswitch-landscape-print";
+
+    /**
+     *
+     * @param parameters
+     *            Page parameters.
+     */
+    public PrinterSettings(final PageParameters parameters) {
+
+        super(parameters);
+
+        final MarkupHelper helper = new MarkupHelper(this);
+        final ConfigManager cm = ConfigManager.instance();
+
+        final String htmlRadioName = "print-page-scaling-enum";
+
+        labelledRadio("page-scaling", "-none", htmlRadioName,
+                PrintScalingClashEnum.NONE.toString(), false);
+
+        labelledRadio("page-scaling", "-fit", htmlRadioName,
+                PrintScalingClashEnum.FIT.toString(), false);
+
+        helper.addButton("button-default", HtmlButtonEnum.DEFAULT);
+
+        if (cm.isConfigValue(Key.WEBAPP_NUMBER_UP_PREVIEW_ENABLE)) {
+
+            add(new NumberUpPreviewPanel(WICKET_ID_NUMBER_UP_PREVIEW));
+
+            helper.addLabel(WICKET_ID_LABEL_LANDSCAPE,
+                    PrintOutNounEnum.LANDSCAPE);
+
+            TooltipPanel tooltip =
+                    new TooltipPanel(WICKET_ID_TOOLTIP_LANDSCAPE_PRINT);
+            tooltip.populate(localized("sp-tooltip-page-orientation-print"),
+                    true);
+            add(tooltip);
+
+            tooltip = new TooltipPanel(WICKET_ID_TOOLTIP_LANDSCAPE_COPY);
+            tooltip.populate(localized("sp-tooltip-page-orientation-copy"),
+                    true);
+            add(tooltip);
+
+        } else {
+            helper.discloseLabel(WICKET_ID_NUMBER_UP_PREVIEW);
+            helper.discloseLabel(WICKET_ID_LABEL_LANDSCAPE);
+        }
+
+        helper.addButton("button-inbox", HtmlButtonEnum.BACK);
+
+        if (ACCESS_CONTROL_SERVICE.hasAccess(SpSession.get().getUserIdDto(),
+                ACLRoleEnum.PRINT_DELEGATE)) {
+            helper.addLabel("button-next-invoicing", NounEnum.INVOICING);
+        } else {
+            helper.discloseLabel("button-next-invoicing");
+        }
+
+        helper.addLabel("button-next", PrintOutNounEnum.JOB);
+
+        helper.addLabel("label-copy",
+                PrintOutNounEnum.COPY.uiText(getLocale()));
+
+    }
+
+}

@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <comment>PrintFlowLite Configuration Properties - Stub for Docker Build</comment>
+
+    <!-- Authentication Modes -->
+    <entry key="auth-mode.name">Authentication Mode: Name</entry>
+    <entry key="auth-mode.name.show">Show Name Field</entry>
+    <entry key="auth-mode.email">Authentication Mode: E-mail</entry>
+    <entry key="auth-mode.email.show">Show E-mail Field</entry>
+    <entry key="auth-mode.id">Authentication Mode: User ID</entry>
+    <entry key="auth-mode.id.show">Show User ID Field</entry>
+    <entry key="auth-mode.id.pin-required">User ID: PIN Required</entry>
+    <entry key="auth-mode.id.is-masked">User ID: Masked</entry>
+    <entry key="auth-mode.card-local">Card: Local Mode</entry>
+    <entry key="auth-mode.card-local.show">Show Local Card Mode</entry>
+    <entry key="auth-mode.card.pin-required">Card: PIN Required</entry>
+    <entry key="auth-mode.card.self-association">Card: Self Association</entry>
+    <entry key="auth-mode.card-ip.expiry-msecs">Card: IP Expiry (ms)</entry>
+    <entry key="auth-mode.yubikey">Authentication Mode: YubiKey</entry>
+    <entry key="auth-mode.yubikey.show">Show YubiKey Field</entry>
+    <entry key="auth-mode.yubikey.api.client-id">YubiKey: API Client ID</entry>
+    <entry key="auth-mode.yubikey.api.secret-key">YubiKey: API Secret Key</entry>
+    <entry key="auth-mode.default">Default Authentication Mode</entry>
+
+    <!-- Card -->
+    <entry key="card.number.format">Card Number Format</entry>
+    <entry key="card.number.first-byte">Card Number First Byte</entry>
+
+    <!-- CUPS / IPP -->
+    <entry key="cups.ipp.max-connections">CUPS IPP: Max Connections</entry>
+    <entry key="cups.ipp.exception.stacktrace">CUPS IPP: Exception Stacktrace</entry>
+    <entry key="cups.ipp.local-connect-timeout-msec">CUPS IPP: Local Connect Timeout (ms)</entry>
+    <entry key="cups.ipp.local-socket-timeout-msec">CUPS IPP: Local Socket Timeout (ms)</entry>
+    <entry key="cups.ipp.remote-enabled">CUPS IPP: Remote Enabled</entry>
+    <entry key="cups.ipp.remote.connect-timeout-msec">CUPS IPP: Remote Connect Timeout (ms)</entry>
+    <entry key="cups.ipp.remote-socket-timeout-msec">CUPS IPP: Remote Socket Timeout (ms)</entry>
+    <entry key="cups.ipp.remote.connect-timeout-msec">CUPS IPP: Remote Connect Timeout (ms)</entry>
+    <entry key="cups.ipp.remote-socket-timeout-msec">CUPS IPP: Remote Socket Timeout (ms)</entry>
+    <entry key="cups.ipp.jobstate.cancel-if-stopped.enable">CUPS IPP: Cancel if Stopped</entry>
+    <entry key="cups.ipp.notification.method">CUPS IPP: Notification Method</entry>
+    <entry key="cups.ipp.notification.push.heartbeat-msec">CUPS IPP: Push Heartbeat (ms)</entry>
+    <entry key="cups.ipp.notification.push.notify-lease-duration">CUPS IPP: Push Notify Lease Duration</entry>
+    <entry key="cups.ipp.notification.push.pull-fallback-msec">CUPS IPP: Push Pull Fallback (ms)</entry>
+    <entry key="cups.ipp.notification.pull.heartbeat-msec">CUPS IPP: Pull Heartbeat (ms)</entry>
+
+    <!-- IPP -->
+    <entry key="ipp.ext.constraint.booklet.enable">IPP: Booklet Enable</entry>
+    <entry key="ipp.job-name.space-to-underscore.enable">IPP: Job Name Space to Underscore</entry>
+    <entry key="ipp.internet.printer-uri.base">IPP: Internet Printer URI Base</entry>
+    <entry key="ipp.authentication.enable">IPP: Authentication Enable</entry>
+    <entry key="ipp.routing.enable">IPP: Routing Enable</entry>
+    <entry key="ipp.routing.terminal.enable">IPP: Routing Terminal Enable</entry>
+    <entry key="ipp.routing.printer.enable">IPP: Routing Printer Enable</entry>
+    <entry key="ipp.printer-attr.printer-uuid">IPP: Printer UUID Attribute</entry>
+
+    <!-- LDAP -->
+    <entry key="ldap.admin-dn">LDAP: Admin DN</entry>
+    <entry key="ldap.admin-password">LDAP: Admin Password</entry>
+    <entry key="ldap.basedn">LDAP: Base DN</entry>
+    <entry key="ldap.host">LDAP: Host</entry>
+    <entry key="ldap.port">LDAP: Port</entry>
+    <entry key="ldap.use.ssl">LDAP: Use SSL</entry>
+    <entry key="ldap.use-ssl.trust-self-signed">LDAP: Trust Self-Signed SSL</entry>
+    <entry key="ldap.use.starttls">LDAP: Use STARTTLS</entry>
+    <entry key="ldap.starttls-cert-dnsname">LDAP: STARTTLS Cert DNS Name</entry>
+    <entry key="ldap.ssl.hostname-verification.disable">LDAP: SSL Hostname Verification Disable</entry>
+    <entry key="ldap.batchsize">LDAP: Batch Size</entry>
+    <entry key="ldap.schema.group-member-field">LDAP: Group Member Field</entry>
+    <entry key="ldap.schema.group-name-field">LDAP: Group Name Field</entry>
+    <entry key="ldap.schema.group-full-name-field">LDAP: Group Full Name Field</entry>
+    <entry key="ldap.schema.group-search">LDAP: Group Search</entry>
+    <entry key="ldap.schema.user-name-group-search">LDAP: User Name Group Search</entry>
+    <entry key="ldap.schema.nested-group-search">LDAP: Nested Group Search</entry>
+    <entry key="ldap.schema.dn-field">LDAP: DN Field</entry>
+    <entry key="ldap.schema.type">LDAP: Schema Type</entry>
+    <entry key="ldap.schema.posix-groups">LDAP: POSIX Groups</entry>
+    <entry key="ldap.disabled-users.allow">LDAP: Allow Disabled Users</entry>
+    <entry key="ldap.disabled-users.local-filter">LDAP: Filter Disabled Users Locally</entry>
+    <entry key="ldap.schema.user-name-field">LDAP: User Name Field</entry>
+    <entry key="ldap.schema.user-name-search">LDAP: User Name Search</entry>
+    <entry key="ldap.schema.user-full-name-field">LDAP: User Full Name Field</entry>
+    <entry key="ldap.schema.user-email-field">LDAP: User E-mail Field</entry>
+    <entry key="ldap.schema.user-department-field">LDAP: User Department Field</entry>
+    <entry key="ldap.schema.user-office-field">LDAP: User Office Field</entry>
+    <entry key="ldap.schema.user-card-number-field">LDAP: User Card Number Field</entry>
+    <entry key="ldap.schema.user-card-number-first-byte">LDAP: User Card Number First Byte</entry>
+    <entry key="ldap.schema.user-card-number-format">LDAP: User Card Number Format</entry>
+    <entry key="ldap.schema.user-id-number-field">LDAP: User ID Number Field</entry>
+
+    <!-- Custom User Sync -->
+    <entry key="custom.user-sync.papercut">PaperCut: Custom User Sync</entry>
+    <entry key="custom.user-sync.papercut.user-card-number-first-byte">PaperCut: User Card Number First Byte</entry>
+    <entry key="custom.user-sync.papercut.user-card-number-format">PaperCut: User Card Number Format</entry>
+
+    <!-- PaperCut -->
+    <entry key="papercut.enable">PaperCut: Enable</entry>
+    <entry key="papercut.db.enable">PaperCut: Database Enable</entry>
+    <entry key="papercut.db.jdbc-driver">PaperCut: JDBC Driver</entry>
+    <entry key="papercut.db.jdbc-url">PaperCut: JDBC URL</entry>
+    <entry key="papercut.db.user">PaperCut: DB User</entry>
+    <entry key="papercut.db.password">PaperCut: DB Password</entry>
+    <entry key="papercut.server.host">PaperCut: Server Host</entry>
+    <entry key="papercut.server.port">PaperCut: Server Port</entry>
+    <entry key="papercut.webservices.auth-token">PaperCut: Auth Token</entry>
+
+    <!-- Financial -->
+    <entry key="legacy.pdf.creator.enable">Legacy: PDF Creator Enable</entry>
+    <entry key="db.batch.commit-chunk-size">Database: Batch Commit Chunk Size</entry>
+    <entry key="db.export.query-max-results">Database: Export Query Max Results</entry>
+    <entry key="financial.global.credit-limit">Financial: Global Credit Limit</entry>
+    <entry key="financial.global.currency-code">Financial: Global Currency Code</entry>
+    <entry key="financial.payment-gateway.accounts">Financial: Payment Gateway Accounts</entry>
+    <entry key="financial.pos.deposit.enable">Financial: POS Deposit Enable</entry>
+    <entry key="financial.pos.sales.enable">Financial: POS Sales Enable</entry>
+    <entry key="financial.pos.sales.credit-limit.enable">Financial: POS Sales Credit Limit Enable</entry>
+    <entry key="financial.pos.sales.credit-limit">Financial: POS Sales Credit Limit</entry>
+    <entry key="financial.pos.sales.card-as-password">Financial: POS Card as Password</entry>
+    <entry key="financial.pos.sales.accounts">Financial: POS Sales Accounts</entry>
+    <entry key="financial.pos.sales.label.locations">Financial: POS Sales Label Locations</entry>
+    <entry key="financial.pos.sales.label.locations.enable">Financial: POS Sales Label Locations Enable</entry>
+    <entry key="financial.pos.sales.label.shops">Financial: POS Sales Label Shops</entry>
+    <entry key="financial.pos.sales.label.shops.enable">Financial: POS Sales Label Shops Enable</entry>
+    <entry key="financial.pos.sales.label.items">Financial: POS Sales Label Items</entry>
+    <entry key="financial.pos.sales.label.items.enable">Financial: POS Sales Label Items Enable</entry>
+    <entry key="financial.pos.sales.label.prices">Financial: POS Sales Label Prices</entry>
+    <entry key="financial.pos.sales.label.prices.enable">Financial: POS Sales Label Prices Enable</entry>
+    <entry key="financial.pos.payment-methods">Financial: POS Payment Methods</entry>
+    <entry key="financial.pos.receipt-header">Financial: POS Receipt Header</entry>
+    <entry key="financial.printer.cost.decimals">Financial: Printer Cost Decimals</entry>
+    <entry key="financial.user.account.papercut.enable">Financial: User Account PaperCut Enable</entry>
+    <entry key="financial.user.balance.decimals">Financial: User Balance Decimals</entry>
+    <entry key="financial.user.transfers.enable">Financial: User Transfers Enable</entry>
+    <entry key="financial.user.transfers.user-search.enable">Financial: User Transfers User Search Enable</entry>
+    <entry key="financial.user.transfers.enable-comments">Financial: User Transfers Enable Comments</entry>
+    <entry key="financial.user.transfers.amount-min">Financial: User Transfers Amount Min</entry>
+    <entry key="financial.user.transfers.amount-max">Financial: User Transfers Amount Max</entry>
+    <entry key="financial.user.transfers.enable-limit-group">Financial: User Transfers Enable Limit Group</entry>
+    <entry key="financial.user.transfers.limit-group">Financial: User Transfers Limit Group</entry>
+    <entry key="financial.user.vouchers.enable">Financial: User Vouchers Enable</entry>
+    <entry key="financial.voucher.card-header">Financial: Voucher Card Header</entry>
+    <entry key="financial.voucher.card-footer">Financial: Voucher Card Footer</entry>
+    <entry key="financial.voucher.card-font-family">Financial: Voucher Card Font Family</entry>
+
+    <!-- API -->
+    <entry key="api.jsonrpc.secret-key">API: JSON-RPC Secret Key</entry>
+    <entry key="api.jsonrpc.ip-addresses.allowed">API: JSON-RPC IP Addresses Allowed</entry>
+    <entry key="api.restful.auth.username">API: RESTful Auth Username</entry>
+    <entry key="api.restful.auth.password">API: RESTful Auth Password</entry>
+    <entry key="api.restful.ip-addresses.allowed">API: RESTful IP Addresses Allowed</entry>
+
+    <!-- Database -->
+    <entry key="db.batch.commit-chunk-size">Database: Batch Commit Chunk Size</entry>
+    <entry key="db.export.query-max-results">Database: Export Query Max Results</entry>
+
+    <!-- Document -->
+    <entry key="doc.convert.xpstopdf-enabled">Document: Convert XPS to PDF Enabled</entry>
+    <entry key="doc.convert.libreoffice-enabled">Document: Convert LibreOffice Enabled</entry>
+
+    <!-- Download -->
+    <entry key="download.max-connections">Download: Max Connections</entry>
+    <entry key="download.max-connections-per-route">Download: Max Connections Per Route</entry>
+    <entry key="download.connect-timeout-msec">Download: Connect Timeout (ms)</entry>
+    <entry key="download.socket-timeout-msec">Download: Socket Timeout (ms)</entry>
+
+    <!-- RESTful Client -->
+    <entry key="restful.client.max-connections">RESTful Client: Max Connections</entry>
+    <entry key="restful.client.max-connections-per-route">RESTful Client: Max Connections Per Route</entry>
+    <entry key="restful.client.connect-timeout-msec">RESTful Client: Connect Timeout (ms)</entry>
+    <entry key="restful.client.read-timeout-msec">RESTful Client: Read Timeout (ms)</entry>
+    <entry key="restful.client.trust-self-signed">RESTful Client: SSL Trust Self-Signed</entry>
+
+    <!-- Environment -->
+    <entry key="environment.co2-grams-per-sheet">Environment: CO2 Grams Per Sheet</entry>
+    <entry key="environment.sheets-per-tree">Environment: Sheets Per Tree</entry>
+    <entry key="environment.watt-hours-per-sheet">Environment: Watt Hours Per Sheet</entry>
+
+    <!-- Extension -->
+    <entry key="ext.papercut.user.sync.enable">Extension: PaperCut User Sync Enable</entry>
+    <entry key="ext.papercut.user.sync.username">Extension: PaperCut User Sync Username</entry>
+    <entry key="ext.papercut.user.sync.password">Extension: PaperCut User Sync Password</entry>
+    <entry key="ext.telegram.enable">Extension: Telegram Enable</entry>
+    <entry key="ext.telegram.bot.username">Extension: Telegram Bot Username</entry>
+    <entry key="ext.telegram.bot.token">Extension: Telegram Bot Token</entry>
+    <entry key="ext.webapi.callback-url.base">Extension: WebAPI Callback URL Base</entry>
+    <entry key="ext.webapi.redirect-url.webapp-user">Extension: WebAPI Redirect URL WebApp User</entry>
+
+    <!-- Infrastructure -->
+    <entry key="infra.internet-connected">Infrastructure: Internet Connected</entry>
+
+    <!-- Internal Users -->
+    <entry key="internal-users.enable">Internal Users: Enable</entry>
+    <entry key="internal-users.registration.enable">Internal Users: Registration Enable</entry>
+    <entry key="internal-users.registration.email.domain-whitelist">Internal Users: Registration Email Domain Whitelist</entry>
+    <entry key="internal-users.registration.ip-addresses.allowed">Internal Users: Registration IP Addresses Allowed</entry>
+    <entry key="internal-users.registration.email.expiry-mins">Internal Users: Registration Email Expiry (mins)</entry>
+    <entry key="internal-users.registration.verify-url.authority">Internal Users: Registration Verify URL Authority</entry>
+    <entry key="internal-users.user-can-change-password">Internal Users: Can Change Password</entry>
+    <entry key="internal-users.username-prefix">Internal Users: Name Prefix</entry>
+    <entry key="internal-users.password-length-min">Internal Users: Password Length Min</entry>
+
+    <!-- Community -->
+    <entry key="community.visitor.start-date">Community: Visitor Start Date</entry>
+
+    <!-- Feed -->
+    <entry key="feed.atom.admin.enable">Feed: Atom Admin Enable</entry>
+    <entry key="feed.atom.admin.schedule">Feed: Atom Admin Schedule</entry>
+    <entry key="feed.atom.admin.uuid">Feed: Atom Admin UUID</entry>
+    <entry key="feed.atom.admin.username">Feed: Atom Admin Username</entry>
+    <entry key="feed.atom.admin.password">Feed: Atom Admin Password</entry>
+
+    <!-- Print IMAP -->
+    <entry key="print.imap.enable">Print IMAP: Enable</entry>
+    <entry key="print.imap.host">Print IMAP: Host</entry>
+    <entry key="print.imap.port">Print IMAP: Port</entry>
+    <entry key="print.imap.connectiontimeout-msecs">Print IMAP: Connection Timeout (ms)</entry>
+    <entry key="print.imap.timeout-msecs">Print IMAP: Timeout (ms)</entry>
+    <entry key="print.imap.security">Print IMAP: Security</entry>
+    <entry key="print.imap.user">Print IMAP: User</entry>
+    <entry key="print.imap.password">Print IMAP: Password</entry>
+    <entry key="print.imap.debug">Print IMAP: Debug</entry>
+    <entry key="print.imap.folder.inbox">Print IMAP: Inbox Folder</entry>
+    <entry key="print.imap.folder.trash">Print IMAP: Trash Folder</entry>
+    <entry key="print.imap.folder.trash.enable">Print IMAP: Trash Folder Enable</entry>
+    <entry key="print.imap.session.heartbeat-secs">Print IMAP: Session Heartbeat (secs)</entry>
+    <entry key="print.imap.session.duration-secs">Print IMAP: Session Duration (secs)</entry>
+    <entry key="print.imap.max-file-mb">Print IMAP: Max File (MB)</entry>
+    <entry key="print.imap.max-files">Print IMAP: Max Files</entry>
+    <entry key="print.imap.content.eml-detain">Print IMAP: Content EML Detain</entry>
+    <entry key="print.imap.ticket.enable">Print IMAP: Ticket Enable</entry>
+    <entry key="print.imap.ticket.operator">Print IMAP: Ticket Operator</entry>
+    <entry key="print.imap.ticket.include-known-users">Print IMAP: Ticket Include Known Users</entry>
+    <entry key="print.imap.ticket.no-files-content.enable">Print IMAP: Ticket No Files Content Enable</entry>
+    <entry key="print.imap.ticket.reply.content-type.html">Print IMAP: Ticket Reply Content Type HTML</entry>
+
+    <!-- WebApp Internet -->
+    <entry key="webapp.internet.mailtickets.enable">WebApp: Internet Mail Tickets Enable</entry>
+    <entry key="webapp.internet.mailtickets.auth-mode.enable">WebApp: Internet Mail Tickets Auth Mode Enable</entry>
+    <entry key="webapp.internet.mailtickets.auth-modes">WebApp: Internet Mail Tickets Auth Modes</entry>
+    <entry key="webapp.internet.payment.enable">WebApp: Internet Payment Enable</entry>
+    <entry key="webapp.internet.payment.auth-mode.enable">WebApp: Internet Payment Auth Mode Enable</entry>
+    <entry key="webapp.internet.payment.auth-modes">WebApp: Internet Payment Auth Modes</entry>
+
+    <!-- Printer -->
+    <entry key="printer.snmp.enable">Printer: SNMP Enable</entry>
+    <entry key="printer.snmp.read.trigger-mins">Printer: SNMP Read Trigger (mins)</entry>
+    <entry key="printer.snmp.read.retries">Printer: SNMP Read Retries</entry>
+    <entry key="printer.snmp.read.timeout-msec">Printer: SNMP Read Timeout (ms)</entry>
+    <entry key="printer.snmp.marker.percent.warn">Printer: SNMP Marker Percent Warning</entry>
+    <entry key="printer.snmp.marker.percent.alert">Printer: SNMP Marker Percent Alert</entry>
+
+    <!-- LibreOffice / SOFFICE -->
+    <entry key="soffice.enable">LibreOffice: Enable</entry>
+    <entry key="soffice.home">LibreOffice: Home</entry>
+    <entry key="soffice.profile.template-dir">LibreOffice: Profile Template Dir</entry>
+    <entry key="soffice.connection.ports">LibreOffice: Connection Ports</entry>
+    <entry key="soffice.connection.restart-task-count">LibreOffice: Connection Restart Task Count</entry>
+    <entry key="soffice.task.queue-timeout-msec">LibreOffice: Task Queue Timeout (ms)</entry>
+    <entry key="soffice.task.exec-timeout-msec">LibreOffice: Task Exec Timeout (ms)</entry>
+    <entry key="soffice.respond.retry-msec">LibreOffice: Respond Retry (ms)</entry>
+    <entry key="soffice.respond.timeout-msec">LibreOffice: Respond Timeout (ms)</entry>
+    <entry key="soffice.start.retry-msec">LibreOffice: Start Retry (ms)</entry>
+    <entry key="soffice.start.timeout-msec">LibreOffice: Start Timeout (ms)</entry>
+
+    <!-- Reports -->
+    <entry key="reports.pdf.internal.font-family">Reports: PDF Internal Font Family</entry>
+
+    <!-- Mail -->
+    <entry key="mail.smtp.host">Mail: SMTP Host</entry>
+    <entry key="mail.smtp.port">Mail: SMTP Port</entry>
+    <entry key="mail.smtp.security">Mail: SMTP Security</entry>
+    <entry key="mail.smtp.username">Mail: SMTP Username</entry>
+    <entry key="mail.smtp.password">Mail: SMTP Password</entry>
+    <entry key="mail.smtp.debug">Mail: SMTP Debug</entry>
+    <entry key="mail.smtp.max-file-kb">Mail: SMTP Max File (KB)</entry>
+    <entry key="mail.smtp.connectiontimeout">Mail: SMTP Connection Timeout</entry>
+    <entry key="mail.smtp.timeout">Mail: SMTP Timeout</entry>
+    <entry key="mail.outbox.poll.heartbeat-msec">Mail: Outbox Poll Heartbeat (ms)</entry>
+    <entry key="mail.outbox.send.interval-msec">Mail: Outbox Send Interval (ms)</entry>
+    <entry key="mail.from.address">Mail: From Address</entry>
+    <entry key="mail.from.name">Mail: From Name</entry>
+    <entry key="mail.reply.to.address">Mail: Reply To Address</entry>
+    <entry key="mail.reply.to.name">Mail: Reply To Name</entry>
+    <entry key="mail.pgp.mime.sign">Mail: PGP MIME Sign</entry>
+    <entry key="mail.pgp.mime.encrypt">Mail: PGP MIME Encrypt</entry>
+    <entry key="mail.imap.auth.login.disable">Mail: IMAP Auth Login Disable</entry>
+    <entry key="mail.imap.auth.plain.disable">Mail: IMAP Auth Plain Disable</entry>
+    <entry key="mail.imap.auth.ntlm.disable">Mail: IMAP Auth NTLM Disable</entry>
+
+    <!-- PGP -->
+    <entry key="pgp.pks.url">PGP: PKS URL</entry>
+
+    <!-- Custom Template -->
+    <entry key="custom.template.home">Custom Template: Home</entry>
+    <entry key="custom.template.home.mail">Custom Template: Home Mail</entry>
+
+    <!-- Print In -->
+    <entry key="print.in.ipp.default.wait-after-failure-msec">Print In: IPP Default Wait After Failure (ms)</entry>
+    <entry key="print.in.pdf.encrypted.allow">Print In: PDF Encrypted Allow</entry>
+    <entry key="print.in.pdf.invalid.repair">Print In: PDF Invalid Repair</entry>
+    <entry key="print.in.pdf.fonts.verify">Print In: PDF Fonts Verify</entry>
+    <entry key="print.in.pdf.fonts.verify.reject">Print In: PDF Fonts Verify Reject</entry>
+    <entry key="print.in.pdf.fonts.embed">Print In: PDF Fonts Embed</entry>
+    <entry key="print.in.pdf.clean">Print In: PDF Clean</entry>
+    <entry key="print.in.pdf.optimize">Print In: PDF Optimize</entry>
+    <entry key="print.in.pdf.prepress">Print In: PDF Prepress</entry>
+    <entry key="print.in.ps.driver.images.trigger">Print In: PS Driver Images Trigger</entry>
+    <entry key="print.in.ps.driver.images.dpi">Print In: PS Driver Images DPI</entry>
+    <entry key="print.in.ps.driver.detain">Print In: PS Driver Detain</entry>
+    <entry key="print.in.ps.driverless.images.trigger">Print In: PS Driverless Images Trigger</entry>
+    <entry key="print.in.ps.driverless.images.dpi">Print In: PS Driverless Images DPI</entry>
+    <entry key="print.in.job.expiry.mins">Print In: Job Expiry (mins)</entry>
+    <entry key="print.in.job.expiry.ignored-mins">Print In: Job Expiry Ignored (mins)</entry>
+
+    <!-- Job Ticket -->
+    <entry key="jobticket.copier.enable">Job Ticket: Copier Enable</entry>
+    <entry key="jobticket.delivery.datetime.enable">Job Ticket: Delivery DateTime Enable</entry>
+    <entry key="jobticket.delivery.time.enable">Job Ticket: Delivery Time Enable</entry>
+    <entry key="jobticket.delivery.days">Job Ticket: Delivery Days</entry>
+    <entry key="jobticket.delivery.days.min">Job Ticket: Delivery Days Min</entry>
+    <entry key="jobticket.delivery.days-of-week">Job Ticket: Delivery Days of Week</entry>
+    <entry key="jobticket.delivery.day-minutes">Job Ticket: Delivery Day Minutes</entry>
+    <entry key="jobticket.notify.email.completed.enable">Job Ticket: Notify Email Completed Enable</entry>
+    <entry key="jobticket.notify.email.canceled.enable">Job Ticket: Notify Email Canceled Enable</entry>
+    <entry key="jobticket.notify.email.content-type.html">Job Ticket: Notify Email Content Type HTML</entry>
+    <entry key="jobticket.domains">Job Ticket: Domains</entry>
+    <entry key="jobticket.domains.enable">Job Ticket: Domains Enable</entry>
+    <entry key="jobticket.domains.required">Job Ticket: Domains Required</entry>
+    <entry key="jobticket.domains.retain">Job Ticket: Domains Retain</entry>
+    <entry key="jobticket.uses">Job Ticket: Uses</entry>
+    <entry key="jobticket.uses.enable">Job Ticket: Uses Enable</entry>
+    <entry key="jobticket.uses.required">Job Ticket: Uses Required</entry>
+    <entry key="jobticket.tags">Job Ticket: Tags</entry>
+    <entry key="jobticket.tags.enable">Job Ticket: Tags Enable</entry>
+
+    <!-- Device -->
+    <entry key="device.card-reader.default-port">Device: Card Reader Default Port</entry>
+
+    <!-- Delete -->
+    <entry key="delete.account-trx-log">Delete: Account Transaction Log</entry>
+    <entry key="delete.account-trx-log.days">Delete: Account Transaction Days</entry>
+    <entry key="delete.app-log">Delete: App Log</entry>
+    <entry key="delete.app-log.days">Delete: App Log Days</entry>
+    <entry key="delete.doc-log">Delete: Doc Log</entry>
+    <entry key="delete.doc-log.days">Delete: Doc Log Days</entry>
+
+    <!-- Print Out -->
+    <entry key="print.out.ipp.default.wait-after-failure-msec">Print Out: IPP Default Wait After Failure (ms)</entry>
+
+    <!-- User Display -->
+    <entry key="user.display.name.format">User Display: Name Format</entry>
+
+    <!-- WebAPI -->
+    <entry key="webapi.callback-url.base">WebAPI: Callback URL Base</entry>
+    <entry key="webapi.redirect-url.webapp-user">WebAPI: Redirect URL WebApp User</entry>
+
+    <!-- System -->
+    <entry key="sys.inetfilter.whitelist.empty.allow-all">System: Allow All Empty Whitelist</entry>
+    <entry key="sys.dosfilter.max-requests-per-sec">System: DoS Filter Max Requests Per Sec</entry>
+    <entry key="sys.dosfilter.max-idle-tracker-msec">System: DoS Filter Max Idle Tracker (ms)</entry>
+    <entry key="sys.rate-limiting.user-auth.enable">System: Rate Limiting User Auth Enable</entry>
+    <entry key="sys.rate-limiting.user-auth.failures-per-min">System: Rate Limiting User Auth Failures Per Min</entry>
+    <entry key="sys.rate-limiting.user-reg.max-per-hour">System: Rate Limiting User Reg Max Per Hour</entry>
+    <entry key="sys.rate-limiting.api.failures-per-min">System: Rate Limiting API Failures Per Min</entry>
+    <entry key="sys.rate-limiting.print-in.failures-per-min">System: Rate Limiting Print In Failures Per Min</entry>
+    <entry key="sys.host.cmd.pdftocairo.img-strategy">System: Host Command PDF to Cairo Image Strategy</entry>
+
+    <!-- Auth -->
+    <entry key="auth-method">Authentication Method</entry>
+    <entry key="auth.custom.user-sync">Custom User Sync</entry>
+    <entry key="auth.custom.user-auth">Custom User Auth</entry>
+
+    <!-- IMAP security -->
+    <entry key="print.imap.security">Print IMAP: Security</entry>
+
+</properties>

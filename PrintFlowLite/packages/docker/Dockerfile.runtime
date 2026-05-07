@@ -1,0 +1,243 @@
+# =============================================================================
+# PrintFlowLite Runtime Dockerfile (builds from source)
+# =============================================================================
+# Builds a Docker image for PrintFlowLite that compiles from source and runs it.
+# Multi-stage build: builder stage compiles Maven packages, runtime stage runs Tomcat.
+#
+# Usage:
+#   1. Build image: docker build -t printflowlite/runtime:latest -f packages/docker/Dockerfile.runtime .
+#   2. Run: docker compose -f packages/docker/docker-compose.runtime.yml up -d
+# =============================================================================
+
+# =============================================================================
+# Stage 1: Builder
+# =============================================================================
+FROM maven:3.9-eclipse-temurin-17 AS builder
+
+# Set timezone
+ENV TZ=Europe/Amsterdam
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# Working directory
+WORKDIR /project
+
+# Copy POM files first (for dependency caching)
+COPY pom.xml ./
+COPY packages/common/pom.xml ./packages/common/
+COPY packages/core/pom.xml ./packages/core/
+COPY packages/ext/pom.xml ./packages/ext/
+COPY packages/server/pom.xml ./packages/server/
+COPY packages/client/pom.xml ./packages/client/
+
+# Download dependencies (cached layer - only re-downloads if pom.xml changes)
+RUN mvn dependency:go-offline --batch-mode || true
+
+# Copy source code
+COPY packages/common/src ./packages/common/src
+COPY packages/core/src ./packages/core/src
+COPY packages/ext/src ./packages/ext/src
+COPY packages/server/src ./packages/server/src
+COPY packages/client/src ./packages/client/src
+
+# Copy build configuration files (build.xml for VersionInfo generation)
+COPY packages/common/build.xml ./packages/common/build.xml
+COPY packages/common/build-common.xml ./packages/common/build-common.xml
+COPY packages/common/VERSION.sh ./packages/common/VERSION.sh
+COPY packages/common/VersionInfo-template.java ./packages/common/VersionInfo-template.java
+COPY packages/core/build.xml ./packages/core/build.xml
+
+# Fix permissions and build issues
+RUN chmod +x ./packages/common/VERSION.sh && \
+    echo ">>> Set execute permission on VERSION.sh"
+
+# Fix printflowlite-i18n-en missing dependency (not in monorepo)
+RUN sed -i ':a;N;$!ba;s|<dependency>\s*<groupId>org.printflow.lite</groupId>\s*<artifactId>printflowlite-i18n-en</artifactId>\s*<version>1.7.0</version>\s*</dependency>||g' packages/core/pom.xml && \
+    echo ">>> Removed printflowlite-i18n-en dependency from core/pom.xml"
+
+# Build all packages (skip tests during image build)
+RUN mvn clean install -DskipTests --batch-mode && \
+    echo ">>> All packages built successfully"
+
+# Build server WAR package
+RUN mvn package -pl packages/server -DskipTests --batch-mode && \
+    echo ">>> Server WAR built successfully"
+
+# Fix resource path mismatch: source tree uses "org/printflow.lite/" (single
+# directory with dot) but Java packages compile to "org/printflow/lite/" (two
+# directories). Merge misplaced resources into the correct classpath location.
+# 1) Fix the core JAR
+RUN CORE_JAR=$(find packages/core/target -name 'printflowlite-core-*.jar' ! -name '*-sources*' | head -1) && \
+    echo ">>> Processing core JAR: $CORE_JAR" && \
+    if [ -n "$CORE_JAR" ] && [ -f "/project/$CORE_JAR" ]; then \
+        TMPDIR=$(mktemp -d) && cd "$TMPDIR" && \
+        jar xf "/project/$CORE_JAR" && \
+        if [ -d "org/printflow.lite" ]; then \
+            mkdir -p org/printflow/lite && \
+            cp -rn org/printflow.lite/* org/printflow/lite/ 2>/dev/null || true && \
+            rm -rf org/printflow.lite && \
+            jar cf "/project/$CORE_JAR" . && \
+            echo ">>> Fixed resource paths in core JAR" ; \
+        else \
+            echo ">>> No misplaced resources in core JAR" ; \
+        fi && rm -rf "$TMPDIR" ; \
+    else \
+        echo ">>> WARNING: Core JAR not found, skipping fix" ; \
+    fi
+# 2) Fix the server WAR
+RUN WAR=$(find packages/server/target -name '*.war' | head -1) && \
+    echo ">>> Processing WAR: $WAR" && \
+    if [ -n "$WAR" ] && [ -f "/project/$WAR" ]; then \
+        TMPDIR=$(mktemp -d) && cd "$TMPDIR" && \
+        jar xf "/project/$WAR" && \
+        echo ">>> Extracted WAR, checking resources..." && \
+        if [ -d "WEB-INF/classes/org/printflow.lite" ]; then \
+            mkdir -p WEB-INF/classes/org/printflow/lite && \
+            cp -rn WEB-INF/classes/org/printflow.lite/* WEB-INF/classes/org/printflow/lite/ 2>/dev/null || true && \
+            rm -rf WEB-INF/classes/org/printflow.lite && \
+            echo ">>> Fixed misplaced resources in WAR classes" ; \
+        fi && \
+        # Fix: copy messages.xml from api/request/ to api/ (API looks for org.printflow.lite.server.api.messages) \
+        if [ -f "WEB-INF/classes/org/printflow/lite/server/api/request/messages.xml" ]; then \
+            cp WEB-INF/classes/org/printflow/lite/server/api/request/messages.xml WEB-INF/classes/org/printflow/lite/server/api/messages.xml ; \
+            echo ">>> Fixed messages.xml path in WAR" ; \
+        fi && \
+        # Fix: add missing msg-change-internal-admin-password key if not present \
+        if ! grep -q 'msg-change-internal-admin-password' WEB-INF/classes/org/printflow/lite/server/api/request/messages.xml 2>/dev/null; then \
+            sed -i 's|</properties>|    <entry key="msg-change-internal-admin-password">You are still using the default admin password. Please change it now for security reasons.</entry>\\n</properties>|' WEB-INF/classes/org/printflow/lite/server/api/request/messages.xml ; \
+            echo ">>> Added missing msg-change-internal-admin-password key" ; \
+        fi && \
+        # Fix all printflowlite JARs in WEB-INF/lib \
+        for LIB in WEB-INF/lib/printflowlite-*.jar; do \
+            if [ -f "$LIB" ]; then \
+                LIBTMP=$(mktemp -d) && cd "$LIBTMP" && \
+                jar xf "$TMPDIR/$LIB" && \
+                if [ -d "org/printflow.lite" ]; then \
+                    mkdir -p org/printflow/lite && \
+                    cp -rn org/printflow.lite/* org/printflow/lite/ 2>/dev/null || true && \
+                    rm -rf org/printflow.lite && \
+                    jar cf "$TMPDIR/$LIB" . && \
+                    echo ">>> Fixed resources in $LIB" ; \
+                fi && rm -rf "$LIBTMP" ; \
+            fi ; \
+        done && \
+        cd "$TMPDIR" && \
+        for f in $(find . -maxdepth 1 -name '*printflowlite*' -o -name '*printflowlite*' | sort -u) ; do \
+            newname=$(echo "$f" | sed 's/printflowlite/PrintFlowLite/g') ; \
+            if [ "$f" != "$newname" ]; then cp "$f" "$newname" ; fi ; \
+        done && \
+        jar cf "/project/$WAR" . && \
+        echo ">>> WAR rebuilt successfully" && \
+        rm -rf "$TMPDIR" ; \
+    else \
+        echo ">>> WARNING: WAR not found, skipping WAR fix" ; \
+    fi
+
+# =============================================================================
+# Stage 2: Runtime
+# =============================================================================
+FROM tomcat:9.0-jdk17
+
+# Set timezone
+ENV TZ=Europe/Amsterdam
+ENV CATALINA_OPTS="-Dserver.home=/opt/printflowlite"
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# Install system dependencies for PrintFlowLite runtime
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # PDF processing
+    poppler-utils \
+    qpdf \
+    imagemagick \
+    wkhtmltopdf \
+    librsvg2-bin \
+    # Networking / discovery
+    avahi-daemon \
+    libnss-mdns \
+    # CUPS
+    cups \
+    cups-bsd \
+    printer-driver-escpr \
+    # Utilities
+    curl \
+    wget \
+    vim-tiny \
+    hplip \
+    # Cleanup
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* /var/tmp/*
+
+# Create printflowlite user for CUPS
+RUN useradd -rm -d /opt/printflowlite -s /bin/bash -G lpadmin printflowlite && \
+    mkdir -p /opt/printflowlite && \
+    chown -R printflowlite:lpadmin /opt/printflowlite
+
+# Set CUPS admin password
+RUN echo 'printflowlite:change-me' | chpasswd
+
+# Copy WAR file from builder stage (use wildcard for any version)
+COPY --from=builder /project/packages/server/target/printflowlite-server-*.war /tmp/ROOT.war
+
+# Extract WAR, add context.xml, enable DEBUG, and repack in one step
+RUN cd /tmp && \
+    mkdir -p webapps/ROOT/META-INF && \
+    cd webapps/ROOT && \
+    jar xf /tmp/ROOT.war && \
+    echo ">>> Extracted WAR" && \
+    # Add context.xml to disable persistent sessions
+    printf '<?xml version="1.0" encoding="UTF-8"?>\n<Context sessionCookiePath="/" useHttpOnly="true" swallowAbortedUploads="true">\n    <Manager pathname="" />\n</Context>\n' > META-INF/context.xml && \
+    echo ">>> Added context.xml to disable persistent sessions" && \
+    # Copy log4j.properties to WEB-INF/classes so Log4j can find it
+    cp WEB-INF/classes/setup/log4j.properties WEB-INF/classes/log4j.properties && \
+    echo ">>> Copied log4j.properties to classpath root" && \
+    # Enable DEBUG logging (both file and stdout)
+    sed -i 's/log4j.rootLogger=DEBUG, file/log4j.rootLogger=DEBUG, file, stdout/g' WEB-INF/classes/log4j.properties && \
+    sed -i 's/log4j.logger.org.printflow.lite=DEBUG/log4j.logger.org.printflow.lite=DEBUG/g' WEB-INF/classes/log4j.properties && \
+    echo ">>> Enabled DEBUG logging" && \
+    rm /tmp/ROOT.war && \
+    jar cf /tmp/ROOT.war . && \
+    mv /tmp/ROOT.war /usr/local/tomcat/webapps/ROOT.war && \
+    rm -rf /tmp/webapps
+
+# Create data directories (including examples/data for template files)
+RUN mkdir -p /opt/printflowlite/data \
+             /opt/printflowlite/data/internal \
+             /opt/printflowlite/data/conf \
+             /opt/printflowlite/logs \
+             /opt/printflowlite/custom \
+             /opt/printflowlite/ext \
+             /opt/printflowlite/examples/data \
+             /opt/printflowlite/server/data \
+             /opt/printflowlite/server/logs \
+             /opt/printflowlite/server/custom \
+             /opt/printflowlite/server/ext \
+             /opt/printflowlite/lib \
+             /opt/printflowlite/lib/web \
+             /opt/printflowlite/lib/sql \
+             /opt/printflowlite/ext/lib \
+             /opt/printflowlite/docs \
+             /opt/printflowlite/docs/manual \
+             /opt/printflowlite/docs/licenses \
+             /opt/printflowlite/custom/web/themes && \
+    chown -R printflowlite:lpadmin /opt/printflowlite
+
+# Set log directory permissions to allow write access
+RUN chmod 777 /opt/printflowlite/logs && \
+    echo ">>> Set log directory permissions"
+
+# Create symlink for PrintFlowLite layout
+RUN mkdir -p /opt/printflowlite/server && \
+    ln -sf /usr/local/tomcat/webapps/ROOT /opt/printflowlite/server/webapps || true
+
+# Expose ports
+# 8080 - HTTP (Tomcat)
+# 8443 - HTTPS (if configured)
+# 631  - CUPS
+EXPOSE 8080 8443 631
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 \
+    CMD curl -f http://localhost:8080/ || exit 1
+
+# Start Tomcat
+CMD ["catalina.sh", "run"]

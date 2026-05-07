@@ -1,0 +1,625 @@
+/*! PrintFlowLite | (c) 2020 Datraverse B.V. | GNU Affero General Public License */
+
+/*
+ * This file is part of the PrintFlowLite project <https://www.PrintFlowLite.org>.
+ * Copyright (c) 2020 Datraverse B.V.
+ * Authors: Rijk Ravestein.
+ *
+ * SPDX-FileCopyrightText: © 2020 Datraverse B.V. <info@datraverse.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For more information, please contact Datraverse B.V. at this
+ * address: info@datraverse.com
+ */
+
+/* jQuery Mobile override */
+.ui-dialog-contain {
+	width: 92.5%;
+	max-width: 500px;
+	/* margin: 10% auto 15px auto; */
+	margin: 5% auto 15px auto;
+	padding: 0;
+	position: relative;
+	top: -15px;
+}
+
+/* Mantis #1170 - jQuery Mobile correction for Firefox 86.0 */
+.sp-jqm-fieldset-radio {
+	width: 100%;
+}
+
+.sp-disabled {
+	pointer-events: none;
+	opacity: 0.7;
+}
+
+.sp-invisible {
+	display: none;
+}
+
+.sp-plain-link {
+	/* */
+	color: #74b042 !important;
+	font-weight: normal !important;
+	text-decoration: none !important;
+	/* */
+}
+
+.sp-plain-community {
+	color: #74b042 !important;
+	font-weight: normal !important;
+	text-decoration: none !important;
+}
+
+.sp-plain-info {
+	color: #666666 !important;
+	font-weight: normal !important;
+	text-decoration: none !important;
+}
+
+.sp-plain-warn {
+	color: #DC5C05 !important;
+	font-weight: normal !important;
+	text-decoration: none !important;
+}
+
+.sp-plain-error {
+	color: red !important;
+	font-weight: normal !important;
+	text-decoration: none !important;
+}
+
+.sp-amount-min {
+	color: red;
+}
+
+.sp-url-wrap, .sp-filename-wrap {
+	/* These are technically the same, but use both */
+	overflow-wrap: break-word;
+	word-wrap: break-word;
+	-ms-word-break: break-all;
+	/* This is the dangerous one in WebKit, as it breaks things wherever */
+	/* word-break: break-all;*/
+	/* Instead use this non-standard one: */
+	word-break: break-word;
+	/* Adds a hyphen where the word breaks, if supported (No Blink) */
+	-ms-hyphens: auto;
+	-moz-hyphens: auto;
+	-webkit-hyphens: auto;
+	hyphens: auto;
+	/* */
+	white-space: normal;
+}
+
+.sp-txt-wrap {
+	white-space: normal;
+}
+
+.sp-txt-info {
+	/* */
+	color: #666666;
+	/* */
+}
+
+.sp-txt-warn {
+	color: #DC5C05;
+}
+
+.sp-txt-error {
+	color: red;
+}
+
+.sp-txt-valid {
+	color: #006600;
+}
+
+.sp-txt-community {
+	color: #74b042;
+}
+
+.sp-txt-internal-user {
+	color: #DC5C05;
+}
+
+.sp-txt-job-finishing {
+	color: #C0392B;
+}
+
+/* non-standard papersize */
+.sp-txt-papersize-ext {
+	color: #C0392B;
+}
+
+.sp-txt-job-ticket-attr {
+	color: purple;
+}
+
+.sp-print-in-queue {
+	color: #000099;
+}
+
+.sp-print-out-printer {
+	color: #990000;
+}
+
+.sp-print-out-pdf {
+	color: #006600;
+}
+
+.sp-msg-popup {
+	
+}
+
+.sp-msg-popup-error {
+	color: red;
+}
+
+.sp-msg-popup-warn {
+	color: #DC5C05;
+}
+
+.sp-msg-popup-info {
+	color: #666666;
+}
+
+a.sp-tooltip-panel-txt {
+	text-decoration: none;
+	color: black !important;
+	font-weight: normal;
+}
+
+table.sp-table-vertical-align-top th, table.sp-table-vertical-align-top td {
+	vertical-align: top;
+}
+
+.ui-btn.sp-tooltip-btn, .ui-btn.sp-tooltip-btn:hover, .ui-btn.sp-tooltip-btn:active
+{
+	background: none;
+	border: 0;
+	opacity: 0.4;
+}
+
+/*
+ * Not 100% width but right-sized by text.
+ * Use with JQM: data-wrapper-class="sp-checkbox-right-sized"
+ */
+.sp-checkbox-right-sized {
+	display: table-cell;
+}
+
+/* Classes for tri-state checkbox */
+.sp-checkbox-tristate-label {
+	
+}
+
+/* Image within JQM checkbox */
+img.sp-checkbox-img {
+	border-top-left-radius: 0px !important;
+}
+
+.sp-tristate-null {
+	/* IE 8 */
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
+	/* IE 5-7 */
+	filter: alpha(opacity = 30);
+	/* Netscape */
+	-moz-opacity: 0.3;
+	/* Safari 1.x */
+	-khtml-opacity: 0.3;
+	/* Good browsers */
+	opacity: 0.3;
+}
+
+.sp-tristate-on {
+	
+}
+
+.sp-tristate-off {
+	
+}
+
+.sp-outbox-remaining-time {
+	color: #DC5C05;
+	padding: 0px;
+}
+
+.sp-outbox-jobs {
+	color: #444444;
+	padding: 2px 5px 2px 5px;
+	border: 1px #DDDDDD solid;
+}
+
+.sp-outbox-pages {
+	color: #888888;
+	padding: 2px 5px 2px 5px;
+	border: 1px #DDDDDD solid;
+}
+
+.sp-outbox-cost {
+	color: #888888;
+	padding: 2px 5px 2px 5px;
+	border: 1px #DDDDDD solid;
+}
+
+.sp-outbox-job-entry {
+	background-color: #fcfcfc;
+	padding: 0px 5px 5px 8px;
+	margin: 10px;
+	border: 1px #DDDDDD solid;
+	-moz-border-radius: 8px;
+	-webkit-border-radius: 8px;
+	-khtml-border-radius: 8px;
+	border-radius: 8px;
+}
+
+.sp-outbox-jobticket-remark {
+	padding: 5px 5px 5px 5px;
+	margin: 8px;
+	border: 2px orange dotted;
+	-moz-border-radius: 8px;
+	-webkit-border-radius: 8px;
+	-khtml-border-radius: 8px;
+	border-radius: 8px;
+}
+
+.sp-jobticket-type-copy-ind {
+	background-color: #fcfcfc;
+	padding: 6px;
+	margin-right: 10px;
+	border: 1px #DDDDDD solid;
+	float: right;
+	color: gray;
+	font-size: 90%;
+	-moz-border-radius: 7px;
+	-webkit-border-radius: 7px;
+	-khtml-border-radius: 7px;
+	border-radius: 7px;
+}
+
+.sp-jobticket-state-ind {
+	background-color: #f9f9f9;
+	padding: 6px;
+	margin-right: 10px;
+	border: 1px #DDDDDD solid;
+	float: right;
+	font-size: 90%;
+	-moz-border-radius: 7px;
+	-webkit-border-radius: 7px;
+	-khtml-border-radius: 7px;
+	border-radius: 7px;
+}
+
+.sp-font-monospace {
+	font-family: Consolas, Monaco, Lucida Console, Liberation Mono,
+		DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
+}
+
+.sp-dropzone-small {
+	border: 4px #ddd dotted !important;
+}
+
+.sp-dropzone-hover {
+	border: 5px #74b042 dotted !important;
+}
+
+.sp-dropzone-hover-small {
+	border: 4px #74b042 dotted !important;
+}
+
+/* E.g. icon in radiobutton. */
+.sp-inline-icon {
+	display: inline-block;
+	position: relative;
+	vertical-align: middle;
+	width: auto !important;
+}
+
+.sp-icon-nodisk:after {
+	background-color: transparent;
+}
+
+/* Trial-and-error correction. */
+table.sp-password-panel {
+    border: 0;
+    padding: 0;
+    margin-left: -3px;
+    margin-top: -12px;
+}
+
+/* 
+ * Trial-and-error correction for label in <div class="ui-field-contain"> 
+ * with password panel.
+ */
+label.sp-password-panel {
+    margin-top: 18px;
+}
+
+
+/* */
+table.sp-info-table {
+	text-align: left;
+}
+
+table.sp-info-table th, table.sp-info-table td {
+	padding: 7px;
+}
+
+/* */
+table.sp-doclog-accounttrx-info-table {
+	text-align: left;
+}
+
+table.sp-doclog-accounttrx-info-table th, table.sp-doclog-accounttrx-info-table td
+	{
+	padding: 7px;
+}
+
+/* ------------------------------------- */
+.sp-nup-preview {
+	color: gray;
+}
+
+.sp-nup-preview-1 span {
+	font-size: 20px;
+}
+
+.sp-nup-preview-2 span {
+	font-size: 18px;
+}
+
+.sp-nup-preview-4 span {
+	font-size: 16px;
+}
+
+.sp-nup-preview-6 span {
+	font-size: 12px;
+}
+
+.sp-nup-preview-9 span {
+	font-size: 10px;
+}
+
+.sp-rotate-90 {
+	display: block;
+	-webkit-transform: rotate(90deg);
+	-moz-transform: rotate(90deg);
+	filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=1);
+}
+
+.sp-rotate-180 {
+	display: block;
+	-webkit-transform: rotate(180deg);
+	-moz-transform: rotate(180deg);
+	filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=2);
+}
+
+.sp-rotate-270 {
+	display: block;
+	-webkit-transform: rotate(270deg);
+	-moz-transform: rotate(270deg);
+	filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+}
+
+.sp-nup-preview table td {
+	border: 1px solid silver;
+	text-align: center;
+}
+
+.sp-nup-preview table {
+	border: 1px solid silver;
+	/* width: 595px; height: 842px; */
+	width: 58px;
+	height: 80px;
+	margin: 7px;
+	border-collapse: collapse;
+	background-repeat: no-repeat;
+}
+
+.sp-nup-punch-left {
+	border-left: 4px double gray !important;
+}
+
+.sp-nup-punch-right {
+	border-right: 4px double gray !important;
+}
+
+.sp-nup-punch-top {
+	border-top: 4px double gray !important;
+}
+
+.sp-nup-punch-bottom {
+	border-bottom: 4px double gray !important;
+}
+
+.sp-nup-staple-top-right {
+	background: url(/images/staple-horizontal-1.png);
+	background-size: 20px 13px;
+	background-position: top right;
+}
+
+.sp-nup-staple-top-left {
+	background: url(/images/staple-horizontal-1.png);
+	background-size: 20px 13px;
+	background-position: top left;
+}
+
+.sp-nup-staple-bottom-right {
+	background: url(/images/staple-horizontal-1.png);
+	background-size: 20px 13px;
+	background-position: bottom right;
+}
+
+.sp-nup-staple-bottom-left {
+	background: url(/images/staple-horizontal-1.png);
+	background-size: 20px 13px;
+	background-position: bottom left;
+}
+
+.sp-nup-staple-top-dual {
+	background: url(/images/staple-horizontal-2.png);
+	background-size: 40px 13px;
+	background-position: top center;
+}
+
+.sp-nup-staple-left-dual {
+	background: url(/images/staple-vertical-2.png);
+	background-size: 13px 40px;
+	background-position: left center;
+}
+
+.sp-nup-staple-right-dual {
+	background: url(/images/staple-vertical-2.png);
+	background-size: 13px 40px;
+	background-position: right center;
+}
+
+.sp-nup-staple-bottom-dual {
+	background: url(/images/staple-horizontal-2.png);
+	background-size: 40px 13px;
+	background-position: bottom center;
+}
+
+.sp-nup-staple-top-triple {
+	background: url(/images/staple-horizontal-3.png);
+	background-size: 60px 13px;
+	background-position: top center;
+}
+
+.sp-nup-staple-left-triple {
+	background: url(/images/staple-vertical-3.png);
+	background-size: 13px 60px;
+	background-position: left center;
+}
+
+.sp-nup-staple-right-triple {
+	background: url(/images/staple-vertical-3.png);
+	background-size: 13px 60px;
+	background-position: right center;
+}
+
+.sp-nup-staple-bottom-triple {
+	background: url(/images/staple-horizontal-3.png);
+	background-size: 60px 13px;
+	background-position: bottom center;
+}
+
+.sp-img-round-corners-6 {
+	border: 1px solid;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	border-radius: 6px;
+}
+
+.sp-img-round-corners-3 {
+	border: 1px solid;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+}
+
+/* ----------------------------------------------------- */
+.sp-ipp-icon {
+	background-repeat: no-repeat;
+	background-position: 6% center;
+}
+
+span.sp-ipp-icon {
+	display: inline-block;
+	width: 30px;
+}
+
+.sp-ipp-icon-void {
+	background-image: URL('/images/void-16x16.png');
+}
+
+.sp-ipp-icon-warn {
+	background-image: URL('/silkicons/error.png');
+}
+/* https://www.iconsdb.com/green-icons/deciduous-tree-icon.html */
+.sp-ipp-icon-tree {
+	background-image: URL('/images/deciduous-tree-16.png');
+}
+
+/* https://icons8.com/preloaders/en/circular/2/ */
+.sp-preload-spinner {
+	background: transparent url('/images/preload-spinner-24x24.gif') center
+		no-repeat;
+}
+
+.sp-preload-spinner-l {
+	background: transparent url('/images/preload-spinner-64x64.gif') center
+		no-repeat;
+}
+
+.sp-dialog-librejs-info .ui-dialog-contain {
+	width: 90%;
+	max-width: 800px;
+	margin: 15px auto 15px auto;
+	padding: 0;
+	position: relative;
+	top: 5px;
+}
+
+.sp-page-pdfvalidate .ui-dialog-contain {
+    width: 90%;
+    max-width: 800px;
+    margin: 15px auto 15px auto;
+    padding: 0;
+    position: relative;
+    top: 5px;
+}
+
+.sp-ui-footer.ui-footer {
+	background-color: rgba(248, 248, 248, 0.6) !important;
+	padding: 0px 0px 5px 0px;
+	margin: 0px 0px 0px 5px;
+	border: 0px;
+}
+
+.sp-ui-footer .ui-controlgroup-horizontal {
+	margin: 0px;
+}
+
+td>div.sp-table-row-icon-margin-fix {
+	margin-top: 12px;
+}
+
+.sp-proxy-print-wait {
+	color: #DC5C05 !important;
+	position: relative;
+}
+
+@keyframes sp-spinner {
+  to {transform: rotate(360deg);}
+}
+ 
+.sp-spinner-small:before {
+  content: '';
+  box-sizing: border-box;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+  margin-left: -10px;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  border-top-color: #000;
+  animation: sp-spinner .6s linear infinite;
+}
+
+/* end-of-file */

@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<wicket:panel>
+	<h3>
+		<wicket:enclosure child="document-pie">
+			<span wicket:id="document-pie" class="" sparkType="pie"
+				sparkSliceColors="[]" />&nbsp;
+        </wicket:enclosure>
+		<span wicket:id="header" />
+	</h3>
+	<wicket:enclosure child="user-name">
+		<div class="sp-txt-wrap">
+			<span wicket:id="prompt-user" /> : <strong wicket:id="user-name" />
+		</div>
+	</wicket:enclosure>
+
+	<div class="sp-txt-wrap">
+		<wicket:enclosure child="img-copy-job">
+			<img wicket:id="img-copy-job" src="" height="16" />&nbsp;
+        </wicket:enclosure>
+		<wicket:enclosure child="img-archive">
+			<img wicket:id="img-archive" src="" style="margin-bottom: -2px;"
+				height="16" />&nbsp;
+        </wicket:enclosure>
+		<wicket:enclosure child="img-journal">
+			<img wicket:id="img-journal" src="" style="margin-bottom: -2px;"
+				height="16" />&nbsp;
+        </wicket:enclosure>
+		<wicket:enclosure child="title">
+			<span wicket:id="title" />
+		</wicket:enclosure>
+		<wicket:enclosure child="tooltip-title">
+			<span style="padding: 0px; margin-left: -5px; margin-top: -15px;">
+				<wicket:panel wicket:id="tooltip-title" />
+			</span>
+		</wicket:enclosure>
+		<wicket:enclosure child="log-comment"> &bull; <span
+				wicket:id="log-comment" />
+		</wicket:enclosure>
+		<wicket:enclosure child="author"> &bull; <span
+				wicket:id="author" />
+		</wicket:enclosure>
+		<wicket:enclosure child="subject"> &bull; <span
+				wicket:id="subject" />
+		</wicket:enclosure>
+		<wicket:enclosure child="keywords"> &bull; <span
+				wicket:id="keywords" />
+		</wicket:enclosure>
+	</div>
+	<div class="sp-txt-wrap">
+		<wicket:enclosure child="printoutMode"> &bull;
+            <wicket:enclosure child="img-job-sheet">
+				<img wicket:id="img-job-sheet" src="" height="14" />
+			</wicket:enclosure>
+			<span class="sp-txt-info" wicket:id="printoutMode" /> &bull; 
+		</wicket:enclosure>
+		<wicket:enclosure child="jobticket-tag-plain">
+			<span class="sp-txt-info" wicket:id="jobticket-tag-plain" /> &bull;
+        </wicket:enclosure>
+		<span wicket:id="totals" />
+		<wicket:enclosure child="job-id"> &bull; <wicket:message
+				key="job-id" />
+			<span wicket:id="job-id" /> &bull; <span wicket:id="job-state" />
+		</wicket:enclosure>
+		<wicket:enclosure child="printout-reversed">
+            &bull; <span class="sp-txt-warn"
+				wicket:id="printout-reversed" />
+		</wicket:enclosure>
+		<wicket:enclosure child="job-completed-date"> &bull; <span
+				wicket:id="job-completed-date" />
+		</wicket:enclosure>
+		<wicket:enclosure child="papersize"> &bull; <span
+				wicket:id="papersize" />
+		</wicket:enclosure>
+		<wicket:enclosure child="printin-ipp-options"> &bull; <span
+				class="sp-txt-info" wicket:id="printin-ipp-options" />
+		</wicket:enclosure>
+		<wicket:enclosure child="scaled"> &bull; <span
+				class="sp-txt-info" wicket:id="scaled" />
+		</wicket:enclosure>
+		<wicket:enclosure child="landscape"> &bull; <span
+				class="sp-txt-info" wicket:id="landscape" />
+		</wicket:enclosure>
+		<wicket:enclosure child="letterhead"> &bull; <span
+				wicket:id="letterhead" />
+		</wicket:enclosure>
+		<wicket:enclosure child="duplex"> &bull; <span
+				class="sp-txt-valid" wicket:id="duplex" />
+		</wicket:enclosure>
+		<wicket:enclosure child="simplex"> &bull; <span
+				class="sp-txt-info" wicket:id="simplex" />
+		</wicket:enclosure>
+		<wicket:enclosure child="color"> &bull; <span
+				class="sp-txt-warn" wicket:id="color" />
+		</wicket:enclosure>
+		<wicket:enclosure child="grayscale"> &bull; <span
+				class="sp-txt-valid" wicket:id="grayscale" />
+		</wicket:enclosure>
+		<wicket:enclosure child="ecoPrint"> &bull; <span
+				class="sp-txt-valid" wicket:id="ecoPrint" />
+		</wicket:enclosure>
+		<wicket:enclosure child="removeGraphics"> &bull; <span
+				class="sp-txt-valid" wicket:id="removeGraphics" />
+		</wicket:enclosure>
+		<wicket:enclosure child="collate"> &bull; <span
+				class="sp-txt-info" wicket:id="collate" />
+		</wicket:enclosure>
+		<wicket:enclosure child="pageRotate180"> &bull; <span
+				class="sp-txt-job-finishing" wicket:id="pageRotate180" />
+		</wicket:enclosure>
+		<wicket:enclosure child="punch"> &bull; <span
+				class="sp-txt-job-finishing" wicket:id="punch" />
+		</wicket:enclosure>
+		<wicket:enclosure child="staple"> &bull; <span
+				class="sp-txt-job-finishing" wicket:id="staple" />
+		</wicket:enclosure>
+		<wicket:enclosure child="fold"> &bull; <span
+				class="sp-txt-job-finishing" wicket:id="fold" />
+		</wicket:enclosure>
+		<wicket:enclosure child="booklet"> &bull; <span
+				class="sp-txt-job-finishing" wicket:id="booklet" />
+		</wicket:enclosure>
+		<wicket:enclosure child="jobcopy-options"> &bull; <span
+				class="sp-txt-job-finishing" wicket:id="jobcopy-options" />
+		</wicket:enclosure>
+		<wicket:enclosure child="jobticket-media"> &bull; <span
+				class="sp-txt-job-ticket-attr" wicket:id="jobticket-media" />
+		</wicket:enclosure>
+		<wicket:enclosure child="jobticket-copy"> &bull; <span
+				class="sp-txt-job-ticket-attr" wicket:id="jobticket-copy" />
+		</wicket:enclosure>
+		<wicket:enclosure child="jobticket-finishings-ext"> &bull; <span
+				class="sp-txt-job-ticket-attr" wicket:id="jobticket-finishings-ext" />
+		</wicket:enclosure>
+		<wicket:enclosure child="jobticket-custom-ext"> &bull; <span
+				class="sp-txt-job-ticket-attr" wicket:id="jobticket-custom-ext" />
+		</wicket:enclosure>
+		<wicket:enclosure child="print-in-label">
+			<span class="sp-txt-warn">&bull;</span>
+			<span class="sp-txt-warn" wicket:id="print-in-label" />
+			<wicket:enclosure child="print-in-denied-reason">
+				<span class="sp-txt-error">&bull;</span>
+				<span class="sp-txt-error" wicket:id="print-in-denied-reason" />
+			</wicket:enclosure>
+		</wicket:enclosure>
+		<wicket:enclosure child="pdfpgp"> &bull; <span
+				class="sp-txt-warn" wicket:id="pdfpgp" />
+		</wicket:enclosure>
+		<wicket:enclosure child="ownerpw"> &bull; <span
+				wicket:id="ownerpw" />
+		</wicket:enclosure>
+		<wicket:enclosure child="userpw"> &bull; <span
+				wicket:id="userpw" />
+		</wicket:enclosure>
+		<wicket:enclosure child="media-source"> &bull; <span
+				wicket:id="media-source" />
+		</wicket:enclosure>
+		<wicket:enclosure child="output-bin"> &gt; <span
+				wicket:id="output-bin" />
+		</wicket:enclosure>
+		<wicket:enclosure child="jog-offset"> (<span
+				wicket:id="jog-offset" />)
+        </wicket:enclosure>
+		<wicket:enclosure child="cost-currency"> &bull; <span
+				wicket:id="cost-currency" />
+		</wicket:enclosure>
+		<wicket:enclosure child="cost">
+			<span wicket:id="cost" />
+		</wicket:enclosure>
+
+		<wicket:enclosure child="account-trx">
+			<span wicket:id="account-trx" />
+			<wicket:enclosure child="jobticket-reopened">
+            &bull; <span class="sp-txt-warn"
+					wicket:id="jobticket-reopened" />
+			</wicket:enclosure>
+			<wicket:enclosure child="account-trx-refund">
+            &bull; <span class="sp-txt-warn"
+					wicket:id="account-trx-refund" />
+			</wicket:enclosure>
+		</wicket:enclosure>
+
+	</div>
+	<wicket:enclosure child="signature">
+		<p class="sp-txt-wrap">
+			<span wicket:id="prompt-signature" /> : <span wicket:id="signature" />
+		</p>
+	</wicket:enclosure>
+	<wicket:enclosure child="destination">
+		<p class="sp-txt-wrap">
+			<span wicket:id="prompt-destination" /> : <span
+				wicket:id="destination" />
+		</p>
+	</wicket:enclosure>
+	<wicket:enclosure child="origin">
+		<p>
+		<div class="sp-txt-wrap">
+			<small> <span wicket:id="prompt-origin" /> : <span
+				wicket:id="origin" /> <wicket:enclosure child="email-ticket">&bull;
+            <span wicket:id="prompt-email-ticket" /> : <span
+						wicket:id="email-ticket" />
+				</wicket:enclosure> <wicket:enclosure child="email-ticket-completed">&bull;
+            <span class="sp-txt-valid"
+						wicket:id="prompt-email-ticket-completed" /> : <span
+						wicket:id="email-ticket-completed" />
+				</wicket:enclosure> <wicket:enclosure child="email-ticket-failed">&bull;
+            <span class="sp-txt-error"
+						wicket:id="prompt-email-ticket-failed" /> : <span
+						wicket:id="email-ticket-failed" />
+				</wicket:enclosure> <wicket:enclosure child="email-ticket-pending">&bull;
+            <span class="sp-txt-warn"
+						wicket:id="prompt-email-ticket-pending" /> : <span
+						wicket:id="email-ticket-pending" />
+				</wicket:enclosure>
+			</small>
+		</div>
+		</p>
+	</wicket:enclosure>
+
+	<wicket:enclosure child="extSupplierPanel">
+		<wicket:panel wicket:id="extSupplierPanel" />
+	</wicket:enclosure>
+
+	<wicket:enclosure child="btn-group">
+		<div data-role="controlgroup" data-type="horizontal" data-mini="true"
+			wicket:id="btn-group">
+			<wicket:enclosure child="btn-account-trx-info">
+				<button data-PrintFlowLite="the-doc-log-db-key"
+					wicket:id="btn-account-trx-info"
+					class="sp-doclog-accounttrx-info ui-btn ui-btn-inline ui-btn-icon-notext ui-icon-shop" />
+			</wicket:enclosure>
+			<wicket:enclosure child="btn-account-trx-refund">
+				<button data-PrintFlowLite="the-doc-log-db-key"
+					wicket:id="btn-account-trx-refund"
+					class="sp-doclog-accounttrx-refund ui-btn ui-btn-inline ui-btn-icon-notext ui-icon-recycle" />
+			</wicket:enclosure>
+			<wicket:enclosure child="btn-printout-resolve-canceled">
+				<button data-PrintFlowLite="the-doc-log-db-key"
+					wicket:id="btn-printout-resolve-canceled"
+					class="sp-printout-jobstate-to-canceled ui-btn ui-btn-icon-left ui-btn-inline ui-icon-sp-cups-jobstate-unfinished" />
+			</wicket:enclosure>
+			<wicket:enclosure child="btn-printout-resolve-completed">
+				<button data-PrintFlowLite="the-doc-log-db-key"
+					wicket:id="btn-printout-resolve-completed"
+					class="sp-printout-jobstate-to-completed ui-btn ui-btn-icon-left ui-btn-inline ui-icon-sp-cups-jobstate-completed" />
+			</wicket:enclosure>
+			<wicket:enclosure child="btn-printout-reverse">
+				<button data-PrintFlowLite="the-doc-log-db-key"
+					wicket:id="btn-printout-reverse"
+					class="sp-doclog-printout-reverse ui-btn ui-btn-inline ui-btn-icon-notext ui-icon-recycle" />
+			</wicket:enclosure>
+			<wicket:enclosure child="btn-doclog-docstore-archive-download">
+				<button data-PrintFlowLite="the-unique-filename"
+					wicket:id="btn-doclog-docstore-archive-download"
+					class="sp-doclog-docstore-archive-download ui-btn ui-btn-inline ui-btn-icon-notext ui-icon-eye" />
+			</wicket:enclosure>
+			<wicket:enclosure child="btn-doclog-docstore-journal-download">
+				<button data-PrintFlowLite="the-unique-filename"
+					wicket:id="btn-doclog-docstore-journal-download"
+					class="sp-doclog-docstore-journal-download ui-btn ui-btn-inline ui-btn-icon-notext ui-icon-eye" />
+			</wicket:enclosure>
+			<wicket:enclosure child="btn-inbox-printin-restore-add">
+				<button data-PrintFlowLite="the-doc-log-db-key"
+					wicket:id="btn-inbox-printin-restore-add"
+					class="sp-inbox-restore-printin-add ui-btn ui-btn-inline ui-btn-icon-notext ui-icon-plus" />
+			</wicket:enclosure>
+			<wicket:enclosure child="btn-inbox-printin-restore-replace">
+				<button data-PrintFlowLite="the-doc-log-db-key"
+					wicket:id="btn-inbox-printin-restore-replace"
+					class="sp-inbox-restore-printin-replace ui-btn ui-btn-inline ui-btn-icon-notext ui-icon-refresh" />
+			</wicket:enclosure>
+			<wicket:enclosure child="btn-doclog-store-delete">
+				<button data-PrintFlowLite="the-unique-filename"
+					wicket:id="btn-doclog-store-delete"
+					class="sp-doclog-docstore-delete ui-btn ui-btn-inline ui-btn-icon-notext ui-icon-delete" />
+			</wicket:enclosure>
+			<wicket:enclosure child="btn-ticket-reopen">
+				<button data-PrintFlowLite="the-unique-filename"
+					wicket:id="btn-ticket-reopen"
+					class="sp-doclog-ticket-reopen ui-btn ui-btn-inline ui-btn-icon-notext ui-icon-plus" />
+			</wicket:enclosure>
+		</div>
+	</wicket:enclosure>
+
+	<p class="ui-li-aside">
+		<span wicket:id="dateCreated" />
+	</p>
+
+</wicket:panel>
+</html>

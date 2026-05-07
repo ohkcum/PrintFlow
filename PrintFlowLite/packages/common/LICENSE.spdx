@@ -1,0 +1,8 @@
+SPDXVersion: SPDX-2.1
+DataLicense: CC0-1.0
+Creator:Organization: Datraverse B.V. (info@datraverse.com)
+PackageName: Common Library for PrintFlowLite Client and Server
+PackageCopyrightText: <text>(c) 2020 Datraverse B.V.</text>
+PackageOriginator:Organization: Datraverse B.V. (info@datraverse.com)
+PackageHomePage: https://github.com/YOUR_GITHUB/PrintFlowLite/
+PackageLicenseDeclared: AGPL-3.0-or-later

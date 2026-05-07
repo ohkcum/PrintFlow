@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+    <!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<wicket:panel>
+	<wicket:enclosure child="search-label">
+		<label wicket:id="search-label" for="[sp-unique-id]" />
+		<input wicket:id="search-input" id="[sp-unique-id]" data-type="search"
+			type="text" value="" maxlength="128" tabindex="0" autofocus
+			autocomplete="off" autocorrect="off" autocapitalize="off"
+			spellcheck="false" />
+	</wicket:enclosure>
+
+	<wicket:enclosure child="search-label-compact">
+		<table style="padding: 0px;" class="sp-quicksearch-input">
+			<tr>
+				<td style="padding-right: 5px;">
+					<span wicket:id="search-label-compact" />
+				</td>
+				<td>
+					<div style="margin-right: 0px; padding: 0px;">
+						<input wicket:id="search-input-compact" id="[sp-unique-id]"
+							data-type="search" type="text" value="" maxlength="128"
+							tabindex="0" autofocus autocomplete="off" autocorrect="off"
+							autocapitalize="off" spellcheck="false" />
+					</div>
+				</td>
+				<wicket:enclosure child="btn-search-scope-compact">
+					<td>
+						<button style="margin-left: 0px;"
+							wicket:id="btn-search-scope-compact"
+							class="ui-btn ui-btn-inline ui-mini">&nbsp;</button>
+					</td>
+				</wicket:enclosure>
+			</tr>
+		</table>
+	</wicket:enclosure>
+
+	<ul wicket:id="search-filter" id="[sp-unique-id]-filter"
+		data-role="listview" data-filter="true" data-input="#[sp-unique-id]"
+		data-filter-theme="a" data-inset="true" />
+
+	<div style="float: left; display: inline-block; margin-right: 20px;">
+		<fieldset data-role="controlgroup" data-type="horizontal"
+			style="display: none; margin-left: 0px;" data-mini="true"
+			class="sp-quicksearch-buttons">
+
+			<button data-PrintFlowLite="0"
+				class="sp-button-first ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-icon-none">1</button>
+			<button data-PrintFlowLite="1"
+				class="sp-button-prev ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-icon-none">&lt;</button>
+			<button data-PrintFlowLite="0"
+				class="sp-button-curr ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-icon-none">?</button>
+			<button data-PrintFlowLite="1"
+				class="sp-button-next ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-icon-none">&gt;</button>
+			<button data-PrintFlowLite="0"
+				class="sp-button-last ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-icon-none">??</button>
+		</fieldset>
+	</div>
+
+	<div style="float: left; padding-top: 5px;"
+		class="sp-quicksearch-button-group-inject" />
+
+</wicket:panel>
+
+</html>

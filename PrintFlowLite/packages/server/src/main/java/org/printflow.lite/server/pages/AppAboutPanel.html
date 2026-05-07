@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<wicket:panel>
+	<div style="font-size: small;">
+
+		<p class="sp-txt-wrap">
+			Copyright &copy; 2011-<span wicket:id="current-year"></span> by <span
+				wicket:id="app-copyright-owner" />
+		</p>
+
+		<table cellpadding="4">
+			<tr>
+				<td valign="top" width="64">
+					<a class="sp-plain-link" href="https://opensource.org/"
+						target="_blank">
+						<img width="64"
+							src="/images/thirdparty/osi_logo_100X133_90ppi_0.png" />
+					</a>
+				</td>
+				<td valign="middle">
+					<span wicket:id="app-name-1" /> is
+					<a class="sp-plain-link" href="https://opensource.org/"
+						target="_blank">OSI Certified Open Source Software</a>
+					, licensed under the
+					<a class="sp-plain-link"
+						href="https://www.gnu.org/licenses/agpl.html" target="_blank">GNU
+						Affero General Public License (AGPL)</a>
+					as published by the
+					<a class="sp-plain-link" href="https://www.fsf.org/"
+						target="_blank">Free Software Foundation</a>
+					, either version&nbsp;3 of the License, or (at your option) any
+					later version.
+				</td>
+			</tr>
+			<tr>
+				<td valign="top" align="center" width="64" title="GNU LibreJS">
+					<a class="sp-plain-link"
+						href="https://www.gnu.org/software/librejs/" target="_blank">
+						<img width="32" src="/images/thirdparty/freejs-logo-32x32.png" />
+					</a>
+				</td>
+				<td valign="middle">
+					JavaScript code run in this browser is
+					<a class="sp-plain-link"
+						href="https://www.gnu.org/software/librejs/" target="_blank">
+						GNU LibreJS</a>
+					compliant.
+					<br />
+					<a
+						class="sp-plain-link ui-btn ui-corner-all ui-btn-inline ui-mini sp-btn-show-librejs"
+						href="#">JavaScript&nbsp;information</a>
+
+				</td>
+			</tr>
+			<tr>
+				<td valign="top" align="center">
+					<a class="sp-plain-link" href="" wicket:id="gdpr-url-img"
+						target="_blank" />
+				</td>
+				<td valign="top">
+					<span wicket:id="app-name-2" /> complies to the
+					<a wicket:id="gdpr-url" class="sp-plain-link" href=""
+						target="_blank">General Data Protection Regulation</a>
+					of the
+					<a class="sp-plain-link" wicket:id="eu-url" href="" target="_blank">European
+						Union</a>
+					.
+				</td>
+			</tr>
+		</table>
+
+		<wicket:enclosure child="translator-info">
+			<p class="sp-txt-wrap" wicket:id="translator-info" />
+		</wicket:enclosure>
+	</div>
+
+	<p>
+		<a class="sp-plain-link ui-btn ui-corner-all ui-btn-inline ui-mini"
+			href="[]" target="_blank" wicket:id="PrintFlowLite-url" />
+		<a class="sp-plain-link ui-btn ui-corner-all ui-btn-inline ui-mini"
+			href="[]" target="_blank" wicket:id="PrintFlowLite-licenses-url" />
+		<a class="sp-plain-link ui-btn ui-corner-all ui-btn-inline ui-mini"
+			href="" target="_blank" wicket:id="PrintFlowLite-source-code-url" />
+	</p>
+
+	<wicket:enclosure child="printerdriver-download-panel">
+		<wicket:panel wicket:id="printerdriver-download-panel" />
+		<br />
+	</wicket:enclosure>
+
+</wicket:panel>
+</html>

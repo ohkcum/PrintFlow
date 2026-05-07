@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<wicket:panel>
+	<li data-role="list-divider">
+		<wicket:message key="title-financial-totals" />
+	</li>
+
+	<li>
+		<wicket:remove>
+			<!--
+		+======================================================================+
+		| http://api.jquerymobile.com/table-reflow/
+        |  ... to use pre-configured  breakpoint, add the ui-responsive class 
+        |  to the table to convert from the stacked presentation to a tabular 
+        |  presentation at 560px (35em)		
+		+======================================================================+
+		-->
+		</wicket:remove>
+		<table data-role="table" data-mode="reflow"
+			class="ui-responsive table-stroke">
+			<thead>
+				<tr>
+					<th data-priority="1">
+						<wicket:message key="accounts" />
+					</th>
+					<th data-priority="1">
+						<wicket:message key="debit" />
+					</th>
+					<th colspan="2" data-priority="1">
+						<wicket:message key="credit" />
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td wicket:id="currency-code" />
+					<td class="sp-txt-info" wicket:id="accounts-deb-sum" />
+					<td colspan="2" class="sp-txt-warn" wicket:id="accounts-crd-sum" />
+				</tr>
+				<tr>
+					<td>
+						<wicket:message key="accounts-min" />
+					</td>
+					<td class="sp-txt-info" wicket:id="accounts-deb-min" />
+					<td colspan="2" class="sp-txt-warn" wicket:id="accounts-crd-min" />
+				</tr>
+				<tr>
+					<td>
+						<wicket:message key="accounts-max" />
+					</td>
+					<td class="sp-txt-info" wicket:id="accounts-deb-max" />
+					<td colspan="2" class="sp-txt-warn" wicket:id="accounts-crd-max" />
+				</tr>
+				<tr>
+					<td>
+						<wicket:message key="accounts-avg" />
+					</td>
+					<td class="sp-txt-info" wicket:id="accounts-deb-avg" />
+					<td colspan="2" class="sp-txt-warn" wicket:id="accounts-crd-avg" />
+				</tr>
+				<tr>
+					<td>
+						<wicket:message key="accounts-count" />
+					</td>
+					<td class="sp-txt-info" wicket:id="accounts-deb-cnt" />
+					<td colspan="2" class="sp-txt-warn" wicket:id="accounts-crd-cnt" />
+				</tr>
+			</tbody>
+		</table>
+	</li>
+
+</wicket:panel>
+</html>

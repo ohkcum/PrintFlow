@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <comment>PrintFlowLite Server WebApp Messages</comment>
+    <entry key="WebApp.starting">PrintFlowLite starting (build {0})</entry>
+    <entry key="txt-logo-subtext">Administration</entry>
+    <entry key="txt-welcome-salutation">Welcome</entry>
+    <entry key="txt-welcome">Manage your PrintFlowLite server</entry>
+    <entry key="button-logout">Logout</entry>
+    <entry key="button-top">Top</entry>
+    <entry key="button-menu">Menu</entry>
+</properties>

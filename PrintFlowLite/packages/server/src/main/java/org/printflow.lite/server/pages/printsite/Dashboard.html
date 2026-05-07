@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+    <!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<ul data-role="listview" data-inset="true" id="dashboard-system-status">
+
+	<li data-role="list-divider" wicket:id="title" />
+
+	<li>
+		<table data-role="table" data-mode="reflow"
+			class="ui-responsive table-stroke">
+			<thead>
+				<tr>
+					<th data-priority="1" />
+					<th width="100%" data-priority="2" />
+				</tr>
+			</thead>
+			<tbody>
+				<wicket:enclosure child="prompt-pending-ext-users">
+					<tr>
+						<th wicket:id="prompt-pending-ext-users" />
+						<td class="sp-txt-info" wicket:id="pending-ext-users" />
+					</tr>
+					<tr>
+						<th wicket:id="prompt-pending-ext-jobs" />
+						<td class="sp-txt-info" wicket:id="pending-ext-jobs" />
+					</tr>
+				</wicket:enclosure>
+				<wicket:enclosure child="prompt-pending-cups-users">
+					<tr>
+						<th wicket:id="prompt-pending-cups-users" />
+						<td class="sp-txt-info" wicket:id="pending-cups-users" />
+					</tr>
+					<tr>
+						<th wicket:id="prompt-pending-cups-jobs" />
+						<td class="sp-txt-info" wicket:id="pending-cups-jobs" />
+					</tr>
+				</wicket:enclosure>
+			</tbody>
+		</table>
+	</li>
+
+	<li data-role="list-divider" wicket:id="realtime-activity" />
+	<li>
+		<div id="live-messages" class="sp-live-msg"
+			style="font-size: small; font-weight: normal"></div>
+		<div>
+			<button id="live-messages-clear" class="ui-btn ui-btn-inline"
+				wicket:id="button-clear" />
+		</div>
+	</li>
+
+</ul>
+
+</html>

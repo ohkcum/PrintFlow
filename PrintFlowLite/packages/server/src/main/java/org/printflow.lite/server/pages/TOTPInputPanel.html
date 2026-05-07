@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2026 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: (c) 2026 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<wicket:panel>
+	<div class="sp-txt-wrap sp-txt-info">
+		<wicket:message key="header-totp" />
+		<span style="margin-top: -15px;"> <wicket:panel
+				wicket:id="tooltip-totp" />
+		</span>
+	</div>
+	<input type="text" wicket:id="totp-code" id="[id]" value=""
+		data-clear-btn="true" />
+</wicket:panel>
+</html>

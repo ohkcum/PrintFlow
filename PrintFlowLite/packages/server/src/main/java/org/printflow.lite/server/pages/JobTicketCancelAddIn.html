@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+    <!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<wicket:enclosure child="btn-no">
+
+	<p class="ui-title">
+		<wicket:message key="sp-cancel-question" />
+	</p>
+
+	<p class="sp-txt-warn">
+		<wicket:message key="sp-cancel-warning" />
+	</p>
+
+	<wicket:enclosure child="label-reason">
+		<div class="ui-field-contain">
+			<label for="sp-jobticket-cancel-popup-reason"
+				wicket:id="label-reason" />
+			<textarea id="sp-jobticket-cancel-popup-reason" />
+		</div>
+	</wicket:enclosure>
+
+	<button id="sp-jobticket-cancel-popup-btn-no" wicket:id="btn-no"
+		class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-delete" />
+
+	<button id="sp-jobticket-cancel-popup-btn-yes" wicket:id="btn-yes"
+		class="ui-btn ui-mini ui-btn-inline ui-btn-icon-left ui-icon-check" />
+
+</wicket:enclosure>
+
+</html>

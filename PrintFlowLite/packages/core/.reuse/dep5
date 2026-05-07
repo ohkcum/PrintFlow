@@ -1,0 +1,24 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: PrintFlowLite Core Library
+Upstream-Contact: Datraverse B.V. <info@datraverse.com>
+Source: https://github.com/YOUR_GITHUB/PrintFlowLite/
+
+Files: src/main/java/META-INF/MANIFEST.MF
+Copyright: (c) 2020 Datraverse BV <info@datraverse.com>
+License: CC0-1.0
+
+Files: src/test/resources/*.csv
+Copyright: (c) 2020 Datraverse BV <info@datraverse.com>
+License: CC-BY-SA-4.0
+
+Files: src/main/java/org/printflow.lite/core/reports/*.png
+Copyright: (c) 2020 Datraverse BV <info@datraverse.com>
+License: CC-BY-SA-4.0
+
+Files: src/main/java/org/printflow.lite/core/reports/template/*.jrxml
+Copyright: (c) 2020 Datraverse BV <info@datraverse.com>
+License: AGPL-3.0-or-later
+
+Files: src/main/java/org/printflow.lite/core/template/email/printflowlite-*.png
+Copyright: (c) 2020 Datraverse BV <info@datraverse.com>
+License: CC-BY-SA-4.0

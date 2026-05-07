@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<span wicket:id="qr-code-span" id="sp-user-totp-qr-code"> <a
+		wicket:id="qr-code-uri">
+		<img style="display: block; margin-left: auto; margin-right: auto;"
+			src="" wicket:id="qr-code" />
+	</a>
+	<center>
+		<small class="s-txt-info"><wicket:message key="scan-with-app" /></small>
+		<br>
+		<small class="s-txt-info"><wicket:message
+				key="copy-secret-code" /></small>
+		<br>
+		<span class="sp-url-wrap sp-txt-valid"
+			style="font-family: monospace; margin-left: 30px;"
+			wicket:id="TOTP-secret" />
+		<wicket:panel wicket:id="TOTP-secret-panel" />
+	</center></span>
+
+<br />
+
+<label for="sp-user-totp-enable-chb" wicket:id="totp-enable-txt" />
+<input type="checkbox" id="sp-user-totp-enable-chb" value="0"
+	wicket:id="totp-enable" />
+
+<wicket:enclosure child="totp-telegram-enable">
+	<span wicket:id="totp-telegram-enable-span"
+		id="sp-user-totp-telegram-enable-span"><label
+			for="sp-user-totp-telegram-enable-chb">
+			<wicket:message key="send-code-to-telegram" />
+		</label> <input data-mini="true" type="checkbox"
+			id="sp-user-totp-telegram-enable-chb" value="0"
+			wicket:id="totp-telegram-enable" /> </span>
+</wicket:enclosure>
+
+<div id="sp-user-totp-enable-verify-code-div" class="ui-field-contain">
+	<wicket:panel wicket:id="totp-input-panel" />
+</div>
+
+<br />
+
+</html>

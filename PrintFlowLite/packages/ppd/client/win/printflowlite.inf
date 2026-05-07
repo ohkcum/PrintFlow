@@ -1,0 +1,50 @@
+; -----------------------------------------------------------------------------
+; PrintFlowLite Printer Driver, (c) 2015 Datraverse B.V.
+;
+; SPDX-FileCopyrightText: 2015 Datraverse B.V. <info@datraverse.com>
+; SPDX-License-Identifier: AGPL-3.0-or-later
+; 
+; -----------------------------------------------------------------------------
+
+[Version]
+Signature="$Windows NT$"
+Provider=Datraverse B.V.
+ClassGUID={4D36E979-E325-11CE-BFC1-08002BE10318}
+Class=Printer
+CatalogFile=oemprint.cat
+
+DriverVer=15/05/2012,0.9.0.0
+
+; Manufacturer section
+[Manufacturer]
+"PrintFlowLite"=PrintFlowLite,NTamd64,NTia64
+
+; Model sections
+[PrintFlowLite]
+"PrintFlowLite Printer Driver" = PRINTFLOWLITE.PPD, PrintFlowLite
+
+[PrintFlowLite.NTamd64]
+"PrintFlowLite Printer Driver" = PRINTFLOWLITE.PPD, PrintFlowLite
+
+[PrintFlowLite.NTia64]
+"PrintFlowLite Printer Driver" = PRINTFLOWLITE.PPD, PrintFlowLite
+
+; Installer section
+[PRINTFLOWLITE.PPD]
+CopyFiles=@PRINTFLOWLITE.PPD
+DataSection=PSCRIPT_DATA
+Include=NTPRINT.INF
+Needs=PSCRIPT.OEM
+
+[DestinationDirs]
+DefaultDestDir=66000
+
+[SourceDisksNames]
+1=%Disk1%,,,""
+
+[SourceDisksFiles]
+PRINTFLOWLITE.PPD =1
+
+[Strings]
+Disk1="PrintFlowLite PPD Setup Disk 1"
+; end of printflowlite.inf

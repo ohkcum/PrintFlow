@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <comment>PrintFlowLite Server API Request Messages</comment>
+
+    <!-- ================================================================
+         USER REGISTRATION MESSAGES (ReqMessageEnum)
+         ================================================================ -->
+    <entry key="msg-user-reg-location-not-permitted">Registration is not permitted from this location.</entry>
+    <entry key="msg-user-reg-username-missing">Username is required.</entry>
+    <entry key="msg-user-reg-username-taken">Username is already taken.</entry>
+    <entry key="msg-user-reg-fullname-missing">Full name is required.</entry>
+    <entry key="msg-user-reg-email-invalid">E-mail address is invalid.</entry>
+    <entry key="msg-user-reg-email-not-permitted">E-mail address domain is not permitted.</entry>
+    <entry key="msg-user-reg-email-taken">E-mail address is already registered.</entry>
+
+    <!-- ================================================================
+         VOUCHER MESSAGES (ReqMessageEnum)
+         ================================================================ -->
+    <entry key="msg-voucher-batch-created-ok">Voucher batch created successfully.</entry>
+
+    <entry key="msg-voucher-batch-deleted-zero">No vouchers were deleted.</entry>
+    <entry key="msg-voucher-batch-deleted-one">1 voucher was deleted.</entry>
+    <entry key="msg-voucher-batch-deleted-many">{0} vouchers were deleted.</entry>
+
+    <entry key="msg-voucher-batch-expired-zero">No vouchers were expired.</entry>
+    <entry key="msg-voucher-batch-expired-one">1 voucher was expired.</entry>
+    <entry key="msg-voucher-batch-expired-many">{0} vouchers were expired.</entry>
+
+    <entry key="msg-voucher-deleted-expired-zero">No expired vouchers were deleted.</entry>
+    <entry key="msg-voucher-deleted-expired-one">1 expired voucher was deleted.</entry>
+    <entry key="msg-voucher-deleted-expired-many">{0} expired vouchers were deleted.</entry>
+
+    <entry key="msg-voucher-redeem-ok">Voucher redeemed successfully.</entry>
+    <entry key="msg-voucher-redeem-invalid">Voucher is invalid.</entry>
+    <entry key="msg-voucher-redeem-user-unknown">User is unknown.</entry>
+
+    <entry key="msg-user-voucher-redeem-ok">Voucher redeemed successfully.</entry>
+    <entry key="msg-user-voucher-redeem-void">Voucher has been voided.</entry>
+    <entry key="msg-user-voucher-redeem-number-invalid">Voucher number is invalid.</entry>
+    <entry key="msg-user-voucher-redeem-user-unknown">User is unknown.</entry>
+
+    <!-- ================================================================
+         GENERIC API MESSAGES
+         ================================================================ -->
+    <entry key="msg-single-parm">{0}</entry>
+    <entry key="msg-apply-ok">Changes applied successfully.</entry>
+    <entry key="msg-action-failed">Action failed.</entry>
+    <entry key="msg-refresh-ok">Refresh completed successfully.</entry>
+    <entry key="msg-saved-ok">Saved successfully.</entry>
+
+    <!-- ================================================================
+         USER MESSAGES
+         ================================================================ -->
+    <entry key="msg-user-created-ok">User created successfully.</entry>
+    <entry key="msg-user-saved-ok">User saved successfully.</entry>
+    <entry key="msg-user-secret-erased-ok">User secret erased successfully.</entry>
+    <entry key="msg-user-not-found">User not found.</entry>
+    <entry key="msg-usercard-unknown">Card is not registered.</entry>
+
+    <!-- ================================================================
+         USER GROUP MESSAGES
+         ================================================================ -->
+    <entry key="msg-usergroup-not-found">User group not found.</entry>
+    <entry key="msg-usergroup-updated">User group {0} updated successfully.</entry>
+    <entry key="msg-groups-added">Groups added.</entry>
+    <entry key="msg-groups-removed">Groups removed.</entry>
+    <entry key="msg-no-groups">No groups selected.</entry>
+
+    <!-- ================================================================
+         USER DELEGATE MESSAGES
+         ================================================================ -->
+    <entry key="msg-delegate-groups-preferred-max">Maximum number of preferred delegate groups reached.</entry>
+
+    <!-- ================================================================
+         USER REGISTRATION MESSAGES (String keys)
+         ================================================================ -->
+    <entry key="msg-user-reg-not-available">User registration is not available.</entry>
+    <entry key="msg-userhome-clean-busy">User home clean is busy.</entry>
+    <entry key="msg-userhome-clean-started">User home clean started.</entry>
+
+    <!-- ================================================================
+         TOTP / AUTH MESSAGES
+         ================================================================ -->
+    <entry key="msg-value-cannot-be-empty">{0} cannot be empty.</entry>
+    <entry key="msg-invalid-input">Invalid input.</entry>
+    <entry key="msg-no-email-address-available">No e-mail address available.</entry>
+
+    <!-- ================================================================
+         ACCOUNT / QUEUE MESSAGES
+         ================================================================ -->
+    <entry key="msg-account-not-found">Account not found.</entry>
+    <entry key="msg-queue-empty-path">Queue path is empty.</entry>
+    <entry key="msg-value-invalid">Invalid {0}: {1}.</entry>
+    <entry key="msg-queue-duplicate-path">Duplicate queue path.</entry>
+    <entry key="msg-queue-reserved-path">Path is reserved.</entry>
+    <entry key="msg-queue-created-ok">Queue created successfully.</entry>
+    <entry key="msg-queue-saved-ok">Queue saved successfully.</entry>
+    <entry key="msg-queue-not-found">Queue not found.</entry>
+    <entry key="msg-queue-urlpath-not-found">Queue URL path {0} not found.</entry>
+    <entry key="msg-queue-enabled">Queue enabled.</entry>
+    <entry key="msg-queue-enabled-pub">Queue enabled (published).</entry>
+    <entry key="msg-queue-disabled">Queue disabled.</entry>
+    <entry key="msg-queue-disabled-pub">Queue disabled (published).</entry>
+    <entry key="msg-queue-enabled-already">Queue is already enabled.</entry>
+    <entry key="msg-queue-disabled-already">Queue is already disabled.</entry>
+
+    <!-- ================================================================
+         PRINTER MESSAGES
+         ================================================================ -->
+    <entry key="msg-printer-sync-ok">Printer synchronized successfully.</entry>
+    <entry key="msg-printer-connection-broken">Printer connection broken.</entry>
+    <entry key="msg-printer-snmp-busy">Printer SNMP is busy.</entry>
+    <entry key="msg-printer-snmp-ok">Printer SNMP updated successfully.</entry>
+    <entry key="msg-printer-not-found">Printer not found.</entry>
+    <entry key="msg-printer-saved-ok">Printer saved successfully.</entry>
+    <entry key="msg-file-not-present">File {0} is not present.</entry>
+
+    <!-- ================================================================
+         JOB TICKET MESSAGES
+         ================================================================ -->
+    <entry key="msg-jobticket-papercut-not-allowed">PaperCut not allowed.</entry>
+    <entry key="msg-jobticket-group-not-entered">Job ticket group not entered.</entry>
+    <entry key="msg-jobticket-group-not-found">Job ticket group {0} not found.</entry>
+
+    <!-- ================================================================
+         PRINT MESSAGES
+         ================================================================ -->
+    <entry key="msg-print-select-option-required">Please select a required option.</entry>
+    <entry key="msg-print-exceeds-jobticket-pagelimit">Print exceeds job ticket page limit.</entry>
+    <entry key="msg-print-exceeds-pagelimit">Print exceeds page limit.</entry>
+    <entry key="msg-print-service-unavailable">Print service is unavailable.</entry>
+    <entry key="msg-print-auth-pending">Print authorization is pending.</entry>
+    <entry key="msg-ecoprint-pending">Eco Print is pending.</entry>
+    <entry key="msg-print-orientation-mismatch-single">Orientation mismatch for single document.</entry>
+    <entry key="msg-print-orientation-mismatch-multiple">Orientation mismatch for multiple documents.</entry>
+    <entry key="msg-print-users-missing-in-papercut">Users missing in PaperCut: {0}</entry>
+
+    <!-- ================================================================
+         COPY JOB MESSAGES
+         ================================================================ -->
+    <entry key="msg-copyjob-media-source-missing">Media source is missing.</entry>
+    <entry key="msg-copyjob-title-missing">Copy job title is missing.</entry>
+    <entry key="msg-copyjob-pages-invalid">Copy job pages are invalid.</entry>
+    <entry key="msg-select-single-pdf-filter">Please select a single PDF document.</entry>
+    <entry key="msg-print-booklet-collate-mismatch">Booklet collate mismatch.</entry>
+
+    <!-- ================================================================
+         URL PRINT MESSAGES
+         ================================================================ -->
+    <entry key="msg-url-print-unknown-content-type">Unknown content type.</entry>
+    <entry key="msg-url-print-error">URL print error: {0}</entry>
+
+    <!-- ================================================================
+         PDF MESSAGES
+         ================================================================ -->
+    <entry key="msg-pdf-identical-owner-user-pw">Owner password and user password must be different.</entry>
+
+    <!-- ================================================================
+         OUTBOX MESSAGES
+         ================================================================ -->
+    <entry key="msg-outbox-release-job-none">No jobs released.</entry>
+    <entry key="msg-outbox-release-job">Job released.</entry>
+    <entry key="msg-outbox-extended-none">No jobs extended.</entry>
+    <entry key="msg-outbox-extended-one">1 job extended.</entry>
+    <entry key="msg-outbox-extended-multiple">{0} jobs extended.</entry>
+    <entry key="msg-outbox-cancelled-job">Job cancelled.</entry>
+    <entry key="msg-outbox-cancelled-job-none">No jobs cancelled.</entry>
+    <entry key="msg-outbox-cancelled-jobticket">Job ticket cancelled.</entry>
+    <entry key="msg-outbox-cancelled-jobticket-none">No job tickets cancelled.</entry>
+    <entry key="msg-outbox-cancelled-none">No jobs cancelled.</entry>
+    <entry key="msg-outbox-cancelled-one">1 job cancelled.</entry>
+    <entry key="msg-outbox-cancelled-multiple">{0} jobs cancelled.</entry>
+
+    <!-- ================================================================
+         MAIL MESSAGES
+         ================================================================ -->
+    <entry key="msg-email-invalid">E-mail address is invalid.</entry>
+    <entry key="msg-mail-sent">Mail sent to {0}.</entry>
+
+    <!-- ================================================================
+         LOGIN MESSAGES
+         ================================================================ -->
+    <entry key="msg-login-not-possible">Login is not possible.</entry>
+    <entry key="msg-login-install-mode">System is in install mode.</entry>
+    <entry key="msg-login-as-internal-admin">Please login as internal admin.</entry>
+    <entry key="msg-login-app-config">Application configuration error.</entry>
+    <entry key="msg-login-non-privileged">Login not permitted for {0}.</entry>
+    <entry key="msg-login-missing-privilege">Missing required privilege.</entry>
+    <entry key="msg-auth-mode-not-available">Authentication mode {0} is not available.</entry>
+    <entry key="msg-login-denied">Login denied.</entry>
+    <entry key="msg-login-invalid-password">Invalid password.</entry>
+    <entry key="msg-login-yubikey-connection-error">YubiKey connection error.</entry>
+    <entry key="msg-login-failed">Login failed.</entry>
+    <entry key="msg-login-invalid-number">Invalid number.</entry>
+    <entry key="msg-login-unregistered-card">Card is not registered.</entry>
+    <entry key="msg-login-card-unknown">Card is unknown.</entry>
+    <entry key="msg-login-user-not-present">User {0} is not present.</entry>
+    <entry key="msg-login-no-admin-rights">No admin rights.</entry>
+    <entry key="msg-login-no-person">User is not a person.</entry>
+    <entry key="msg-login-disabled">User is disabled.</entry>
+    <entry key="msg-login-no-access-to-role">No access to role {0}.</entry>
+    <entry key="msg-login-conflict">Role conflict: {0}.</entry>
+    <entry key="msg-login-no-pin-available">No PIN available.</entry>
+    <entry key="msg-login-invalid-pin">Invalid PIN.</entry>
+    <entry key="msg-change-internal-admin-password">You are still using the default admin password. Please change it now for security reasons.</entry>
+
+</properties>

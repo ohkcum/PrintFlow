@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+    <!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<wicket:enclosure child="printer-media-source-panel">
+
+	<ul data-role="listview" data-inset="true">
+
+		<li data-role="list-divider" data-theme="b">
+			<wicket:message key="media-source" />
+		</li>
+
+		<li>
+			<div>
+				<img width="16" height="16" wicket:id="printerImage" />
+				<wicket:enclosure child="deviceUriImg">
+					<img wicket:id="deviceUriImg" src="" style="margin-bottom: -2px;"
+						height="16" />&nbsp;
+                </wicket:enclosure>
+				<span wicket:id="cost-per-side" />
+			</div>
+			<wicket:enclosure child="media-source-remark">
+				<p style="margin-left: 20px;">
+					<span class="sp-txt-wrap sp-txt-warn"
+						wicket:id="media-source-remark" />
+				</p>
+			</wicket:enclosure>
+		</li>
+
+		<li class="sp-printer-charge-media-sources">
+			<wicket:panel wicket:id="printer-media-source-panel" />
+		</li>
+
+		<li>
+			<div>
+				<button id="button-save-printer-media-sources"
+					class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-check"
+					tabindex="200">
+					<wicket:message key="button-apply" />
+				</button>
+
+				<a href="#" data-rel="back" data-direction="reverse" tabindex="201"
+					class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-back"> <wicket:message
+						key="button-cancel" />
+				</a>
+			</div>
+		</li>
+
+	</ul>
+
+</wicket:enclosure>
+</html>

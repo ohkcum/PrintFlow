@@ -1,0 +1,318 @@
+/*
+ * This file is part of the PrintFlowLite project <https://printflowlite.local>.
+ * Copyright (c) 2020 Datraverse B.V.
+ * Author: Rijk Ravestein.
+ *
+ * SPDX-FileCopyrightText: © 2020 Datraverse B.V. <info@datraverse.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For more information, please contact Datraverse B.V. at this
+ * address: info@datraverse.com
+ */
+package org.printflow.lite.core.config;
+
+import java.io.IOException;
+import java.net.URLConnection;
+
+import javax.mail.MessagingException;
+
+import org.printflow.lite.core.circuitbreaker.CircuitBreaker;
+import org.printflow.lite.core.circuitbreaker.CircuitBreakerListener;
+import org.printflow.lite.core.circuitbreaker.CircuitBreakerRegistry;
+import org.printflow.lite.core.circuitbreaker.CircuitNonTrippingException;
+import org.printflow.lite.core.circuitbreaker.CircuitTrippingException;
+import org.printflow.lite.core.cometd.PubTopicEnum;
+import org.printflow.lite.core.jpa.AppLog;
+import org.printflow.lite.ext.papercut.PaperCutConnectException;
+import org.printflow.lite.ext.papercut.PaperCutException;
+
+/**
+ * Identification and configuration for {@link CircuitBreaker} instances as used
+ * in {@link CircuitBreakerRegistry}.
+ * <p>
+ * For each breaker an {@link CircuitBreakerListenerMixin} is specified.
+ * </p>
+ *
+ * @author Rijk Ravestein
+ *
+ */
+public enum CircuitBreakerEnum {
+
+    /**
+     * Breaker for Local CUPS/IPP connection.
+     * <p>
+     * See {@link CircuitBreakerListenerMixin} how {@link CircuitBreaker} events
+     * are handled.
+     * </p>
+     *
+     */
+    CUPS_LOCAL_IPP_CONNECTION(1, 10000, new CircuitBreakerListenerMixin() {
+
+        @Override
+        public boolean isLogExceptionTracktrace(final CircuitBreaker breaker,
+                final Exception exception) {
+
+            return ConfigManager.isCupsIppExceptionStacktrace()
+                    || !(exception instanceof CircuitTrippingException);
+        }
+
+        @Override
+        protected PubTopicEnum getPubTopic() {
+            return PubTopicEnum.CUPS;
+        }
+
+        @Override
+        protected String getMessageBaseKey() {
+            return "circuit-cups-local-connection";
+        }
+    }),
+
+    /**
+     * Breaker for ALL remote CUPS/IPP connections.
+     * <p>
+     * NOTE: A zero (0) retry interval is used, cause this
+     * {@link CircuitBreaker} is used for various connections (IP destinations).
+     * </p>
+     * <p>
+     * See {@link CircuitBreakerListenerMixin} how {@link CircuitBreaker} events
+     * are handled.
+     * </p>
+     *
+     */
+    CUPS_REMOTE_IPP_CONNECTIONS(1, 0, new CircuitBreakerListenerMixin() {
+
+        @Override
+        public boolean isLogExceptionTracktrace(final CircuitBreaker breaker,
+                final Exception exception) {
+
+            return ConfigManager.isCupsIppExceptionStacktrace()
+                    || !(exception instanceof CircuitTrippingException);
+        }
+
+        @Override
+        protected PubTopicEnum getPubTopic() {
+            return PubTopicEnum.CUPS;
+        }
+
+        @Override
+        protected String getMessageBaseKey() {
+            return "circuit-cups-remote-connection";
+        }
+
+        /**
+         * No operation, cause this {@link CircuitBreaker} is used for various
+         * connections (IP destinations).
+         *
+         * @param breaker
+         */
+        @Override
+        public void onCircuitOpened(final CircuitBreaker breaker) {
+            // noop
+        }
+
+        /**
+         * No operation, cause this {@link CircuitBreaker} is used for various
+         * connections (IP destinations).
+         *
+         * @param breaker
+         */
+        @Override
+        public void onCircuitClosed(final CircuitBreaker breaker) {
+            // noop
+        }
+
+        /**
+         * Just a message, no {@link AppLog}, cause this {@link CircuitBreaker}
+         * is used for various connections (IP destinations).
+         *
+         * @param breaker
+         * @param cause
+         */
+        @Override
+        public void onTrippingException(final CircuitBreaker breaker,
+                final Exception cause) {
+            this.publishWarning(cause);
+        }
+
+    }),
+
+    /**
+     * Breaker for {@link URLConnection} to the internet (as opposed to
+     * <i>intranet</i>).
+     * <p>
+     * See {@link CircuitBreakerListenerMixin} how {@link CircuitBreaker} events
+     * are handled.
+     * </p>
+     */
+    INTERNET_URL_CONNECTION(1, 60000, new CircuitBreakerListenerMixin() {
+
+        @Override
+        public boolean isLogExceptionTracktrace(final CircuitBreaker breaker,
+                final Exception exception) {
+            return !(exception instanceof CircuitTrippingException
+                    || exception instanceof IOException
+                    || exception instanceof MessagingException);
+        }
+
+        @Override
+        protected PubTopicEnum getPubTopic() {
+            return PubTopicEnum.INTERNET_URL_CONNECTION;
+        }
+
+        @Override
+        protected String getMessageBaseKey() {
+            return "circuit-url-connection";
+        }
+
+    }),
+
+    /**
+     * Breaker for MailPrint connectivity.
+     * <p>
+     * See {@link CircuitBreakerListenerMixin} how {@link CircuitBreaker} events
+     * are handled.
+     * </p>
+     */
+    MAILPRINT_CONNECTION(1, 60000, new CircuitBreakerListenerMixin() {
+
+        @Override
+        public boolean isLogExceptionTracktrace(final CircuitBreaker breaker,
+                final Exception exception) {
+            return !(exception instanceof IOException
+                    || exception instanceof MessagingException
+                    || exception instanceof CircuitTrippingException);
+        }
+
+        @Override
+        protected PubTopicEnum getPubTopic() {
+            return PubTopicEnum.MAILPRINT;
+        }
+
+        @Override
+        protected String getMessageBaseKey() {
+            return "circuit-mailprint-connection";
+        }
+
+    }),
+
+    /**
+     * Breaker for PaperCut connectivity.
+     * <p>
+     * See {@link CircuitBreakerListenerMixin} how {@link CircuitBreaker} events
+     * are handled.
+     * </p>
+     */
+    PAPERCUT_CONNECTION(1, 60000, new CircuitBreakerListenerMixin() {
+
+        @Override
+        public boolean isLogExceptionTracktrace(final CircuitBreaker breaker,
+                final Exception exception) {
+            return !(exception instanceof PaperCutConnectException
+                    || exception instanceof PaperCutException
+                    || exception instanceof CircuitNonTrippingException);
+        }
+
+        @Override
+        protected PubTopicEnum getPubTopic() {
+            return PubTopicEnum.PAPERCUT;
+        }
+
+        @Override
+        protected String getMessageBaseKey() {
+            return "circuit-papercut-connection";
+        }
+
+    }),
+
+    /**
+     * Breaker for SMTP connectivity.
+     * <p>
+     * See {@link CircuitBreakerListenerMixin} how {@link CircuitBreaker} events
+     * are handled.
+     * </p>
+     */
+    SMTP_CONNECTION(1, 30000, new CircuitBreakerListenerMixin() {
+
+        @Override
+        public boolean isLogExceptionTracktrace(final CircuitBreaker breaker,
+                final Exception exception) {
+            return !(exception instanceof CircuitTrippingException);
+        }
+
+        @Override
+        protected PubTopicEnum getPubTopic() {
+            return PubTopicEnum.SMTP;
+        }
+
+        @Override
+        protected String getMessageBaseKey() {
+            return "circuit-smtp-connection";
+        }
+
+    });
+
+    /**
+     * The number of failures before the circuit is opened.
+     */
+    private final int failureThreshHold;
+
+    /**
+     *
+     */
+    private final int millisUntilRetry;
+
+    /**
+     *
+     */
+    private final CircuitBreakerListener breakerListener;
+
+    /**
+     *
+     * @param failureThrHold
+     *            Number of failures after which circuit is closed.
+     * @param millisRetry
+     *            The number of milliseconds until to retry the connection.
+     * @param listener
+     *            The {@link CircuitBreakerListener}.
+     */
+    CircuitBreakerEnum(final int failureThrHold, final int millisRetry,
+            final CircuitBreakerListener listener) {
+        this.failureThreshHold = failureThrHold;
+        this.millisUntilRetry = millisRetry;
+        this.breakerListener = listener;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public int getFailureThreshHold() {
+        return failureThreshHold;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public int getMillisUntilRetry() {
+        return millisUntilRetry;
+    }
+
+    public CircuitBreakerListener getBreakerListener() {
+        return breakerListener;
+    }
+
+}

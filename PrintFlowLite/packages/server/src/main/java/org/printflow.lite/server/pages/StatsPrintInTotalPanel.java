@@ -1,0 +1,155 @@
+/*
+ * This file is part of the PrintFlowLite project <https://www.PrintFlowLite.org>.
+ * Copyright (c) 2020 Datraverse B.V.
+ * Author: Rijk Ravestein.
+ *
+ * SPDX-FileCopyrightText: © 2020 Datraverse B.V. <info@datraverse.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For more information, please contact Datraverse B.V. at this
+ * address: info@datraverse.com
+ */
+package org.printflow.lite.server.pages;
+
+import org.printflow.lite.core.config.ConfigManager;
+import org.printflow.lite.core.config.IConfigProp.Key;
+import org.printflow.lite.core.i18n.AdjectiveEnum;
+import org.printflow.lite.core.i18n.AdverbEnum;
+import org.printflow.lite.core.i18n.NounEnum;
+import org.printflow.lite.core.json.JsonRollingTimeSeries;
+import org.printflow.lite.core.json.TimeSeriesInterval;
+import org.printflow.lite.server.helpers.SparklineHtml;
+
+/**
+ *
+ * @author Rijk Ravestein
+ *
+ */
+public final class StatsPrintInTotalPanel extends StatsTotalPanel {
+
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * @param id
+     *            Wicket ID.
+     */
+    public StatsPrintInTotalPanel(final String id) {
+        super(id);
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void populate() {
+        final MarkupHelper helper = new MarkupHelper(this);
+        final ConfigManager cm = ConfigManager.instance();
+
+        helper.addLabel("received", AdjectiveEnum.RECEIVED);
+        helper.addLabel("valid", AdjectiveEnum.VALID);
+        helper.addLabel("repaired", AdjectiveEnum.REPAIRED);
+        helper.addLabel("rejected", AdjectiveEnum.REJECTED);
+        helper.addLabel("period", NounEnum.PERIOD);
+
+        helper.addLabel("pdf-week", NounEnum.WEEK);
+        helper.addLabel("pdf-month", NounEnum.MONTH);
+        helper.addLabel("pdf-tot", NounEnum.TOTAL);
+
+        helper.addLabel("printin-totals-since", String.format("%s %s",
+                AdverbEnum.SINCE.uiText(getSession().getLocale()),
+                localizedDate(getSession().getLocale(), cm
+                        .getConfigDate(Key.STATS_TOTAL_RESET_DATE_PRINT_IN))));
+
+        MarkupHelper.appendComponentAttr(
+                helper.addTransparant("pdf-valid-cell"),
+                MarkupHelper.ATTR_STYLE,
+                String.format("color: %s;", SparklineHtml.COLOR_QUEUE));
+
+        //
+        long totPdf;
+        long totPdfRepaired;
+        long totPdfRejected;
+
+        //
+        TimeSeriesInterval intervalWlk = TimeSeriesInterval.WEEK;
+
+        JsonRollingTimeSeries<Integer> data =
+                new JsonRollingTimeSeries<>(intervalWlk, 1, 0);
+
+        totPdf = getTodayValue(data, intervalWlk,
+                Key.STATS_PRINT_IN_ROLLING_WEEK_PDF);
+        totPdfRepaired = getTodayValue(data, intervalWlk,
+                Key.STATS_PRINT_IN_ROLLING_WEEK_PDF_REPAIR)
+                + getTodayValue(data, intervalWlk,
+                        Key.STATS_PRINT_IN_ROLLING_WEEK_PDF_REPAIR_FONT);
+        totPdfRejected = getTodayValue(data, intervalWlk,
+                Key.STATS_PRINT_IN_ROLLING_WEEK_PDF_REPAIR_FAIL)
+                + getTodayValue(data, intervalWlk,
+                        Key.STATS_PRINT_IN_ROLLING_WEEK_PDF_REPAIR_FONT_FAIL);
+
+        helper.addLabel("pdf-valid-week", Long
+                .valueOf(totPdf - totPdfRepaired - totPdfRejected).toString());
+        helper.addLabel("pdf-repaired-week",
+                helper.localizedNumberOrSpace(totPdfRepaired))
+                .setEscapeModelStrings(false);
+        helper.addLabel("pdf-rejected-week",
+                helper.localizedNumberOrSpace(totPdfRejected))
+                .setEscapeModelStrings(false);
+
+        //
+        intervalWlk = TimeSeriesInterval.MONTH;
+        data = new JsonRollingTimeSeries<>(intervalWlk, 1, 0);
+
+        totPdf = getTodayValue(data, intervalWlk,
+                Key.STATS_PRINT_IN_ROLLING_MONTH_PDF);
+        totPdfRepaired = getTodayValue(data, intervalWlk,
+                Key.STATS_PRINT_IN_ROLLING_MONTH_PDF_REPAIR)
+                + getTodayValue(data, intervalWlk,
+                        Key.STATS_PRINT_IN_ROLLING_MONTH_PDF_REPAIR_FONT);
+        totPdfRejected = getTodayValue(data, intervalWlk,
+                Key.STATS_PRINT_IN_ROLLING_MONTH_PDF_REPAIR_FAIL)
+                + getTodayValue(data, intervalWlk,
+                        Key.STATS_PRINT_IN_ROLLING_MONTH_PDF_REPAIR_FONT_FAIL);
+
+        helper.addLabel("pdf-valid-month", Long
+                .valueOf(totPdf - totPdfRepaired - totPdfRejected).toString());
+        helper.addLabel("pdf-repaired-month",
+                helper.localizedNumberOrSpace(totPdfRepaired))
+                .setEscapeModelStrings(false);
+        helper.addLabel("pdf-rejected-month",
+                helper.localizedNumberOrSpace(totPdfRejected))
+                .setEscapeModelStrings(false);
+
+        //
+        totPdf = cm.getConfigLong(Key.STATS_TOTAL_PRINT_IN_PDF);
+        totPdfRepaired = cm.getConfigLong(Key.STATS_TOTAL_PRINT_IN_PDF_REPAIR)
+                + cm.getConfigLong(Key.STATS_TOTAL_PRINT_IN_PDF_REPAIR_FONT);
+        totPdfRejected =
+                cm.getConfigLong(Key.STATS_TOTAL_PRINT_IN_PDF_REPAIR_FAIL)
+                        + cm.getConfigLong(
+                                Key.STATS_TOTAL_PRINT_IN_PDF_REPAIR_FONT_FAIL);
+
+        helper.addLabel("pdf-valid-tot", Long
+                .valueOf(totPdf - totPdfRepaired - totPdfRejected).toString());
+        helper.addLabel("pdf-repaired-tot",
+                helper.localizedNumberOrSpace(totPdfRepaired))
+                .setEscapeModelStrings(false);
+        helper.addLabel("pdf-rejected-tot",
+                helper.localizedNumberOrSpace(totPdfRejected))
+                .setEscapeModelStrings(false);
+    }
+
+}

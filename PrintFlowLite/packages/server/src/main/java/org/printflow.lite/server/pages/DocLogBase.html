@@ -1,0 +1,401 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<input type="hidden" value="the-user-id" id="sp-doclog-hidden-user-id"
+	wicket:id="hidden-user-id" />
+<input type="hidden" value="the-account-id"
+	id="sp-doclog-hidden-account-id" wicket:id="hidden-account-id" />
+
+<ul data-role="listview" data-inset="true">
+
+	<li data-role="list-divider">
+		<wicket:message key="title" />
+		<span id="sp-doclog-user-title"> <wicket:enclosure
+				child="select-and-sort-user">- <span
+					wicket:id="select-and-sort-user-prompt" />: <span
+					wicket:id="select-and-sort-user" />
+			</wicket:enclosure>
+		</span> <span id="sp-doclog-account-title"> <wicket:enclosure
+				child="select-and-sort-account">- <span
+					wicket:id="select-and-sort-account-prompt" />: <span
+					wicket:id="select-and-sort-account" />
+			</wicket:enclosure>
+		</span>
+	</li>
+	<li>
+		<div data-role="collapsible" data-collapsed="true">
+
+			<h3 wicket:id="select-and-sort" />
+
+			<ul data-role="listview" data-inset="true">
+
+				<li id="sp-doclog-cat-type">
+					<div class="ui-field-contain">
+						<fieldset data-role="controlgroup" data-type="horizontal"
+							class="ui-mini sp-jqm-fieldset-radio">
+
+							<legend class="sp-txt-wrap" wicket:id="prompt-type" />
+
+							<label for="sp-doclog-select-type-all">-</label>
+							<input type="radio" name="sp-doclog-select-type"
+								id="sp-doclog-select-type-all" wicket:id="select-type-all"
+								value="" />
+
+							<label for="sp-doclog-select-type-in">
+								<wicket:message key="type-in" />
+							</label>
+							<input type="radio" name="sp-doclog-select-type"
+								id="sp-doclog-select-type-in" wicket:id="select-type-in"
+								value="" />
+
+							<label for="sp-doclog-select-type-out">
+								<wicket:message key="type-out" />
+							</label>
+							<input type="radio" name="sp-doclog-select-type"
+								id="sp-doclog-select-type-out" wicket:id="select-type-out"
+								value="" />
+
+							<wicket:enclosure child="select-type-pdf">
+								<label for="sp-doclog-select-type-pdf">
+									<wicket:message key="type-pdf" />
+								</label>
+								<input type="radio" name="sp-doclog-select-type"
+									id="sp-doclog-select-type-pdf" wicket:id="select-type-pdf"
+									value="" />
+							</wicket:enclosure>
+
+							<wicket:enclosure child="select-type-print">
+								<label for="sp-doclog-select-type-print">
+									<wicket:message key="type-print" />
+								</label>
+								<input type="radio" name="sp-doclog-select-type"
+									id="sp-doclog-select-type-print" wicket:id="select-type-print"
+									value="" />
+							</wicket:enclosure>
+
+							<wicket:enclosure child="select-type-ticket">
+								<label for="sp-doclog-select-type-ticket">
+									<wicket:message key="type-ticket" />
+								</label>
+								<input type="radio" name="sp-doclog-select-type"
+									id="sp-doclog-select-type-ticket"
+									wicket:id="select-type-ticket" value="" />
+							</wicket:enclosure>
+
+						</fieldset>
+					</div>
+
+				</li>
+
+				<li>
+					<div class="ui-field-contain">
+
+						<label for="sp-doclog-document-name"
+							wicket:id="prompt-document-name" />
+						<input type="text" id="sp-doclog-document-name" value=""
+							maxlength="128" data-clear-btn="true" />
+					</div>
+					<wicket:enclosure child="prompt-ticket-number-mail">
+						<div class="ui-field-contain">
+							<label for="sp-doclog-ticket-number-mail"
+								wicket:id="prompt-ticket-number-mail" />
+							<input type="text" id="sp-doclog-ticket-number-mail" value=""
+								maxlength="64" data-clear-btn="true" />
+						</div>
+					</wicket:enclosure>
+				</li>
+
+				<li>
+					<span class="sp-txt-wrap" wicket:id="prompt-period" />
+
+					<div class="ui-field-contain">
+						<label for="sp-doclog-date-from" class="sp-txt-wrap"
+							wicket:id="prompt-period-from" />
+						<input id="sp-doclog-date-from" data-clear-btn="true" />
+					</div>
+
+					<div class="ui-field-contain">
+						<label for="sp-doclog-date-to" class="sp-txt-wrap"
+							wicket:id="prompt-period-to" />
+						<input id="sp-doclog-date-to" data-clear-btn="true" />
+					</div>
+				</li>
+
+				<li class="sp-doclog-cat-queue">
+					<div class="ui-field-contain">
+						<label for="sp-print-in-queue" class="sp-txt-wrap"
+							wicket:id="cat-queue" />
+						<select name="sp-print-in-queue" id="sp-print-in-queue"
+							data-native-menu="false" data-mini="true">
+							<wicket:remove>
+								<!--
+			                NOTE: This options MUST have a value to be selectable, 
+			                if not it is just a header.
+			                -->
+							</wicket:remove>
+							<wicket:enclosure child="option-queue-all">
+								<option value="0">- <span wicket:id="option-queue-all" />
+									-
+								</option>
+							</wicket:enclosure>
+							<wicket:panel wicket:id="option-list-queues">
+								<option value="the-key" wicket:id="option-queue"></option>
+							</wicket:panel>
+						</select>
+					</div>
+				</li>
+
+				<li class="sp-doclog-cat-out">
+					<div>
+						<wicket:enclosure child="prompt-destination">
+							<div class="ui-field-contain sp-doclog-cat-out-detail">
+								<label for="sp-doc-out-destination" class="sp-txt-wrap"
+									wicket:id="prompt-destination" />
+								<input type="text" id="sp-doc-out-destination" value=""
+									data-clear-btn="true" maxlength="128" autocomplete="off"
+									autocorrect="off" autocapitalize="off" spellcheck="false" />
+							</div>
+						</wicket:enclosure>
+						<wicket:enclosure child="prompt-letterhead">
+							<div class="ui-field-contain sp-doclog-cat-out-detail">
+								<fieldset data-role="controlgroup" data-type="horizontal"
+									class="ui-mini sp-jqm-fieldset-radio">
+
+									<legend class="sp-txt-wrap" wicket:id="prompt-letterhead" />
+
+									<label for="sp-doc-out-lh-all">-</label>
+									<input type="radio" name="sp-doc-out-lh" id="sp-doc-out-lh-all"
+										value="" checked="checked" />
+
+									<label for="sp-doc-out-lh-y" wicket:id="lh-option-yes" />
+									<input type="radio" name="sp-doc-out-lh" id="sp-doc-out-lh-y"
+										value="1" />
+
+									<label for="sp-doc-out-lh-n" wicket:id="lh-option-no" />
+									<input type="radio" name="sp-doc-out-lh" id="sp-doc-out-lh-n"
+										value="0" />
+
+								</fieldset>
+							</div>
+						</wicket:enclosure>
+
+						<ul data-role="listview" data-inset="true"
+							class="sp-doclog-cat-pdf">
+
+							<li>
+								<div class="ui-field-contain">
+									<label for="sp-pdf-out-author" class="sp-txt-wrap"
+										wicket:id="prompt-author" />
+									<input type="text" id="sp-pdf-out-author" value=""
+										data-clear-btn="true" maxlength="128" />
+								</div>
+								<div class="ui-field-contain">
+									<label for="sp-pdf-out-subject" class="sp-txt-wrap"
+										wicket:id="prompt-subject" />
+									<input type="text" id="sp-pdf-out-subject" value=""
+										data-clear-btn="true" maxlength="128" />
+								</div>
+								<div class="ui-field-contain">
+									<label for="sp-pdf-out-keywords" class="sp-txt-wrap"
+										wicket:id="prompt-keywords" />
+									<input type="text" id="sp-pdf-out-keywords" value=""
+										data-clear-btn="true" maxlength="128" autocapitalize="off" />
+								</div>
+
+								<div class="ui-field-contain">
+									<fieldset data-role="controlgroup" data-type="horizontal"
+										class="ui-mini sp-jqm-fieldset-radio">
+
+										<legend class="sp-txt-wrap" wicket:id="prompt-encryption" />
+
+										<label for="sp-pdf-out-encryp-all">-</label>
+										<input type="radio" name="sp-pdf-out-encrypt"
+											id="sp-pdf-out-encryp-all" value="" checked="checked" />
+
+										<label for="sp-pdf-out-encryp-y" wicket:id="encryp-option-yes" />
+										<input type="radio" name="sp-pdf-out-encrypt"
+											id="sp-pdf-out-encryp-y" value="1" />
+
+										<label for="sp-pdf-out-encryp-n" wicket:id="encryp-option-no" />
+										<input type="radio" name="sp-pdf-out-encrypt"
+											id="sp-pdf-out-encryp-n" value="0" />
+
+									</fieldset>
+								</div>
+
+								<div class="ui-field-contain">
+									<label class="sp-password-panel" for="sp-pdf-out-pw-user">
+										<span class="sp-txt-wrap"><wicket:message
+												key="user-password" /></span>
+									</label>
+									<wicket:panel wicket:id="sp-pdf-out-pw-user-panel" />
+								</div>
+								<div class="ui-field-contain">
+									<label class="sp-password-panel" for="sp-pdf-out-pw-owner">
+										<span class="sp-txt-wrap"><wicket:message
+												key="owner-password" /></span>
+									</label>
+									<wicket:panel wicket:id="sp-pdf-out-pw-owner-panel" />
+								</div>
+							</li>
+
+						</ul>
+						<ul data-role="listview" data-inset="true"
+							class="sp-doclog-cat-printer">
+							<li>
+								<div class="ui-field-contain sp-doclog-cat-printer-list">
+									<label for="sp-print-out-printer" class="sp-txt-wrap">
+										<wicket:message key="prompt-printer" />
+									</label>
+									<select name="sp-print-out-printer" id="sp-print-out-printer"
+										data-mini="true" data-native-menu="false">
+										<wicket:remove>
+											<!--
+	                                NOTE: This options MUST have a value to be selectable, 
+	                                if not it is just a header.
+	                                -->
+										</wicket:remove>
+										<wicket:enclosure child="option-printer-all">
+											<option value="0">- <span
+													wicket:id="option-printer-all" /> -
+											</option>
+										</wicket:enclosure>
+										<wicket:panel wicket:id="option-list-printers">
+											<option value="the-key" wicket:id="option-printer"></option>
+										</wicket:panel>
+									</select>
+								</div>
+
+								<div class="ui-field-contain sp-doclog-cat-ticket">
+									<label for="sp-doclog-ticket-number">
+										<span class="sp-txt-wrap"><wicket:message
+												key="type-ticket" /></span>
+									</label>
+									<input type="text" id="sp-doclog-ticket-number" value=""
+										maxlength="32" data-clear-btn="true" />
+								</div>
+
+								<div class="ui-field-contain">
+									<label for="sp-print-out-state">
+										<span class="sp-txt-wrap"><wicket:message
+												key="prompt-job-state" /></span>
+									</label>
+									<select name="sp-print-out-state" id="sp-print-out-state"
+										data-mini="true" data-native-menu="false">
+										<option value="0">-
+											<wicket:message key="option-all" /> -
+										</option>
+										<option value="1"><wicket:message
+												key="option-job-state-active" /></option>
+										<option value="2"><wicket:message
+												key="option-job-state-unfinished" /></option>
+										<option value="3"><wicket:message
+												key="option-job-state-completed" /></option>
+										<option value="4" wicket:id="option-job-state-unknown" />
+									</select>
+								</div>
+
+								<div class="ui-field-contain sp-doclog-cat-printer-print-layout">
+									<fieldset data-role="controlgroup" data-type="horizontal"
+										class="ui-mini sp-jqm-fieldset-radio">
+
+										<legend class="sp-txt-wrap" wicket:id="prompt-layout" />
+
+										<label for="sp-print-out-duplex-all">-</label>
+										<input type="radio" name="sp-print-out-duplex"
+											id="sp-print-out-duplex-all" value="" checked="checked" />
+
+										<label for="sp-print-out-duplex-n" wicket:id="option-simplex" />
+										<input type="radio" name="sp-print-out-duplex"
+											id="sp-print-out-duplex-n" value="0" />
+
+										<label for="sp-print-out-duplex-y" wicket:id="option-duplex" />
+										<input type="radio" name="sp-print-out-duplex"
+											id="sp-print-out-duplex-y" value="1" />
+
+									</fieldset>
+								</div>
+							</li>
+						</ul>
+					</div>
+				</li>
+
+				<li>
+					<div class="ui-field-contain">
+						<fieldset data-role="controlgroup" data-type="horizontal"
+							class="ui-mini sp-jqm-fieldset-radio">
+
+							<legend class="sp-txt-wrap" wicket:id="prompt-sort-by" />
+
+							<label for="sp-doclog-sort-by-date" wicket:id="sort-by-date" />
+							<input type="radio" name="sp-doclog-sort-by"
+								id="sp-doclog-sort-by-date" checked="checked" value="date" />
+
+							<label for="sp-doclog-sort-by-name" wicket:id="sort-by-name" />
+							<input type="radio" name="sp-doclog-sort-by"
+								id="sp-doclog-sort-by-name" value="name" />
+
+							<wicket:enclosure child="sort-by-queue">
+								<label class="sp-doclog-cat-queue" for="sp-doclog-sort-by-queue"
+									wicket:id="sort-by-queue" />
+								<input class="sp-doclog-cat-queue" type="radio"
+									name="sp-doclog-sort-by" id="sp-doclog-sort-by-queue"
+									value="queue" />
+							</wicket:enclosure>
+
+							<wicket:enclosure child="sort-by-printer">
+								<label class="sp-doclog-cat-printer"
+									for="sp-doclog-sort-by-printer" wicket:id="sort-by-printer" />
+								<input class="sp-doclog-cat-printer" type="radio"
+									name="sp-doclog-sort-by" id="sp-doclog-sort-by-printer"
+									value="printer" />
+							</wicket:enclosure>
+
+							<label for="sp-doclog-sort-dir-asc" wicket:id="sort-asc" />
+							<input type="radio" name="sp-doclog-sort-dir"
+								id="sp-doclog-sort-dir-asc" checked="checked" />
+
+							<label for="sp-doclog-sort-dir-desc" wicket:id="sort-desc" />
+							<input type="radio" name="sp-doclog-sort-dir"
+								id="sp-doclog-sort-dir-desc" />
+
+						</fieldset>
+					</div>
+
+				</li>
+
+				<li>
+					<div data-role="controlgroup" data-type="horizontal">
+						<button id="button-doclog-apply"
+							class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-check"
+							wicket:id="button-apply" />
+						<button id="button-doclog-default"
+							class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-recycle"
+							wicket:id="button-default" />
+						<button
+							class="ui-btn ui-btn-inline ui-btn-icon-notext ui-icon-minus sp-collapse">&nbsp;</button>
+					</div>
+				</li>
+			</ul>
+		</div>
+	</li>
+
+	<li id="sp-doclog-list-page"></li>
+
+</ul>
+
+</html>

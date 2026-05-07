@@ -1,0 +1,99 @@
+/*
+ * This file is part of the PrintFlowLite project <https://www.PrintFlowLite.org>.
+ * Copyright (c) 2020 Datraverse B.V.
+ * Author: Rijk Ravestein.
+ *
+ * SPDX-FileCopyrightText: © 2020 Datraverse B.V. <info@datraverse.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For more information, please contact Datraverse B.V. at this
+ * address: info@datraverse.com
+ */
+package org.printflow.lite.server.pages.admin;
+
+import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.printflow.lite.core.config.ConfigManager;
+import org.printflow.lite.core.dao.enums.ACLOidEnum;
+import org.printflow.lite.core.dao.enums.IppRoutingEnum;
+import org.printflow.lite.core.i18n.AdverbEnum;
+import org.printflow.lite.core.i18n.NounEnum;
+import org.printflow.lite.server.helpers.HtmlButtonEnum;
+import org.printflow.lite.server.pages.MarkupHelper;
+
+/**
+ *
+ * @author Rijk Ravestein
+ *
+ */
+public final class PageQueue extends AbstractAdminPage {
+
+    /**
+     * Version for serialization.
+     */
+    private static final long serialVersionUID = 1L;
+
+    /** */
+    private static final String WID_LABEL_IPP_ROUTING_TYPE_NONE =
+            "label-ipp-routing-type-none";
+    /** */
+    private static final String WID_LABEL_IPP_ROUTING_TYPE_TERMINAL =
+            "label-ipp-routing-type-terminal";
+    /** */
+    private static final String WID_LABEL_IPP_ROUTING_TYPE_PRINTER =
+            "label-ipp-routing-type-printer";
+
+    /** */
+    private static final String WID_LABEL_QUEUE_BASIC_AUTH =
+            "label-queue-basic-auth";
+
+    /**
+     * @param parameters
+     *            The page parameters.
+     */
+    public PageQueue(final PageParameters parameters) {
+        super(parameters, ACLOidEnum.A_QUEUES, RequiredPermission.EDIT);
+
+        final MarkupHelper helper = new MarkupHelper(this);
+
+        helper.addLabel("queue-journal", NounEnum.JOURNAL);
+        helper.addLabel("journal-disabled", AdverbEnum.DISABLED);
+
+        helper.addLabel("ipp-routing-prompt", "IPP Routing Options");
+
+        helper.addLabel(WID_LABEL_IPP_ROUTING_TYPE_NONE,
+                IppRoutingEnum.NONE.uiText(getLocale()));
+        helper.addModifyLabelAttr("ipp-routing-type-none", "",
+                MarkupHelper.ATTR_VALUE, IppRoutingEnum.NONE.toString());
+
+        helper.addLabel(WID_LABEL_IPP_ROUTING_TYPE_TERMINAL,
+                IppRoutingEnum.TERMINAL.uiText(getLocale()));
+        helper.addModifyLabelAttr("ipp-routing-type-terminal", "",
+                MarkupHelper.ATTR_VALUE, IppRoutingEnum.TERMINAL.toString());
+
+        helper.addLabel(WID_LABEL_IPP_ROUTING_TYPE_PRINTER,
+                IppRoutingEnum.PRINTER.uiText(getLocale()));
+        helper.addModifyLabelAttr("ipp-routing-type-printer", "",
+                MarkupHelper.ATTR_VALUE, IppRoutingEnum.PRINTER.toString());
+
+        helper.addModifyLabelAttr("queue-ipp-routing-printer-input",
+                MarkupHelper.ATTR_PLACEHOLDER,
+                HtmlButtonEnum.SEARCH.uiTextDottedSfx((getLocale())));
+
+        helper.encloseLabel(WID_LABEL_QUEUE_BASIC_AUTH, "Basic Authentication",
+                ConfigManager.isIppAuthOptionEnabled());
+    }
+
+}

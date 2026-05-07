@@ -1,0 +1,107 @@
+;
+; This file is part of the PrintFlowLite project <https://www.printflowlite.org>.
+; Copyright (c) 2016 Datraverse B.V.
+; Author: Rijk Ravestein.
+;
+; SPDX-FileCopyrightText: (c) 2016 Datraverse B.V. <info@datraverse.com>
+; SPDX-License-Identifier: AGPL-3.0-or-later
+;
+; This program is free software: you can redistribute it and/or modify
+; it under the terms of the GNU Affero General Public License as
+; published by the Free Software Foundation, either version 3 of the
+; License, or (at your option) any later version.
+;
+; This program is distributed in the hope that it will be useful,
+; but WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+; GNU Affero General Public License for more details.
+;
+; You should have received a copy of the GNU Affero General Public License
+; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+;
+; For more information, please contact Datraverse B.V. at this
+; address: info@datraverse.com
+;
+
+[Version]
+Signature="$Windows NT$"
+Provider=Datraverse B.V.
+LayoutFile=ntprint.inf
+ClassGUID={4D36E979-E325-11CE-BFC1-08002BE10318}
+Class=Printer
+DriverVer=07/01/2015,0.9.6.0
+
+;
+; Manufacturer section.
+;
+[Manufacturer]
+"PrintFlowLite"=PrintFlowLite, NTamd64, NTia64
+
+;
+; Model sections. 
+; 
+[PrintFlowLite]
+"PrintFlowLite Printer" = INSTALL_OEMUI.PS,,PrintFlowLite
+
+[PrintFlowLite.NTamd64]
+"PrintFlowLite Printer" = INSTALL_OEMUI.PS,,PrintFlowLite
+
+[PrintFlowLite.NTia64]
+"PrintFlowLite Printer" = INSTALL_OEMUI.PS,,PrintFlowLite
+
+;
+; Installer Sections
+;
+[INSTALL_OEMUI.PS]
+CopyFiles=@PRINTFLOWLITE.PPD
+CopyFiles=@PRINTFLOWLITE_OEMUI.INI
+CopyFiles=OEMUI
+DataFile=PRINTFLOWLITE.PPD
+DataSection=PSCRIPT_DATA
+Include=NTPRINT.INF
+Needs=PSCRIPT.OEM,PSCRIPT_DATA
+
+;
+; Copy Sections
+;
+; Lists of files that are actually copied. These sections are referenced
+; from the installer sections, above. 
+;
+
+[OEMUI]
+PRINTFLOWLITE_OEMUI.DLL
+
+;
+; Data Sections
+;
+[SourceDisksNames]
+100 = %Disk1%
+
+[SourceDisksFiles.x86]
+printflowlite_oemui.dll      = 100,.\x86
+
+[SourceDisksFiles.amd64]
+printflowlite_oemui.dll      = 100,.\amd64
+
+[SourceDisksFiles.ia64]
+printflowlite_oemui.dll      = 100,.\ia64
+
+[SourceDisksFiles]
+PRINTFLOWLITE_OEMUI.INI     = 100
+
+;
+; Call SetupSetDirectoryId with 66000 to set the target directory at runtime
+; (depending on which environment drivers are getting installed)
+;
+
+[DestinationDirs]
+DefaultDestDir=66000
+
+;
+; Localizable Strings
+;
+[Strings]
+Disk1="PrintFlowLite Printer Driver (OEM)"
+
+
+; end-of-file

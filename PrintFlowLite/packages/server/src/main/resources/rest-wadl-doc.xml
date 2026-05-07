@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com> -->
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<applicationDocs
+    targetNamespace="http://wadl.dev.java.net/2009/02">
+    <doc xml:lang="en" title="PrintFlowLite rest api">PrintFlowLite REST API</doc>
+</applicationDocs>

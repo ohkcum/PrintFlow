@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+    <!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<h4 wicket:id="txt-mode" />
+
+<table data-role="table" data-mode="reflow"
+	class="ui-responsive table-stroke">
+	<thead>
+		<tr>
+			<th data-priority="1" />
+			<th data-priority="2" />
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td wicket:id="txt-from" />
+			<td wicket:id="txt-current" />
+		</tr>
+		<tr>
+			<th wicket:id="txt-to" />
+			<th wicket:id="txt-change" />
+		</tr>
+		<tr>
+			<td colspan="2">
+				<button tabindex="0" data-PrintFlowLite=""
+					class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-check"
+					id="sp-btn-sys-mode-apply" wicket:id="btn-apply" />
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<a href="#" data-rel="back"
+	class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right" />
+
+</html>

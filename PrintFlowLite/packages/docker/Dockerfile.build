@@ -1,0 +1,58 @@
+# =============================================================================
+# PrintFlowLite Build Dockerfile
+# =============================================================================
+# Builds all PrintFlowLite packages and runs tests using Maven + PostgreSQL.
+#
+# NOTE: This Dockerfile is used ONLY for CI-style build+test operations.
+# For runtime deployment, use the standard Dockerfile instead.
+#
+# Requirements:
+#   - PostgreSQL 16 service (managed via docker-compose.build.yml)
+#   - Build context is the project root (../.. from packages/docker/)
+# =============================================================================
+
+FROM maven:3.9-eclipse-temurin-17
+
+# Build arguments
+ARG MAVEN_OPTS=-Xmx1024m
+
+# Set Maven options (can be overridden at build time)
+ENV MAVEN_OPTS=${MAVEN_OPTS}
+
+# Working directory set to project root
+WORKDIR /project
+
+# Copy Maven wrapper and POM files first (for dependency caching)
+COPY pom.xml ./
+COPY packages/common/pom.xml ./packages/common/
+COPY packages/core/pom.xml ./packages/core/
+COPY packages/ext/pom.xml ./packages/ext/
+COPY packages/server/pom.xml ./packages/server/
+COPY packages/client/pom.xml ./packages/client/
+
+# Download dependencies (cached layer - only re-downloads if pom.xml changes)
+RUN mvn dependency:go-offline --batch-mode || true
+
+# Copy source code
+COPY packages/common/src ./packages/common/src
+COPY packages/common/VersionInfo-template.java ./packages/common/
+COPY packages/core/src ./packages/core/src
+COPY packages/ext/src ./packages/ext/src
+COPY packages/server/src ./packages/server/src
+COPY packages/client/src ./packages/client/src
+
+# Copy build configuration files (build.xml for VersionInfo generation)
+COPY packages/common/build.xml ./packages/common/build.xml
+COPY packages/common/build-common.xml ./packages/common/build-common.xml
+COPY packages/common/VERSION.sh ./packages/common/VERSION.sh
+RUN chmod +x ./packages/common/VERSION.sh
+COPY packages/core/build.xml ./packages/core/build.xml
+
+# Remove missing dependency printflowlite-i18n-en from core/pom.xml
+# (this artifact is not in the monorepo and is not used in any Java code)
+RUN sed -i ':a;N;$!ba;s|<dependency>\s*<groupId>org.printflow.lite</groupId>\s*<artifactId>printflowlite-i18n-en</artifactId>\s*<version>1.7.0</version>\s*</dependency>||g' packages/core/pom.xml && \
+    echo ">>> Removed printflowlite-i18n-en dependency from core/pom.xml"
+
+# Default command: build + test
+# Override via docker compose run or docker run
+CMD ["mvn", "clean", "install", "-DskipTests", "--batch-mode"]

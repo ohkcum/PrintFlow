@@ -1,0 +1,288 @@
+/*
+ * This file is part of the PrintFlowLite project <https://www.PrintFlowLite.org>.
+ * Copyright (c) 2020 Datraverse B.V.
+ * Author: Rijk Ravestein.
+ *
+ * SPDX-FileCopyrightText: © 2020 Datraverse B.V. <info@datraverse.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For more information, please contact Datraverse B.V. at this
+ * address: info@datraverse.com
+ */
+package org.printflow.lite.server.dropzone;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
+import javax.mail.internet.InternetAddress;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.wicket.markup.html.form.upload.FileUpload;
+import org.apache.wicket.util.lang.Bytes;
+import org.printflow.lite.core.config.ConfigManager;
+import org.printflow.lite.core.config.IConfigProp;
+import org.printflow.lite.core.config.IConfigProp.Key;
+import org.printflow.lite.core.doc.DocContent;
+import org.printflow.lite.core.util.NumberUtil;
+import org.printflow.lite.lib.pgp.PGPKeyID;
+import org.printflow.lite.lib.pgp.PGPPublicKeyInfo;
+import org.printflow.lite.lib.pgp.PGPSecretKeyInfo;
+import org.printflow.lite.lib.pgp.pdf.PdfPgpHelper;
+import org.printflow.lite.lib.pgp.pdf.PdfPgpSignatureInfo;
+import org.printflow.lite.server.pages.MarkupHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ *
+ * @author Rijk Ravestein
+ *
+ */
+public final class PdfPgpUploadHelper implements IFileUploadHelperEx {
+
+    /**
+     * The logger.
+     */
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(PdfPgpDropZoneFileResource.class);
+
+    /** */
+    private static final String IMG_PATH_VALID =
+            MarkupHelper.IMG_PATH_GENERIC_CHECKMARK_GREEN;
+
+    /** */
+    private static final String IMG_PATH_ERROR =
+            MarkupHelper.IMG_PATH_GENERIC_ERROR;
+
+    /** */
+    private static final String IMG_PATH_EXCEPTION =
+            MarkupHelper.IMG_PATH_GENERIC_CROSS_RED;
+
+    /** */
+    private static final class SingletonHolder {
+        /** */
+        public static final PdfPgpUploadHelper INSTANCE =
+                new PdfPgpUploadHelper();
+    }
+
+    /**
+     * .
+     */
+    private PdfPgpUploadHelper() {
+    }
+
+    /**
+     * Gets the singleton instance.
+     *
+     * @return The singleton.
+     */
+    public static PdfPgpUploadHelper instance() {
+        return SingletonHolder.INSTANCE;
+    }
+
+    @Override
+    public Bytes getMaxUploadSize() {
+        // Note: Bytes.megabytes() is MiB (not MB).
+        return Bytes.bytes(ConfigManager.instance().getConfigLong(
+                Key.WEBAPP_PDFPGP_MAX_UPLOAD_FILE_MB,
+                IConfigProp.WEBAPP_PDFPGP_MAX_UPLOAD_FILE_MB_V_DEFAULT)
+                * NumberUtil.INT_THOUSAND * NumberUtil.INT_THOUSAND);
+    }
+
+    @Override
+    public List<String> getSupportedFileExtensions(final boolean dotPfx) {
+
+        final List<String> list = new ArrayList<>();
+
+        if (dotPfx) {
+            list.add(String.format(".%s", DocContent.FILENAME_EXT_PDF));
+        } else {
+            list.add(DocContent.FILENAME_EXT_PDF);
+        }
+        return list;
+    }
+
+    @Override
+    public void handleFileUpload(final String originatorIp,
+            final FileUpload uploadedFile, final StringBuilder feedbackMsg) {
+
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace("[{}] uploaded file [{}] [{}]", originatorIp,
+                    uploadedFile.getContentType(),
+                    uploadedFile.getClientFileName());
+        }
+
+        File fileTemp = null;
+
+        try {
+            fileTemp = uploadedFile.writeToTempFile();
+
+            final PGPSecretKeyInfo secKeyInfo =
+                    ConfigManager.instance().getPGPSecretKeyInfo();
+
+            final PdfPgpSignatureInfo sigInfo = PdfPgpHelper.instance()
+                    .verify(fileTemp, secKeyInfo.getPublicKey());
+
+            final boolean isSigValid = sigInfo.isValid();
+            final boolean isSigTrusted = sigInfo.getSignature()
+                    .getKeyID() == secKeyInfo.getPrivateKey().getKeyID();
+
+            /*
+             * Messages are modeled after GPG CLI output.
+             */
+            feedbackMsg.append("<div class=\"sp-pdfpgp-verify-entry")
+                    .append(" ").append(MarkupHelper.CSS_TXT_WRAP).append(" ");
+
+            final String imgSrc;
+
+            if (isSigValid) {
+                feedbackMsg.append(MarkupHelper.CSS_TXT_VALID).append(" ")
+                        .append("sp-pdfpgp-verify-entry-valid");
+                imgSrc = IMG_PATH_VALID;
+            } else {
+                feedbackMsg.append(MarkupHelper.CSS_TXT_WARN).append(" ")
+                        .append("sp-pdfpgp-verify-entry-warn");
+                imgSrc = IMG_PATH_ERROR;
+            }
+            feedbackMsg.append("\">");
+
+            appendFileInfo(uploadedFile, feedbackMsg, imgSrc);
+
+            if (isSigValid || isSigTrusted) {
+
+                if (isSigValid) {
+                    feedbackMsg.append("Good");
+                } else {
+                    feedbackMsg.append("BAD");
+                }
+
+                feedbackMsg.append(" signature from ")
+                        .append(secKeyInfo.getUids().get(0).toString())
+                        .append(" &lt;")
+                        .append(secKeyInfo.getUids().get(0).getAddress())
+                        .append("&gt;");
+
+            } else {
+                feedbackMsg.append(String
+                        .format("Can't check signature: public key not found"));
+            }
+
+            feedbackMsg.append("<br><br><small>");
+            feedbackMsg.append(String.format(
+                    "Signature made %s (clock of signer's computer)",
+                    sigInfo.getSignature().getCreationTime()));
+
+            feedbackMsg.append("<br>");
+            feedbackMsg.append(String.format("Key ID: %s", PGPKeyID
+                    .formattedKeyID(sigInfo.getSignature().getKeyID())));
+
+            if (isSigTrusted) {
+                feedbackMsg.append("<br>");
+                feedbackMsg.append(String.format("Key fingerprint: %s",
+                        secKeyInfo.formattedFingerPrint()));
+            }
+
+            final PGPPublicKeyInfo author = sigInfo.getPubKeyAuthor();
+
+            if (isSigTrusted && author != null && !author.getUids().isEmpty()) {
+
+                feedbackMsg.append(
+                        "<br><br><hr style=\"border: 1px dotted silver;\">");
+                feedbackMsg.append("Author Name: ")
+                        .append(author.getUids().get(0).getPersonal());
+
+                feedbackMsg.append("<br>");
+                feedbackMsg.append(String.format("Author Key ID: %s",
+                        author.formattedKeyID()));
+
+                feedbackMsg.append("<br>");
+                feedbackMsg.append(String.format("Author Key fingerprint: %s",
+                        author.formattedFingerPrint()));
+
+                final StringBuilder authorEmails = new StringBuilder();
+
+                for (final InternetAddress addr : author.getUids()) {
+                    if (authorEmails.length() == 0) {
+                        authorEmails.append("Author Email: ");
+                    } else {
+                        authorEmails.append(", ");
+                    }
+                    authorEmails.append(addr.getAddress());
+                }
+
+                feedbackMsg.append("<br>");
+                feedbackMsg.append(authorEmails.toString());
+            }
+
+            feedbackMsg.append("</small></div>");
+
+        } catch (Exception e) {
+
+            feedbackMsg.append("<div class=\"sp-pdfpgp-verify-entry")
+                    .append(" ").append(MarkupHelper.CSS_TXT_WRAP).append(" ")
+                    .append(MarkupHelper.CSS_TXT_ERROR).append(" ")
+                    .append("sp-pdfpgp-verify-entry-error").append("\">");
+            appendFileInfo(uploadedFile, feedbackMsg, IMG_PATH_EXCEPTION);
+
+            feedbackMsg.append("The signature could not be verified");
+            if (StringUtils.isNotBlank(e.getMessage())) {
+                feedbackMsg.append("<br><br>");
+                feedbackMsg.append("<small>").append(e.getMessage())
+                        .append("</small>");
+            }
+            feedbackMsg.append("</div>");
+
+        } finally {
+            // Close quietly.
+            uploadedFile.closeStreams();
+            // Don't wait for garbage collect: delete now.
+            uploadedFile.delete();
+            //
+            if (fileTemp != null) {
+                fileTemp.delete();
+            }
+        }
+    }
+
+    /**
+     *
+     * @param uploadedFile
+     *            Uploaded file
+     * @param feedbackMsg
+     *            Message to append on.
+     * @param imgSrc
+     *            image URL path.
+     */
+    private static void appendFileInfo(final FileUpload uploadedFile,
+            final StringBuilder feedbackMsg, final String imgSrc) {
+
+        feedbackMsg.append("<span class=\"sp-pdfpgp-file\">").append(
+                "<img class=\"sp-pdfpgp-status-img\" height=\"20\" src=\"")
+                .append(imgSrc).append("\">").append("&nbsp;&nbsp;")
+                .append(uploadedFile.getClientFileName()).append(" &bull; ")
+                .append(NumberUtil.humanReadableByteCountSI(Locale.US,
+                        uploadedFile.getSize()))
+                .append("</span>");
+        feedbackMsg.append("<br><br>");
+    }
+
+    @Override
+    public boolean isUploadEnabled() {
+        return ConfigManager.instance().isConfigValue(Key.WEBAPP_PDFPGP_ENABLE);
+    }
+}

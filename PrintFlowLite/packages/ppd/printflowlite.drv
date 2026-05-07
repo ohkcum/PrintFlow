@@ -1,0 +1,157 @@
+//=============================================================================
+// ppdc command line defines
+//
+// VERSION
+//=============================================================================
+
+Copyright "
+This file is part of the PrintFlowLite project <https://www.printflowlite.org>
+Copyright (c) 2023 Datraverse B.V. | Author: Rijk Ravestein.
+
+SPDX-FileCopyrightText: (c) 2023 Datraverse BV <info@datraverse.com> 
+SPDX-License-Identifier: AGPL-3.0-or-later 
+
+PrintFlowLite is free software licensed under AGPLv3, or any later version.
+"
+
+//=============================================================================
+DriverType ps
+
+//=============================================================================
+// Include standard font and media definitions
+//=============================================================================
+#include <font.defs>
+#include <media.defs>
+
+#po nl "nl.po"  // Dutch
+
+
+//=============================================================================
+// Constants
+//
+// Note: Check the Avahi printflowlite.service file so the MODEL_NAME matches the 
+// one in the product txt-record, like this: 
+// <txt-record>product=(printflowlite.org)</txt-record> 
+//=============================================================================
+#define MANUFACTURER "PrintFlowLite"
+#define MODEL_NAME   "printflowlite.org"
+
+//=============================================================================
+// List the fonts that are that are available in the driver, in our case all 
+// standard fonts.
+//
+// Fonts that are NOT in the list need to be EMBEDDED in documents that use
+// the font for this printer.
+//=============================================================================
+Font *
+
+//=============================================================================
+// Manufacturer, model name, and version
+//=============================================================================
+Manufacturer "$MANUFACTURER"
+ModelName "$MODEL_NAME"
+Version $VERSION
+
+//=============================================================================
+// COLOR
+//=============================================================================
+ColorDevice true
+
+//-----------------------------------------------------------------------------
+// Supported colorspaces
+//-----------------------------------------------------------------------------
+ColorModel Gray/Grayscale w chunky 0
+*ColorModel RGB/RGB rgb chunky 0
+ColorModel CMYK/CMYK cmyk chunky 0
+
+
+//=============================================================================
+// Duplex printing is supported, so it can be passed to Fast Print Mode.
+//=============================================================================
+Duplex normal
+
+//=============================================================================
+// Testing Inputslots...
+// They are displayed in picklist in Ubuntu, Windows, Mac OS, BUT the
+// selection is NOT passed to the IPP request when printing the job, why !?
+//=============================================================================
+
+InputSlot 0 "main/Main"
+InputSlot 1 "top/Top"
+InputSlot 2 "middle/Middle"
+InputSlot 3 "bottom/Bottom"
+InputSlot 4 "side/Side"
+
+//=============================================================================
+// Not used, but considering ... 
+//=============================================================================
+
+// Installable
+
+
+//=============================================================================
+// OPTIONS
+//=============================================================================
+
+//-----------------------------------------------------------------------------
+// Pages per minute
+// Note: this value is displayed in the Windows Printer Dialog :-)
+//-----------------------------------------------------------------------------
+Throughput 120
+
+//-----------------------------------------------------------------------------
+// The HWMargins directive specifies the current margins for MediaSize that
+// follow. The left, bottom, right, and top margin values specify the printable 
+// margins.
+//-----------------------------------------------------------------------------
+HWMargins 0 0 0 0
+
+//-----------------------------------------------------------------------------
+// Supported page sizes.
+// 
+// If the default media size is Letter, the PPD compiler will override it to
+// be A4 for non-English localizations for you automatically.
+//-----------------------------------------------------------------------------
+*MediaSize Letter
+MediaSize A4
+MediaSize A3
+MediaSize A2
+MediaSize A1
+MediaSize A0
+MediaSize EnvC0
+MediaSize EnvC1
+MediaSize EnvC2
+MediaSize EnvC3
+MediaSize EnvC4
+MediaSize EnvC5
+MediaSize EnvC6
+MediaSize EnvC7
+MediaSize EnvDL
+MediaSize EnvMonarch 
+
+
+//-----------------------------------------------------------------------------
+// Supported resolutions
+//
+// All versions of CUPS support 1 and 8 bits per color. CUPS 1.2 and higher
+// (Mac OS X 10.5 and higher) also supports 16 bits per color.
+// What about Windows ??
+//-----------------------------------------------------------------------------
+Resolution - 8 0 0 0 "72dpi/72 DPI"
+Resolution - 8 0 0 0 "96dpi/96 DPI"
+Resolution - 8 0 0 0 "144dpi/144 DPI"
+Resolution - 8 0 0 0 "150dpi/150 DPI"
+*Resolution - 8 0 0 0 "300dpi/300 DPI"
+Resolution - 8 0 0 0 "600dpi/600 DPI"
+Resolution - 8 0 0 0 "720dpi/720 DPI"
+Resolution - 8 0 0 0 "1200dpi/1200 DPI"
+Resolution - 8 0 0 0 "2400dpi/2400 DPI"
+Resolution - 8 0 0 0 "3600dpi/3600 DPI"
+Resolution - 8 0 0 0 "4000dpi/4000 DPI"
+
+//=============================================================================
+// Specify the name of the PPD file we want to generate...
+//
+// The filename may not exceed 8 characters followed by the extension .ppd 
+//=============================================================================
+PCFileName "PRINTFLOWLITE.ppd"

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+    <!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<head>
+
+<noscript>
+	<h2>Your browser does not support JavaScript or JavaScript is
+		disabled!</h2>
+	<h3>Please enable JavaScript to run this application.</h3>
+	<hr />
+</noscript>
+
+<title wicket:id="app-title"></title>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<wicket:remove>
+	<!--
+Informs the Apple browser that this is a web app.
+<meta name="apple-mobile-web-app-capable" content="yes">
+-->
+</wicket:remove>
+
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<wicket:remove>
+	<!--  Prevent chaching in IE: http://support.microsoft.com/kb/234067  -->
+</wicket:remove>
+<META HTTP-EQUIV="Expires" CONTENT="-1">
+
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+
+<wicket:remove>
+	<!--  
+http://developer.apple.com/library/ios/#DOCUMENTATION/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
+http://iconhandbook.co.uk/reference/chart/ios/
+
+sizes="72x72"   : iPad
+sizes="114x114" : iPhone 4+
+sizes="144x144" : iPad 3+
+
+If no sizes attribute is set, the element’s size defaults to 57 x 57.  
+-->
+</wicket:remove>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="apple-touch-icon" sizes="72x72"
+	href="/apple-touch-icon-72x72.png" />
+<link rel="apple-touch-icon" sizes="114x114"
+	href="/apple-touch-icon-114x114.png" />
+<link rel="apple-touch-icon" sizes="144x144"
+	href="/apple-touch-icon-144x144.png" />
+
+</head>
+
+<body>
+
+    <div wicket:id="sp-overlay-block-user-input" />
+
+	<div data-role="dialog" data-theme="a" data-close-btn="none">
+
+		<div data-role="header" data-theme="b">
+			<h1 wicket:id="title" class="sp-txt-wrap"/>
+		</div>
+
+		<div class="ui-content">
+
+			<ul data-role="listview" data-inset="true">
+				<li>
+					<h2 class="sp-txt-wrap" wicket:id="message" />
+					<wicket:enclosure child="remedy">
+						<div class="sp-txt-info sp-txt-wrap" wicket:id="remedy" />
+					</wicket:enclosure>
+				</li>
+			</ul>
+			<wicket:enclosure child="button-login">
+				<input type="hidden" id="sp-webapp-mountpath"
+					wicket:id="sp-webapp-mountpath" />
+				<a href="#" id="button-login"
+					class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-home"
+					wicket:id="button-login" />
+			</wicket:enclosure>
+		</div>
+	</div>
+
+</body>
+
+</html>

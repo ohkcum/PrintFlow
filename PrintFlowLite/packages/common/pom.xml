@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com> -->
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>printflowlite-common</artifactId>
+    <groupId>org.printflow.lite</groupId>
+    <version>1.7.0</version>
+    <name>PrintFlowLite Common Library</name>
+    <properties>
+        <org.junit.jupiter.version>5.5.2</org.junit.jupiter.version>
+        <LICENSE_NAME>GNU Affero General Public License (AGPL)</LICENSE_NAME>
+        <LICENSE_URL>https://www.gnu.org/licenses/agpl-3.0.txt</LICENSE_URL>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+    <licenses>
+        <license>
+            <name>${LICENSE_NAME}</name>
+            <url>${LICENSE_URL}</url>
+        </license>
+    </licenses>
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**</include>
+                </includes>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <id>version-info</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <echo message="*** GENERATING VersionInfo.java ***" />
+                                <property name="_src.dir"
+                                    value="${project.build.sourceDirectory}" />
+                                <property name="_product.package"
+                                    value="org.printflow.lite.common" />
+                                <property name="_product.package.path"
+                                    value="org/printflow/lite/common" />
+                                <property name="_product.name"
+                                    value="${project.artifactId}" />
+                                <property name="_product.license"
+                                    value="printflowlite" />
+                                <property name="_product.version"
+                                    value="${project.version}" />
+                                <property name="_license.name"
+                                    value="${LICENSE_NAME}" />
+                                <property name="_license.url"
+                                    value="${LICENSE_URL}" />
+                                <ant antfile="${basedir}/build.xml">
+                                    <target name="versioninfo" />
+                                </ant>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.1</version>
+                <configuration>
+                    <!-- Prevent: "Error: Could not find or load main class 
+                        org.apache.maven.surefire.booter.ForkedBooter" -->
+                    <useSystemClassLoader>false</useSystemClassLoader>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <!-- <optimize>true</optimize> <debug>true</debug> -->
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.0.1</version>
+                <executions>
+                    <execution>
+                        <id>aggregate</id>
+                        <goals>
+                            <goal>aggregate</goal>
+                        </goals>
+                        <phase>site</phase>
+                        <configuration>
+                            <!-- Specific configuration for the aggregate 
+                                report -->
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.7.1</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>3.0.0</version>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+            <!-- Mantis #1160 -->
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>1.8</version>
+                    <executions>
+                        <execution>
+                            <id>version-info</id>
+                            <phase>generate-sources</phase>
+                            <configuration>
+                                <target>
+                                    <echo
+                                        message="*** GENERATING VersionInfo.java ***" />
+                                    <property name="_src.dir"
+                                        value="${project.build.sourceDirectory}" />
+                                    <property
+                                        name="_product.package"
+                                        value="org.printflow.lite.common" />
+                                    <property
+                                        name="_product.package.path"
+                                        value="org/printflow/lite/common" />
+                                    <property
+                                        name="_product.name"
+                                        value="${project.artifactId}" />
+                                    <property
+                                        name="_product.license"
+                                        value="printflowlite" />
+                                    <property
+                                        name="_product.version"
+                                        value="${project.version}" />
+                                    <property
+                                        name="_license.name"
+                                        value="${LICENSE_NAME}" />
+                                    <property
+                                        name="_license.url"
+                                        value="${LICENSE_URL}" />
+                                    <ant
+                                        antfile="${basedir}/build.xml">
+                                        <target
+                                            name="versioninfo" />
+                                    </ant>
+                                </target>
+                            </configuration>
+                            <goals>
+                                <goal>run</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${org.junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <description>PrintFlowLite is a Free Software Solution that uses Open Standards and Commodity Hardware for Secure Pull-Printing, Pay-Per-Print, Delegated Print, Job Ticketing, Auditing and PDF Creation.</description>
+    <url>https://printflowlite.local</url>
+    <organization>
+        <url>https://www.datraverse.com</url>
+        <name>Datraverse B.V.</name>
+    </organization>
+    <issueManagement>
+        <url>https://github.com/YOUR_GITHUB/PrintFlowLite/issues</url>
+    </issueManagement>
+</project>

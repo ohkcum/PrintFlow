@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+    <!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<div class="ui-content" id="print-settings">
+
+	<ul data-role="listview" data-inset="true">
+
+		<li data-role="list-divider" id="title-printer-settings" />
+
+		<li>
+			<div style="width: 100%; float: left;">
+
+				<div class="ui-mini" style="float: left;">
+
+					<div class="sp-print-job-info" data-role="controlgroup"
+						data-type="horizontal">
+						<button tabindex="-1"
+							class="ui-shadow ui-btn ui-corner-all ui-btn-icon-notext sp-print-job-media-sources-info" />
+						<button tabindex="-1"
+							class="ui-shadow ui-btn ui-corner-all ui-btn-icon-notext sp-print-job-media-info" />
+					</div>
+
+					<div class="sp-copy-job-info" data-role="controlgroup"
+						data-type="horizontal">
+						<button
+							class="ui-shadow ui-btn ui-corner-all ui-btn-icon-notext sp-copy-job-info">
+							<span wicket:id="label-copy" /> &nbsp; <span
+								class="sp-txt-wrap sp-copy-job-media-sources-info sp-ipp-media-info-match" />
+						</button>
+					</div>
+
+				</div>
+
+				<div class="ui-mini" style="float: right; margin-right: 10px;">
+
+					<button id="button-print-settings-default"
+						wicket:id="button-default"
+						class="ui-btn ui-btn-icon-right ui-icon-recycle ui-shadow ui-corner-all sp-txt-info" />
+
+					<wicket:enclosure child="label-landscape">
+
+						<div style="float: left;">
+							<label type="checkbox" wicket:id="label-landscape"
+								for="cb-nup-preview-landscape" />
+							<input type="checkbox" id="cb-nup-preview-landscape" />
+						</div>
+
+						<div style="float: right;">
+							<div class="sp-print-job-info"
+								style="float: right; height: 100%; vertical-align: middle;">
+								<wicket:panel wicket:id="tooltip-flipswitch-landscape-print" />
+							</div>
+							<div class="sp-copy-job-info"
+								style="float: right; height: 100%; vertical-align: middle;">
+								<wicket:panel wicket:id="tooltip-flipswitch-landscape-copy" />
+							</div>
+						</div>
+					</wicket:enclosure>
+
+				</div>
+
+				<wicket:enclosure child="number-up-preview">
+					<wicket:panel wicket:id="number-up-preview" />
+				</wicket:enclosure>
+
+			</div>
+		</li>
+		<li class="sp-print-job-scaling">
+
+			<wicket:message key="page-scaling" />
+
+			<div class="ui-mini">
+
+				<fieldset data-role="controlgroup" data-type="horizontal">
+
+					<label for="" wicket:id="page-scaling-none-label" />
+					<input type="radio" name="" id="" wicket:id="page-scaling-none" />
+
+					<label for="" wicket:id="page-scaling-fit-label" />
+					<input type="radio" name="" id="" wicket:id="page-scaling-fit"
+						checked />
+
+				</fieldset>
+
+			</div>
+
+		</li>
+
+		<li>
+			<div id="printer-options">
+				<wicket:remove>
+					<!--
+		    Placeholder for: <select id="print-opt-i" data-native-menu="false"></select>
+		     -->
+				</wicket:remove>
+			</div>
+		</li>
+	</ul>
+
+	<button id="button-print-settings-back" wicket:id="button-inbox"
+		class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-home" />
+
+	<wicket:enclosure child="button-next-invoicing">
+		<button id="button-print-settings-next-invoicing"
+			wicket:id="button-next-invoicing"
+			class="ui-btn ui-btn-inline ui-btn-icon-right ui-icon-arrow-r" />
+	</wicket:enclosure>
+
+	<button id="button-print-settings-next" wicket:id="button-next"
+		class="ui-btn ui-btn-inline ui-btn-icon-right ui-icon-arrow-r" />
+
+</div>
+
+<wicket:remove>
+	<!-- 
+THIS POPUP MUST BE PRESENT IN EVERY PAGE AND DIALOG 
+-->
+</wicket:remove>
+<div data-role="popup" data-position-to="window"
+	class="sp-msg-popup ui-content" />
+
+</html>

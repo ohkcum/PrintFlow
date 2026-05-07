@@ -1,0 +1,5216 @@
+/*
+ * This file is part of the PrintFlowLite project <https://printflowlite.local>.
+ * Copyright (c) 2020 Datraverse B.V.
+ * Author: Rijk Ravestein.
+ *
+ * SPDX-FileCopyrightText: © 2020 Datraverse B.V. <info@datraverse.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For more information, please contact Datraverse B.V. at this
+ * address: info@datraverse.com
+ */
+package org.printflow.lite.core.config;
+
+import java.math.BigDecimal;
+import java.util.Locale;
+import java.util.Properties;
+import java.util.Set;
+import java.util.UUID;
+
+import javax.print.attribute.standard.MediaSizeName;
+
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jetty.http.HttpStatus;
+import org.printflow.lite.core.SpException;
+import org.printflow.lite.core.community.CommunityDictEnum;
+import org.printflow.lite.core.config.validator.AbstractSetValidator;
+import org.printflow.lite.core.config.validator.BooleanValidator;
+import org.printflow.lite.core.config.validator.CidrRangesValidator;
+import org.printflow.lite.core.config.validator.ConfigPropValidator;
+import org.printflow.lite.core.config.validator.CronExpressionDaysOfWeekValidator;
+import org.printflow.lite.core.config.validator.CronExpressionValidator;
+import org.printflow.lite.core.config.validator.CurrencyCodeValidator;
+import org.printflow.lite.core.config.validator.DecimalValidator;
+import org.printflow.lite.core.config.validator.EmailAddressValidator;
+import org.printflow.lite.core.config.validator.EmailDomainSetValidator;
+import org.printflow.lite.core.config.validator.EnumSetValidator;
+import org.printflow.lite.core.config.validator.EnumValidator;
+import org.printflow.lite.core.config.validator.InternalFontFamilyValidator;
+import org.printflow.lite.core.config.validator.IpPortValidator;
+import org.printflow.lite.core.config.validator.LocaleValidator;
+import org.printflow.lite.core.config.validator.NotEmptyValidator;
+import org.printflow.lite.core.config.validator.NumberValidator;
+import org.printflow.lite.core.config.validator.UriAuthorityValidator;
+import org.printflow.lite.core.config.validator.UriValidator;
+import org.printflow.lite.core.config.validator.UrlValidator;
+import org.printflow.lite.core.config.validator.UserAuthModeSetValidator;
+import org.printflow.lite.core.config.validator.UuidValidator;
+import org.printflow.lite.core.config.validator.ValidationResult;
+import org.printflow.lite.core.config.validator.ValidationStatusEnum;
+import org.printflow.lite.core.crypto.OneTimeAuthToken;
+import org.printflow.lite.core.dao.enums.DeviceTypeEnum;
+import org.printflow.lite.core.dao.enums.PrinterAttrEnum;
+import org.printflow.lite.core.dao.impl.DaoBatchCommitterImpl;
+import org.printflow.lite.core.dto.QuickSearchFilterUserGroupDto;
+import org.printflow.lite.core.dto.QuickSearchUserGroupMemberFilterDto;
+import org.printflow.lite.core.dto.UserHomeStatsDto;
+import org.printflow.lite.core.fonts.InternalFontFamilyEnum;
+import org.printflow.lite.core.imaging.Pdf2ImgCairoCmd;
+import org.printflow.lite.core.jpa.Account.AccountTypeEnum;
+import org.printflow.lite.core.jpa.AppLog;
+import org.printflow.lite.core.jpa.ConfigProperty;
+import org.printflow.lite.core.jpa.PrinterGroup;
+import org.printflow.lite.core.jpa.UserNumber;
+import org.printflow.lite.core.json.rpc.JsonRpcMethodName;
+import org.printflow.lite.core.pdf.PdfResolutionEnum;
+import org.printflow.lite.core.services.helpers.DocLogScopeEnum;
+import org.printflow.lite.core.services.helpers.InboxSelectScopeEnum;
+import org.printflow.lite.core.services.helpers.PrintScalingClashEnum;
+import org.printflow.lite.core.services.helpers.PrintScalingMatchEnum;
+import org.printflow.lite.core.services.helpers.UserAuthModeEnum;
+import org.printflow.lite.core.services.helpers.account.UserAccountContextEnum;
+import org.printflow.lite.core.system.SystemInfo;
+import org.printflow.lite.core.util.InetUtils;
+import org.printflow.lite.core.util.Messages;
+
+/**
+ *
+ * @author Rijk Ravestein
+ *
+ */
+public interface IConfigProp {
+
+    /**
+     * IMPORTANT: This is the maximum number of decimals (scale) used in the
+     * database for PrintFlowLite Financial.
+     */
+    int MAX_FINANCIAL_DECIMALS_IN_DB = 6;
+
+    /**
+     *
+     */
+    String DEFAULT_FINANCIAL_PRINTER_COST_DECIMALS = "4";
+
+    /**
+     *
+     */
+    String DEFAULT_FINANCIAL_USER_BALANCE_DECIMALS = "2";
+
+    /**
+     *
+     */
+    String DEFAULT_WEBAPP_WATCHDOG_INTERVAL_SECS = "3";
+
+    /**
+     *
+     */
+    String DEFAULT_WEBAPP_WATCHDOG_ALLOWED_DELAY_SECS = "7";
+
+    /**
+     *
+     */
+    String DEFAULT_BATCH_COMMIT_CHUNK_SIZE = "100";
+
+    /**
+     * Default number of rows in the result set for exporting tables for
+     * database backup.
+     */
+    String DEFAULT_EXPORT_QUERY_MAX_RESULTS = "1000";
+
+    /**
+     *
+     */
+    InternalFontFamilyEnum DEFAULT_INTERNAL_FONT_FAMILY =
+            InternalFontFamilyEnum.DEFAULT;
+
+    String V_YES = "Y";
+    String V_NO = "N";
+
+    String V_ZERO = "0";
+
+    /** */
+    String V_TEST_KEY_PREFIX = "test.";
+
+    /**
+     * Is updatable with {@link JsonRpcMethodName#SET_CONFIG_PROPERTY}.
+     */
+    boolean API_UPDATABLE_ON = true;
+    /**
+     * <b>Not</b> updatable with {@link JsonRpcMethodName#SET_CONFIG_PROPERTY}.
+     */
+    boolean API_UPDATABLE_OFF = !API_UPDATABLE_ON;
+
+    /**
+     * Null value for numerics.
+     */
+    String V_NULL = "-1";
+
+    String AUTH_METHOD_V_LDAP = "ldap";
+    String AUTH_METHOD_V_UNIX = "unix";
+    String AUTH_METHOD_V_NONE = "none";
+    String AUTH_METHOD_V_CUSTOM = "custom";
+
+    String AUTH_MODE_V_NAME = UserAuthModeEnum.NAME.toDbValue();
+    String AUTH_MODE_V_EMAIL = UserAuthModeEnum.EMAIL.toDbValue();
+    String AUTH_MODE_V_ID = UserAuthModeEnum.ID.toDbValue();
+    String AUTH_MODE_V_CARD_LOCAL = UserAuthModeEnum.CARD_LOCAL.toDbValue();
+    String AUTH_MODE_V_CARD_IP = UserAuthModeEnum.CARD_IP.toDbValue();
+    String AUTH_MODE_V_YUBIKEY = UserAuthModeEnum.YUBIKEY.toDbValue();
+
+    String LDAP_TYPE_V_APPLE = "APPLE_OPENDIR";
+    String LDAP_TYPE_V_OPEN_LDAP = "OPEN_LDAP";
+    String LDAP_TYPE_V_FREE_IPA = "FREE_IPA";
+    String LDAP_TYPE_V_E_DIR = "NOVELL_EDIRECTORY";
+    String LDAP_TYPE_V_ACTIV = "ACTIVE_DIRECTORY";
+    String LDAP_TYPE_V_GOOGLE_CLOUD = "GOOGLE_CLOUD";
+
+    String PAPERSIZE_V_SYSTEM = "";
+    String PAPERSIZE_V_A4 = MediaSizeName.ISO_A4.toString();
+    String PAPERSIZE_V_LETTER = MediaSizeName.NA_LETTER.toString();
+
+    /**
+     *
+     */
+    String SMTP_SECURITY_V_NONE = "";
+
+    /**
+     * STARTTLS is for connecting to an SMTP server port using a plain
+     * (non-encrypted) connection, then elevating to an encrypted connection on
+     * the same port.
+     */
+    String SMTP_SECURITY_V_STARTTLS = "starttls";
+    /**
+     *
+     */
+    String SMTP_SECURITY_V_SSL = "ssl";
+
+    /**
+     *
+     */
+    String IMAP_SECURITY_V_NONE = "";
+
+    /**
+     *
+     */
+    String IMAP_SECURITY_V_STARTTLS = "starttls";
+
+    /**
+     *
+     */
+    String IMAP_SECURITY_V_SSL = "ssl";
+
+    /**
+     *
+     */
+    Integer IMAP_CONNECTION_TIMEOUT_V_DEFAULT = 10000;
+    Integer IMAP_TIMEOUT_V_DEFAULT = 10000;
+
+    Long IMAP_MAX_FILE_MB_V_DEFAULT = 5L;
+    Integer IMAP_MAX_FILES_V_DEFAULT = 1;
+
+    /** */
+    Long WEBPRINT_MAX_FILE_MB_V_DEFAULT = 10L;
+
+    /** */
+    Long WEBAPP_PDFPGP_MAX_UPLOAD_FILE_MB_V_DEFAULT = 10L;
+
+    /** */
+    Long WEBAPP_PDFVALIDATE_MAX_UPLOAD_FILE_MB_V_DEFAULT = 10L;
+
+    /**
+     *
+     */
+    Integer WEBAPP_MAX_IDLE_SECS_V_NONE = 0;
+
+    String CARD_NUMBER_FORMAT_V_DEC = "DEC";
+    String CARD_NUMBER_FORMAT_V_HEX = "HEX";
+
+    String CARD_NUMBER_FIRSTBYTE_V_LSB = "LSB";
+    String CARD_NUMBER_FIRSTBYTE_V_MSB = "MSB";
+
+    /**
+     *
+     */
+    Integer NUMBER_V_NONE = 0;
+
+    /**
+     * .
+     */
+    enum KeyType {
+        /**
+         * .
+         */
+        BIG_DECIMAL,
+
+        /**
+         * .
+         */
+        LOCALIZED_MULTI_LINE,
+
+        /**
+         * .
+         */
+        LOCALIZED_SINGLE_LINE,
+
+        /**
+         * .
+         */
+        MULTI_LINE,
+
+        /**
+         * .
+         */
+        SINGLE_LINE
+    };
+
+    /**
+     * .
+     */
+    enum Key {
+
+        /** Enable legacy Text PDF creator. */
+        LEGACY_PDF_CREATOR_ENABLE(//
+                "legacy.pdf.creator.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         * See {@link DaoBatchCommitterImpl}.
+         */
+        DB_BATCH_COMMIT_CHUNK_SIZE(//
+                "db.batch.commit-chunk-size", NUMBER_VALIDATOR,
+                DEFAULT_BATCH_COMMIT_CHUNK_SIZE),
+
+        /**
+         * The number of rows in the result set for exporting tables to a
+         * database backup.
+         */
+        DB_EXPORT_QUERY_MAX_RESULTS(//
+                "db.export.query-max-results", NUMBER_VALIDATOR,
+                DEFAULT_EXPORT_QUERY_MAX_RESULTS),
+
+        /**
+         *
+         */
+        FINANCIAL_GLOBAL_CREDIT_LIMIT(//
+                "financial.global.credit-limit", KeyType.BIG_DECIMAL, "0.00"),
+
+        /**
+         * ISO 4217 codes, like EUR, USD, JPY, etc. A <i>blank</i> Currency Code
+         * is API updatable with {@link JsonRpcMethodName#SET_CONFIG_PROPERTY}
+         * When set, it can only be "changed" by server command
+         * {@link JsonRpcMethodName#CHANGE_BASE_CURRENCY}.
+         */
+        FINANCIAL_GLOBAL_CURRENCY_CODE(//
+                "financial.global.currency-code", CURRENCY_VALIDATOR,
+                API_UPDATABLE_ON),
+
+        /**
+         * Which user account context(s) for Payment Gateway.
+         */
+        FINANCIAL_PAYMENT_GATEWAY_ACCOUNTS(//
+                "financial.payment-gateway.accounts",
+                new EnumSetValidator<>(UserAccountContextEnum.class),
+                API_UPDATABLE_ON),
+
+        /**
+         * Is POS deposit enabled?
+         */
+        FINANCIAL_POS_DEPOSIT_ENABLE(//
+                "financial.pos.deposit.enable", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * Is POS sales enabled?
+         */
+        FINANCIAL_POS_SALES_ENABLE(//
+                "financial.pos.sales.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        FINANCIAL_POS_SALES_CREDIT_LIMIT_ENABLE(//
+                "financial.pos.sales.credit-limit.enable", BOOLEAN_VALIDATOR,
+                V_YES, API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        FINANCIAL_POS_SALES_CREDIT_LIMIT(//
+                "financial.pos.sales.credit-limit", KeyType.BIG_DECIMAL,
+                "0.00"),
+
+        /**
+         *
+         */
+        FINANCIAL_POS_SALES_CARD_AS_PASSWORD(//
+                "financial.pos.sales.card-as-password", ON_OFF_ENUM_VALIDATOR,
+                OnOffEnum.OFF.toString(), API_UPDATABLE_ON),
+
+        /**
+         * Which user account context(s) for POS Sales?
+         */
+        FINANCIAL_POS_SALES_ACCOUNTS(//
+                "financial.pos.sales.accounts",
+                new EnumSetValidator<>(UserAccountContextEnum.class),
+                API_UPDATABLE_ON),
+
+        /**
+         * A comma separated list of POS Sales Locations to be applied as sales
+         * label prefix. Each location on the list is formatted as
+         * "LOC/location", where "LOC" is a unique N-letter upper-case mnemonic,
+         * "/" is a fixed separator, "location" is a case-sensitive single word
+         * used in UI context.
+         *
+         * E.g. "A/LocationA,B/LocationB,C/LocationC". If a Web Cashier selects
+         * location "B", the sales prefix is "B".
+         */
+        FINANCIAL_POS_SALES_LABEL_LOCATIONS(
+                "financial.pos.sales.label.locations", KeyType.MULTI_LINE),
+
+        /**
+         * Enable {@link IConfigProp.Key#FINANCIAL_POS_SALES_LABEL_LOCATIONS}
+         * (boolean).
+         */
+        FINANCIAL_POS_SALES_LABEL_LOCATIONS_ENABLE(//
+                "financial.pos.sales.label.locations.enable", BOOLEAN_VALIDATOR,
+                V_NO, API_UPDATABLE_ON),
+
+        /**
+         * A comma separated list of POS Sales Shops in a Location, to be
+         * applied as sales label after the location label. Each shop on the
+         * list is formatted as "SHOP/shop", where "SHOP" is a unique N-letter
+         * upper-case mnemonic, "/" is a fixed separator, and "shop" is a
+         * case-sensitive single word used in UI context.
+         *
+         * E.g. "F/Frontdesk,L/Library". If a Web Cashier selects shop "L" in
+         * location "B", the sales label is "B/L".
+         *
+         * A shop can be restricted to one or more locations by appending the
+         * location mnemonics. E.g. "F/Frontdesk/A/C" restricts the
+         * "F/Frontdesk" shop to "A" and "C" locations.
+         */
+        FINANCIAL_POS_SALES_LABEL_SHOPS("financial.pos.sales.label.shops",
+                KeyType.MULTI_LINE),
+
+        /**
+         * Enable {@link IConfigProp.Key#FINANCIAL_POS_SALES_LABEL_SHOPS}
+         * (boolean).
+         */
+        FINANCIAL_POS_SALES_LABEL_SHOPS_ENABLE(//
+                "financial.pos.sales.label.shops.enable", BOOLEAN_VALIDATOR,
+                V_NO, API_UPDATABLE_ON),
+
+        /**
+         * A comma separated list of POS Sales Items in a Shop to be applied as
+         * sales label after the shop label. Each item on the list is formatted
+         * as "ITEM/item", where "ITEM" is a unique N-letter upper-case
+         * mnemonic, "/" is a fixed separator, and "item" is a case-sensitive
+         * single word used in UI context.
+         *
+         * E.g. "BK/Book,CA/Cafetaria,HW/Hardware". If a Web Cashier selects
+         * item "CA" in shop "L" of location "B", the sales label is "B/L/CA".
+         *
+         * An item can be restricted for use with one or more shops by appending
+         * the shop mnemonics. E.g. "BK/Book/F/L" restricts the "BK/Book" item
+         * to "F" and "L" shops.
+         */
+        FINANCIAL_POS_SALES_LABEL_ITEMS("financial.pos.sales.label.items",
+                KeyType.MULTI_LINE),
+
+        /**
+         * Enable {@link IConfigProp.Key#FINANCIAL_POS_SALES_LABEL_ITEMS}
+         * (boolean).
+         */
+        FINANCIAL_POS_SALES_LABEL_ITEMS_ENABLE(//
+                "financial.pos.sales.label.items.enable", BOOLEAN_VALIDATOR,
+                V_NO, API_UPDATABLE_ON),
+
+        /**
+         * A comma separated list of POS Sales Prices for Items. Each price on
+         * the list is formatted as "PRICE/price", where "PRICE" is a unique
+         * N-digit amount in cents, "/" is a fixed separator, and "price" is the
+         * case-sensitive single word price in UI context. Prices are shown as
+         * preset choices.
+         *
+         * E.g. "50/0.50,100/1.00,150/1.50,850/8.50".
+         *
+         * A price can be restricted for use with one or more items by appending
+         * the item mnemonics. E.g. "850/8.50/BK/HW" restricts the "850/8.50"
+         * price to "BK" and "HW" items.
+         */
+        FINANCIAL_POS_SALES_LABEL_PRICES("financial.pos.sales.label.prices",
+                KeyType.MULTI_LINE),
+
+        /**
+         * Enable {@link IConfigProp.Key#FINANCIAL_POS_SALES_LABEL_PRICES}
+         * (boolean).
+         */
+        FINANCIAL_POS_SALES_LABEL_PRICES_ENABLE(//
+                "financial.pos.sales.label.prices.enable", BOOLEAN_VALIDATOR,
+                V_NO, API_UPDATABLE_ON),
+
+        /**
+         * A comma separated list of Point-of-Sale payment methods.
+         */
+        FINANCIAL_POS_PAYMENT_METHODS(//
+                "financial.pos.payment-methods", API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        FINANCIAL_POS_RECEIPT_HEADER(//
+                "financial.pos.receipt-header", API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        FINANCIAL_PRINTER_COST_DECIMALS(//
+                "financial.printer.cost-decimals", ACCOUNTING_DECIMAL_VALIDATOR,
+                DEFAULT_FINANCIAL_PRINTER_COST_DECIMALS, API_UPDATABLE_ON),
+
+        /**
+         * When "Y", PaperCut Personal Account is the leading account for
+         * personal financial transactions and credit checks. Is active when
+         * {@link #PAPERCUT_ENABLE} is "Y".
+         */
+        FINANCIAL_USER_ACCOUNT_PAPERCUT_ENABLE(//
+                "financial.user.account.papercut.enable", BOOLEAN_VALIDATOR,
+                V_NO, API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        FINANCIAL_USER_BALANCE_DECIMALS(//
+                "financial.user.balance-decimals", ACCOUNTING_DECIMAL_VALIDATOR,
+                DEFAULT_FINANCIAL_USER_BALANCE_DECIMALS, API_UPDATABLE_ON),
+
+        /**
+         * .
+         */
+        FINANCIAL_USER_TRANSFERS_ENABLE(//
+                "financial.user.transfers.enable", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         * .
+         */
+        FINANCIAL_USER_TRANSFERS_USER_SEARCH_ENABLE(//
+                "financial.user.transfers.user-search.enable",
+                BOOLEAN_VALIDATOR, V_NO),
+
+        /**
+         * .
+         */
+        FINANCIAL_USER_TRANSFERS_ENABLE_COMMENTS(//
+                "financial.user.transfers.enable-comments", BOOLEAN_VALIDATOR,
+                V_YES),
+
+        /**
+         * .
+         */
+        FINANCIAL_USER_TRANSFERS_AMOUNT_MIN(//
+                "financial.user.transfers.amount-min", KeyType.BIG_DECIMAL,
+                "0.01"),
+
+        /**
+         * .
+         */
+        FINANCIAL_USER_TRANSFERS_AMOUNT_MAX(//
+                "financial.user.transfers.amount-max", KeyType.BIG_DECIMAL,
+                "999999999.99"),
+
+        /**
+         * .
+         */
+        FINANCIAL_USER_TRANSFERS_ENABLE_LIMIT_GROUP(//
+                "financial.user.transfers.enable-limit-group",
+                BOOLEAN_VALIDATOR, V_NO),
+
+        /**
+         * .
+         */
+        FINANCIAL_USER_TRANSFERS_LIMIT_GROUP(//
+                "financial.user.transfers.limit-group", API_UPDATABLE_OFF),
+
+        /**
+         * .
+         */
+        FINANCIAL_USER_VOUCHERS_ENABLE(//
+                "financial.user.vouchers.enable", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         *
+         */
+        FINANCIAL_VOUCHER_CARD_HEADER(//
+                "financial.voucher.card-header", KeyType.LOCALIZED_SINGLE_LINE),
+
+        /**
+         *
+         */
+        FINANCIAL_VOUCHER_CARD_FOOTER(//
+                "financial.voucher.card-footer", API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        FINANCIAL_VOUCHER_CARD_FONT_FAMILY(//
+                "financial.voucher.card-font-family",
+                INTERNAL_FONT_FAMILY_VALIDATOR,
+                DEFAULT_INTERNAL_FONT_FAMILY.toString()),
+
+        /**
+         *
+         */
+        AUTH_MODE_NAME("auth-mode.name", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         *
+         */
+        AUTH_MODE_NAME_SHOW("auth-mode.name.show", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+        *
+        */
+        AUTH_MODE_EMAIL("auth-mode.email", BOOLEAN_VALIDATOR, V_NO),
+
+        /**
+        *
+        */
+        AUTH_MODE_EMAIL_SHOW("auth-mode.email.show", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         *
+         */
+        AUTH_MODE_ID("auth-mode.id", BOOLEAN_VALIDATOR, V_NO),
+
+        /**
+         *
+         */
+        AUTH_MODE_ID_PIN_REQUIRED(//
+                "auth-mode.id.pin-required", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         *
+         */
+        AUTH_MODE_ID_IS_MASKED(//
+                "auth-mode.id.is-masked", BOOLEAN_VALIDATOR, V_NO),
+
+        /**
+         *
+         */
+        AUTH_MODE_ID_SHOW("auth-mode.id.show", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         *
+         */
+        AUTH_MODE_CARD_LOCAL("auth-mode.card-local", BOOLEAN_VALIDATOR, V_NO),
+
+        /**
+         *
+         */
+        AUTH_MODE_YUBIKEY("auth-mode.yubikey", BOOLEAN_VALIDATOR, V_NO),
+
+        /**
+         *
+         */
+        AUTH_MODE_YUBIKEY_SHOW(//
+                "auth-mode.yubikey.show", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         * .
+         */
+        AUTH_MODE_YUBIKEY_API_CLIENT_ID(//
+                "auth-mode.yubikey.api.client-id", API_UPDATABLE_ON),
+
+        /**
+         * .
+         */
+        AUTH_MODE_YUBIKEY_API_SECRET_KEY(//
+                "auth-mode.yubikey.api.secret-key", API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        AUTH_MODE_CARD_PIN_REQUIRED(//
+                "auth-mode.card.pin-required", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         *
+         */
+        AUTH_MODE_CARD_SELF_ASSOCIATION(//
+                "auth-mode.card.self-association", BOOLEAN_VALIDATOR, V_NO),
+
+        /**
+         * Number of msecs after which an IP Card Number Detect event expires.
+         */
+        AUTH_MODE_CARD_IP_EXPIRY_MSECS(//
+                "auth-mode.card-ip.expiry-msecs", NUMBER_VALIDATOR, "2000"),
+
+        /**
+         *
+         */
+        AUTH_MODE_CARD_LOCAL_SHOW(//
+                "auth-mode.card-local.show", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         *
+         */
+        AUTH_MODE_DEFAULT(//
+                "auth-mode-default", null, AUTH_MODE_V_NAME,
+                new String[] { AUTH_MODE_V_NAME, AUTH_MODE_V_EMAIL,
+                        AUTH_MODE_V_ID, AUTH_MODE_V_CARD_LOCAL,
+                        AUTH_MODE_V_YUBIKEY },
+                API_UPDATABLE_OFF),
+
+        /**
+         * Authentication method.
+         */
+        AUTH_METHOD(//
+                "auth.method", null, AUTH_METHOD_V_NONE,
+                new String[] { AUTH_METHOD_V_NONE, AUTH_METHOD_V_UNIX,
+                        AUTH_METHOD_V_LDAP, AUTH_METHOD_V_CUSTOM },
+                API_UPDATABLE_ON),
+
+        /** */
+        AUTH_CUSTOM_USER_SYNC("auth.custom.user-sync", API_UPDATABLE_ON),
+
+        /** */
+        AUTH_CUSTOM_USER_AUTH("auth.custom.user-auth", API_UPDATABLE_ON),
+
+        /**
+         * Custom User Synchronization using PaperCut API as User Source.
+         */
+        CUSTOM_USER_SYNC_PAPERCUT("custom.user-sync.papercut",
+                BOOLEAN_VALIDATOR, V_NO, API_UPDATABLE_ON),
+        /** */
+        CUSTOM_USER_SYNC_PAPERCUT_USER_CARD_NUMBER_FIRST_BYTE(//
+                "custom.user-sync.papercut.user-card-number.first-byte", null,
+                CARD_NUMBER_FIRSTBYTE_V_LSB,
+                new String[] { CARD_NUMBER_FIRSTBYTE_V_LSB,
+                        CARD_NUMBER_FIRSTBYTE_V_MSB },
+                API_UPDATABLE_OFF),
+        /** */
+        CUSTOM_USER_SYNC_PAPERCUT_USER_CARD_NUMBER_FORMAT(//
+                "custom.user-sync.papercut.user-card-number.format", null,
+                CARD_NUMBER_FORMAT_V_HEX,
+                new String[] { CARD_NUMBER_FORMAT_V_DEC,
+                        CARD_NUMBER_FORMAT_V_HEX },
+                API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        AUTH_LDAP_ADMIN_DN("auth.ldap.admin-dn", API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        AUTH_LDAP_ADMIN_PASSWORD("auth.ldap.admin-password", API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        AUTH_LDAP_BASE_DN("auth.ldap.basedn", API_UPDATABLE_ON),
+
+        /**
+         * LDAP Host name or IP address.
+         */
+        AUTH_LDAP_HOST("auth.ldap.host", InetUtils.LOCAL_HOST,
+                API_UPDATABLE_ON),
+
+        /**
+         * LDAP host IP port number.
+         */
+        AUTH_LDAP_PORT(//
+                "auth.ldap.port", IP_PORT_VALIDATOR, "389", API_UPDATABLE_ON),
+
+        /**
+         * Use SSL for the LDAP connection.
+         */
+        AUTH_LDAP_USE_SSL(//
+                "auth.ldap.use-ssl", BOOLEAN_VALIDATOR, V_NO, API_UPDATABLE_ON),
+
+        /**
+         * Trust self-signed certificate for LDAP SSL?
+         */
+        AUTH_LDAP_USE_SSL_TRUST_SELF_SIGNED(//
+                "auth.ldap.use-ssl.trust-self-signed", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         * Use STARTTLS for the LDAP connection.
+         */
+        AUTH_LDAP_USE_STARTTLS(//
+                "auth.ldap.use-starttls", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         * The "DNS Name" in the SSL Certificate "Subject Alternative Name"
+         * group (RFC 6125). This is usually the fully qualified DNS hostname.
+         * For example: www.example.com
+         *
+         * When "DNS Name" is not present (self-signed certificates), the Common
+         * Name (CN) the certificate is "issued to" can be used (not RFC 6125).
+         */
+        AUTH_LDAP_STARTTLS_CERT_DNSNAME(//
+                "auth.ldap.starttls-cert-dnsname", API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        AUTH_LDAP_SSL_HOSTNAME_VERIFICATION_DISABLE(//
+                "auth.ldap.ssl.hostname-verification-disable",
+                BOOLEAN_VALIDATOR, V_NO, API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        CARD_NUMBER_FORMAT(//
+                "card.number.format", null, CARD_NUMBER_FORMAT_V_HEX,
+                new String[] { CARD_NUMBER_FORMAT_V_DEC,
+                        CARD_NUMBER_FORMAT_V_HEX },
+                API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        CARD_NUMBER_FIRST_BYTE(//
+                "card.number.first-byte", null, CARD_NUMBER_FIRSTBYTE_V_LSB,
+                new String[] { CARD_NUMBER_FIRSTBYTE_V_LSB,
+                        CARD_NUMBER_FIRSTBYTE_V_MSB },
+                API_UPDATABLE_OFF),
+
+        /**
+         * Max number of IPP connections per CUPS server.
+         */
+        CUPS_IPP_MAX_CONNECTIONS(//
+                "cups.ipp.max-connections", NUMBER_VALIDATOR, "10",
+                API_UPDATABLE_ON),
+
+        /**
+         * Log stack trace if exception on IPP CUPS connection?
+         */
+        CUPS_IPP_EXCEPTION_STACKTRACE(//
+                "cups.ipp.exception.stacktrace", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * Timeout in milliseconds until a IPP connection with local CUPS server
+         * is established.
+         */
+        CUPS_IPP_LOCAL_CONNECT_TIMEOUT_MSEC(//
+                "cups.ipp.local-connect-timeout-msec", NUMBER_VALIDATOR, "5000",
+                API_UPDATABLE_ON),
+
+        /**
+         * Timeout in milliseconds to receive IPP data from local CUPS server
+         * after the connection is established, i.e. maximum time of inactivity
+         * between two data packets.
+         */
+        CUPS_IPP_LOCAL_SOCKET_TIMEOUT_MSEC(//
+                "cups.ipp.local-socket-timeout-msec", NUMBER_VALIDATOR, "9000",
+                API_UPDATABLE_ON),
+
+        /**
+         * Is access of remote CUPS enabled?
+         */
+        CUPS_IPP_REMOTE_ENABLED(//
+                "cups.ipp.remote-enabled", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         * Timeout in milliseconds until a IPP connection with remote CUPS
+         * server is established.
+         */
+        CUPS_IPP_REMOTE_CONNECT_TIMEOUT_MSEC(//
+                "cups.ipp.remote-connect-timeout-msec", NUMBER_VALIDATOR,
+                "5000", API_UPDATABLE_ON),
+
+        /**
+         * Timeout in milliseconds to receive IPP data from remote CUPS server
+         * after the connection is established, i.e. maximum time of inactivity
+         * between two data packets.
+         */
+        CUPS_IPP_REMOTE_SOCKET_TIMEOUT_MSEC(//
+                "cups.ipp.remote-socket-timeout-msec", NUMBER_VALIDATOR, "9000",
+                API_UPDATABLE_ON),
+
+        /**
+         * Cancel CUPS job when stopped.
+         */
+        CUPS_IPP_JOBSTATE_CANCEL_IF_STOPPED_ENABLE(//
+                "cups.ipp.job-state.cancel-if-stopped.enable",
+                BOOLEAN_VALIDATOR, V_YES, API_UPDATABLE_ON),
+
+        /** */
+        CUPS_IPP_NOTIFICATION_METHOD(//
+                "cups.ipp.notification.method", PULL_PUSH_ENUM_VALIDATOR,
+                PullPushEnum.PUSH.toString(), API_UPDATABLE_ON),
+
+        /**
+         * Heartbeat (milliseconds) for monitoring pushed CUPS job id status
+         * notifications.
+         */
+        CUPS_IPP_NOTIFICATION_PUSH_HEARTBEAT_MSEC(//
+                "cups.ipp.notification.push.heartbeat-msec", NUMBER_VALIDATOR,
+                "4000"),
+
+        /**
+         * Number of milliseconds since the last pushed print job status
+         * notification by CUPS Notifier after which a job status update is
+         * pulled from CUPS.
+         */
+        CUPS_IPP_NOTIFICATION_PUSH_PULL_FALLBACK_MSEC(//
+                "cups.ipp.notification.push.pull-fallback-msec",
+                NUMBER_VALIDATOR, "30000"),
+
+        /**
+         * IMPORTANT: the value of this key should be GT one (1) hour, since the
+         * renewal is Quartz scheduled with Key.ScheduleHourly.
+         */
+        CUPS_IPP_NOTIFICATION_PUSH_NOTIFY_LEASE_DURATION(//
+                "cups.ipp.notification.push.notify-lease-duration",
+                NUMBER_VALIDATOR, "4200", API_UPDATABLE_ON),
+
+        /**
+         * Heartbeat (milliseconds) for performing a CUPS pull of job id status
+         * while monitoring CUPS notifications.
+         */
+        CUPS_IPP_NOTIFICATION_PULL_HEARTBEAT_MSEC(//
+                "cups.ipp.notification.pull.heartbeat-msec", NUMBER_VALIDATOR,
+                "5000"),
+
+        /**
+         *
+         */
+        DELETE_ACCOUNT_TRX_LOG(//
+                "delete.account-trx-log", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         * A value of {@code -1} is interpreted as {@code null}.
+         */
+        DELETE_ACCOUNT_TRX_DAYS(//
+                "delete.account-trx-log.days", NUMBER_VALIDATOR, "365"),
+
+        /**
+         *
+         */
+        DELETE_APP_LOG("delete.app-log", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         * A value of {@code -1} is interpreted as {@code null}.
+         */
+        DELETE_APP_LOG_DAYS("delete.app-log.days", NUMBER_VALIDATOR, "365"),
+
+        /**
+         *
+         */
+        DELETE_DOC_LOG("delete.doc-log", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         * A value of {@code -1} is interpreted as {@code null}.
+         */
+        DELETE_DOC_LOG_DAYS("delete.doc-log.days", NUMBER_VALIDATOR, "365"),
+
+        /**
+         * The default port for {@link DeviceTypeEnum#CARD_READER}.
+         */
+        DEVICE_CARD_READER_DEFAULT_PORT(//
+                "device.card-reader.default-port", NUMBER_VALIDATOR, "7772"),
+
+        /**
+         *
+         */
+        DOC_CONVERT_XPS_TO_PDF_ENABLED(//
+                "doc.convert.xpstopdf-enabled", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        DOC_CONVERT_LIBRE_OFFICE_ENABLED(//
+                "doc.convert.libreoffice-enabled", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         * Max number of HTTP download connections.
+         */
+        DOWNLOAD_MAX_CONNECTIONS(//
+                "download.max-connections", NUMBER_VALIDATOR, "10",
+                API_UPDATABLE_ON),
+
+        /**
+         * Max number of HTTP download connections per route (host).
+         */
+        DOWNLOAD_MAX_CONNECTIONS_PER_ROUTE(//
+                "download.max-connections-per-route", NUMBER_VALIDATOR, "2",
+                API_UPDATABLE_ON),
+
+        /**
+         * Timeout in milliseconds until a download connection is established.
+         */
+        DOWNLOAD_CONNECT_TIMEOUT_MSEC(//
+                "download.connect-timeout-msec", NUMBER_VALIDATOR, "5000",
+                API_UPDATABLE_ON),
+
+        /**
+         * Timeout in milliseconds to receive data from remote host after the
+         * connection is established, i.e. maximum time of inactivity between
+         * two data packets.
+         */
+        DOWNLOAD_SOCKET_TIMEOUT_MSEC(//
+                "download.socket-timeout-msec", NUMBER_VALIDATOR, "9000",
+                API_UPDATABLE_ON),
+
+        /**
+         * Max number of RESTful client connections.
+         */
+        RESTFUL_CLIENT_MAX_CONNECTIONS(//
+                "restful.client.max-connections", NUMBER_VALIDATOR, "100",
+                API_UPDATABLE_ON),
+
+        /**
+         * Max number of RESTful client connections per route (host).
+         */
+        RESTFUL_CLIENT_MAX_CONNECTIONS_PER_ROUTE(//
+                "restful.client.max-connections-per-route", NUMBER_VALIDATOR,
+                "20", API_UPDATABLE_ON),
+
+        /**
+         * Timeout in milliseconds until a connection is established.
+         */
+        RESTFUL_CLIENT_CONNECT_TIMEOUT_MSEC(//
+                "restful.client.connect-timeout-msec", NUMBER_VALIDATOR, "4000",
+                API_UPDATABLE_ON),
+
+        /**
+         * Timeout in milliseconds to receive data from remote host after the
+         * connection is established, i.e. maximum time of inactivity between
+         * two data packets.
+         */
+        RESTFUL_CLIENT_READ_TIMEOUT_MSEC(//
+                "restful.client.read-timeout-msec", NUMBER_VALIDATOR, "2000",
+                API_UPDATABLE_ON),
+
+        /**
+         * Trust self-signed certificate of RESTful servers?
+         */
+        RESTFUL_CLIENT_SSL_TRUST_SELF_SIGNED(//
+                "restful.client.trust-self-signed", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        ENV_CO2_GRAMS_PER_SHEET(//
+                "environment.co2-grams-per-sheet", "5.1", API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        ENV_SHEETS_PER_TREE(//
+                "environment.sheets-per-tree", NUMBER_VALIDATOR, "8333"),
+
+        /**
+         *
+         */
+        ENV_WATT_HOURS_PER_SHEET(//
+                "environment.watt-hours-per-sheet", "12.5", API_UPDATABLE_OFF),
+
+        /**
+         * Enable PaperCut Custom User Sync Integration (boolean).
+         */
+        EXT_PAPERCUT_USER_SYNC_ENABLE(//
+                "ext.papercut.user.sync.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         * PaperCut Custom User Sync Integration: Basic Authentication Username.
+         */
+        EXT_PAPERCUT_USER_SYNC_USERNAME(//
+                "ext.papercut.user.sync.username", "", API_UPDATABLE_ON),
+
+        /**
+         * PaperCut Custom User Sync Integration: Basic Authentication Password.
+         */
+        EXT_PAPERCUT_USER_SYNC_PASSWORD(//
+                "ext.papercut.user.sync.password", "", API_UPDATABLE_ON),
+
+        /**
+         * Client IP addresses (CIDR) that are allowed to use PaperCut Custom
+         * User Sync Integration (when void, not a single client is allowed).
+         */
+        EXT_PAPERCUT_USER_SYNC_IP_ADDRESSES_ALLOWED(//
+                "ext.papercut.user.sync.ip-addresses-allowed",
+                CIDR_RANGES_VALIDATOR_OPT, API_UPDATABLE_OFF),
+
+        /**
+         * Enable Telegram messaging.
+         */
+        EXT_TELEGRAM_ENABLE("ext.telegram.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         * Telegram BOT username of HTTP API.
+         */
+        EXT_TELEGRAM_BOT_USERNAME("ext.telegram.bot.username",
+                API_UPDATABLE_ON),
+
+        /**
+         * Secret token to access the Telegram HTTP API.
+         */
+        EXT_TELEGRAM_BOT_TOKEN("ext.telegram.bot.token", API_UPDATABLE_ON),
+
+        /**
+         * The base URL, i.e. "protocol://authority" <i>without</i> the path, of
+         * the Web API callback interface (no trailing slash) (optional).
+         */
+        EXT_WEBAPI_CALLBACK_URL_BASE(//
+                "ext.webapi.callback.url-base", URL_VALIDATOR_OPT, ""),
+
+        /**
+         * The URL of the User Web App used by the Web API to redirect to after
+         * remote Web App dialog is done (optional).
+         */
+        EXT_WEBAPI_REDIRECT_URL_WEBAPP_USER(//
+                "ext.webapi.redirect.url-webapp-user", URL_VALIDATOR_OPT, ""),
+
+        /**
+         * Do we have an Internet connection?
+         */
+        INFRA_INTERNET_CONNECTED(//
+                "infra.internet-connected", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         *
+         */
+        INTERNAL_USERS_ENABLE(//
+                "internal-users.enable", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /** */
+        INTERNAL_USERS_REGISTRATION_ENABLE(//
+                "internal-users.registration.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /** */
+        INTERNAL_USERS_REGISTRATION_EMAIL_DOMAIN_WHITELIST(//
+                "internal-users.registration.email.domain-whitelist",
+                EMAIL_DOMAIN_SET_VALIDATOR_OPT, API_UPDATABLE_ON),
+
+        /**
+         * Comma-separated list of remote IP addresses in CIDR notation from
+         * which registration is allowed.
+         */
+        INTERNAL_USERS_REGISTRATION_IP_ADDRESSES_ALLOWED(//
+                "internal-users.registration.ip-addresses-allowed",
+                CIDR_RANGES_VALIDATOR_OPT, API_UPDATABLE_ON),
+
+        /** */
+        INTERNAL_USERS_REGISTRATION_EMAIL_EXPIRY_MINS(//
+                "internal-users.registration.email.expiry-mins",
+                NUMBER_VALIDATOR, "60", API_UPDATABLE_ON),
+
+        /** */
+        INTERNAL_USERS_REGISTRATION_VERIFY_URL_AUTHORITY(//
+                "internal-users.registration.verify-url.authority",
+                URI_AUTHORITY_VALIDATOR_OPT, API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        INTERNAL_USERS_CAN_CHANGE_PW(//
+                "internal-users.user-can-change-password", BOOLEAN_VALIDATOR,
+                V_YES),
+
+        /**
+         *
+         */
+        INTERNAL_USERS_NAME_PREFIX(//
+                "internal-users.username-prefix", "guest-", API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        INTERNAL_USERS_PW_LENGTH_MIN(//
+                "internal-users.password-length-min", NUMBER_VALIDATOR, "6"),
+
+        /**
+         *
+         */
+        IPP_EXT_CONSTRAINT_BOOKLET_ENABLE(//
+                "ipp.ext.constraint.booklet.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         * This is a temporary solution: see Mantis #987.
+         */
+        IPP_JOB_NAME_SPACE_TO_UNDERSCORE_ENABLE(//
+                "ipp.job-name.space-to-underscore.enable", BOOLEAN_VALIDATOR,
+                V_NO, API_UPDATABLE_ON),
+
+        /**
+         * The base URL, i.e. "protocol://authority" <i>without</i> the path, of
+         * the IPP Internet Printer URI (no trailing slash) (optional).
+         */
+        IPP_INTERNET_PRINTER_URI_BASE(//
+                "ipp.internet-printer.uri-base", URI_VALIDATOR_OPT, ""),
+
+        /** */
+        IPP_AUTHENTICATION_ENABLE(//
+                "ipp.authentication.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /** */
+        IPP_ROUTING_ENABLE(//
+                "ipp.routing.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /** */
+        IPP_ROUTING_TERMIMAL_ENABLE(//
+                "ipp.routing.terminal.enable", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /** */
+        IPP_ROUTING_PRINTER_ENABLE(//
+                "ipp.routing.printer.enable", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /** */
+        IPP_PRINTER_ATTR_PRINTER_UUID(//
+                "ipp.printer-attr.printer-uuid", UUID_VALIDATOR,
+                UUID.randomUUID().toString(), API_UPDATABLE_ON),
+
+        /**
+         * See this <a href=
+         * "http://docs.oracle.com/javase/jndi/tutorial/ldap/search/batch.html"
+         * >explanation</a> and this <a href=
+         * "http://docs.oracle.com/javase/jndi/tutorial/ldap/search/src/Batchsize.java"
+         * >sample code</a>.
+         */
+        LDAP_BATCH_SIZE("ldap.batchsize", NUMBER_VALIDATOR, "500"),
+
+        /**
+         * The LDAP field that contains the group members.
+         */
+        LDAP_SCHEMA_GROUP_MEMBER_FIELD(//
+                "ldap.schema.group-member-field", API_UPDATABLE_ON),
+
+        /**
+         * The LDAP field that contains the group's name.
+         */
+        LDAP_SCHEMA_GROUP_NAME_FIELD(//
+                "ldap.schema.group-name-field", API_UPDATABLE_ON),
+
+        /**
+         * The LDAP field that contains the group's full name.
+         */
+        LDAP_SCHEMA_GROUP_FULL_NAME_FIELD(//
+                "ldap.schema.group-full-name-field", API_UPDATABLE_ON),
+
+        /**
+         * The LDAP search to retrieve the group. The <code>{0}</code> in the
+         * search is replaced with {@code *} for all group searches. If no
+         * search is defined, the default is
+         * <code>([groupMemberField]={0})</code> , which means get all entries
+         * with at least one member.
+         * <p>
+         * IMPORTANT: The search must include the <code>{0}</code> value.
+         * </p>
+         */
+        LDAP_SCHEMA_GROUP_SEARCH("ldap.schema.group-search", API_UPDATABLE_ON),
+
+        /**
+         * The LDAP search to retrieve the users as member of a group. The {0}
+         * in the expression is replaced with the distinguishedName (DN) of the
+         * group. The extra {1} in the search is replaced with an optional
+         * filter to fetch enabled users only.
+         * <p>
+         * Note: Active Directory only.
+         * </p>
+         * <p>
+         * IMPORTANT: The search must include the <code>{0}</code> value.
+         * </p>
+         */
+        LDAP_SCHEMA_USER_NAME_GROUP_SEARCH(//
+                "ldap.schema.user-name-group-search", API_UPDATABLE_ON),
+
+        /**
+         * The LDAP search to retrieve the nested groups of a parent group. The
+         * {0} in the expression is replaced with the distinguishedName (DN) of
+         * the parent group.
+         * <p>
+         * Note: Active Directory only.
+         * </p>
+         * <p>
+         * IMPORTANT: The search must include the <code>{0}</code> value.
+         * </p>
+         */
+        LDAP_SCHEMA_NESTED_GROUP_SEARCH(//
+                "ldap.schema.nested-group-search", API_UPDATABLE_ON),
+
+        /**
+         * The LDAP field that contains the Distinguished Name (DN).
+         * <p>
+         * Note: Active Directory only.
+         * </p>
+         */
+        LDAP_SCHEMA_DN_FIELD("ldap.schema.dn-field", API_UPDATABLE_ON),
+
+        /**
+         * Boolean to allow or deny disabled users. When blank, LDAP default is
+         * used.
+         * <p>
+         * Note: Active Directory only.
+         * </p>
+         */
+        LDAP_ALLOW_DISABLED_USERS(//
+                "ldap.disabled-users.allow", BOOLEAN_VALIDATOR_OPT,
+                API_UPDATABLE_ON),
+
+        /**
+         * Boolean to indicate if filtering out disabled users is done locally
+         * (by checking the userAccountControl attribute), or remotely (by AND
+         * in userAccountControl in the LDAP query). When blank, LDAP default is
+         * used.
+         * <p>
+         * Note: Active Directory only.
+         * </p>
+         */
+        LDAP_FILTER_DISABLED_USERS_LOCALLY(//
+                "ldap.disabled-users.local-filter", BOOLEAN_VALIDATOR_OPT,
+                API_UPDATABLE_ON),
+
+        /**
+         * If {@code Y}, then the group member field contains the user's
+         * username. If {@code N}, then the group member field contains the
+         * user's DN.
+         */
+        LDAP_SCHEMA_POSIX_GROUPS("ldap.schema.posix-groups", API_UPDATABLE_ON),
+
+        /**
+         * LdapSchema* properties have "" default value.
+         */
+        LDAP_SCHEMA_TYPE(//
+                "ldap.schema.type", null, LDAP_TYPE_V_OPEN_LDAP,
+                new String[] { LDAP_TYPE_V_ACTIV, LDAP_TYPE_V_E_DIR,
+                        LDAP_TYPE_V_APPLE, LDAP_TYPE_V_OPEN_LDAP,
+                        LDAP_TYPE_V_FREE_IPA, LDAP_TYPE_V_GOOGLE_CLOUD },
+                API_UPDATABLE_ON),
+
+        /**
+         * The LDAP field that contains the user's username.
+         */
+        LDAP_SCHEMA_USER_NAME_FIELD(//
+                "ldap.schema.user-name-field", API_UPDATABLE_ON),
+
+        /**
+         * The LDAP search to retrieve the user. The <code>{0}</code> in the
+         * search is replaced with {@code *} when listing all users, and
+         * {@code [username]} when searching for a specific user. If no search
+         * is defined, the default is <code>([userNameField]={0})</code>.
+         * <p>
+         * IMPORTANT: The search must include the <code>{0}</code> value.
+         * </p>
+         * <p>
+         * NOTE: Active Directory Only. The extra {1} in the search is replaced
+         * with an optional filter to fetch enabled users only.
+         * </p>
+         */
+        LDAP_SCHEMA_USER_NAME_SEARCH(//
+                "ldap.schema.user-name-search", API_UPDATABLE_ON),
+
+        /**
+         * The LDAP field that contains the user's full name.
+         */
+        LDAP_SCHEMA_USER_FULL_NAME_FIELD(//
+                "ldap.schema.user-full-name-field", API_UPDATABLE_ON),
+
+        /**
+         * The LDAP field that contains the user's email address.
+         */
+        LDAP_SCHEMA_USER_EMAIL_FIELD(//
+                "ldap.schema.user-email-field", API_UPDATABLE_ON),
+
+        /**
+         * The LDAP field that contains the user's department.
+         */
+        LDAP_SCHEMA_USER_DEPARTMENT_FIELD(//
+                "ldap.schema.user-department-field", API_UPDATABLE_ON),
+
+        /**
+         * The LDAP field that contains the user's office location.
+         */
+        LDAP_SCHEMA_USER_OFFICE_FIELD(//
+                "ldap.schema.user-office-field", API_UPDATABLE_ON),
+
+        /**
+         * The LDAP field that contains the user's Card Number.
+         */
+        LDAP_SCHEMA_USER_CARD_NUMBER_FIELD(//
+                "ldap.schema.user-card-number-field", API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        LDAP_SCHEMA_USER_CARD_NUMBER_FIRST_BYTE(//
+                "ldap.user-card-number.first-byte", null,
+                CARD_NUMBER_FIRSTBYTE_V_LSB,
+                new String[] { CARD_NUMBER_FIRSTBYTE_V_LSB,
+                        CARD_NUMBER_FIRSTBYTE_V_MSB },
+                API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        LDAP_SCHEMA_USER_CARD_NUMBER_FORMAT(//
+                "ldap.user-card-number.format", null, CARD_NUMBER_FORMAT_V_HEX,
+                new String[] { CARD_NUMBER_FORMAT_V_DEC,
+                        CARD_NUMBER_FORMAT_V_HEX },
+                API_UPDATABLE_OFF),
+
+        /**
+         * The LDAP field that contains the user's ID Number.
+         */
+        LDAP_SCHEMA_USER_ID_NUMBER_FIELD(//
+                "ldap.schema.user-id-number-field", API_UPDATABLE_ON),
+
+        /**
+         * Date on which this PrintFlowLite instance was first installed. The
+         * community role at this point is "Visitor", and the date defaults to
+         * the start date of the visiting period.
+         */
+        COMMUNITY_VISITOR_START_DATE(//
+                "community.visitor.start-date", API_UPDATABLE_OFF),
+
+        /**
+         * Is PaperCut integration enabled?
+         */
+        PAPERCUT_ENABLE("papercut.enable", BOOLEAN_VALIDATOR, V_NO),
+
+        /** */
+        PAPERCUT_DB_ENABLE("papercut.db.enable", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         * PaperCut Database JDBC driver, like "org.postgresql.Driver".
+         */
+        PAPERCUT_DB_JDBC_DRIVER("papercut.db.jdbc-driver", API_UPDATABLE_ON),
+
+        /**
+         * PaperCut Database JDBC url.
+         */
+        PAPERCUT_DB_JDBC_URL("papercut.db.jdbc-url", API_UPDATABLE_ON),
+
+        /**
+         * PaperCut Database user.
+         */
+        PAPERCUT_DB_USER("papercut.db.user", API_UPDATABLE_ON),
+
+        /**
+         * PaperCut Database password.
+         */
+        PAPERCUT_DB_PASSWORD("papercut.db.password", API_UPDATABLE_ON),
+
+        /**
+         * PaperCut Server host.
+         */
+        PAPERCUT_SERVER_HOST(//
+                "papercut.server.host", InetUtils.LOCAL_HOST, API_UPDATABLE_ON),
+
+        /**
+         * PaperCut Server port.
+         */
+        PAPERCUT_SERVER_PORT("papercut.server.port", IP_PORT_VALIDATOR, "9191"),
+
+        /**
+         * PaperCut authentication token for Web Services.
+         */
+        PAPERCUT_SERVER_AUTH_TOKEN(//
+                "papercut.webservices.auth-token", API_UPDATABLE_ON),
+
+        /**
+         * PaperCut XML-RPC path. E.g.{@code /rpc/api/xmlrpc}
+         */
+        PAPERCUT_XMLRPC_URL_PATH(//
+                "papercut.xmlrpc.url-path", "/rpc/api/xmlrpc",
+                API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        API_JSONRPC_SECRET_KEY(//
+                "api.jsonrpc.secret-key", API_UPDATABLE_OFF),
+
+        /**
+         * Client IP addresses (CIDR) that are allowed to use the JSON_RPC API
+         * (when void, all client addresses are allowed).
+         */
+        API_JSONRPC_IP_ADDRESSES_ALLOWED(//
+                "api.jsonrpc.ext.ip-addresses-allowed",
+                CIDR_RANGES_VALIDATOR_OPT, API_UPDATABLE_OFF),
+
+        /**
+         * RESTful API: Basic Authentication Username.
+         */
+        API_RESTFUL_AUTH_USERNAME(//
+                "api.restful.auth.username", "", API_UPDATABLE_ON),
+
+        /**
+         * RESTful API: Basic Authentication Password.
+         */
+        API_RESTFUL_AUTH_PASSWORD(//
+                "api.restful.auth.password", "", API_UPDATABLE_ON),
+
+        /**
+         * Client IP addresses (CIDR) that are allowed to use RESTful API (when
+         * void, all client addresses are allowed).
+         */
+        API_RESTFUL_IP_ADDRESSES_ALLOWED(//
+                "api.restful.ip-addresses-allowed", CIDR_RANGES_VALIDATOR_OPT,
+                API_UPDATABLE_OFF),
+
+        /**
+         * Admin Atom Feed: enable.
+         */
+        FEED_ATOM_ADMIN_ENABLE(//
+                "feed.atom.admin.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         * Tuesday-Saturday at 3:00.
+         */
+        FEED_ATOM_ADMIN_SCHEDULE(//
+                "feed.atom.admin.schedule", CRON_EXPR_VALIDATOR,
+                "0 0 3 ? * 3-7", API_UPDATABLE_OFF),
+
+        /**
+         * Admin Atom Feed: UUID as feed id.
+         */
+        FEED_ATOM_ADMIN_UUID(//
+                "feed.atom.admin.uuid", UUID_VALIDATOR,
+                UUID.randomUUID().toString(), API_UPDATABLE_ON),
+
+        /**
+         * Admin Atom Feed: Basic Authentication Username.
+         */
+        FEED_ATOM_ADMIN_USERNAME(//
+                "feed.atom.admin.username", "", API_UPDATABLE_ON),
+
+        /**
+         * Admin Atom Feed: Basic Authentication Password.
+         */
+        FEED_ATOM_ADMIN_PASSWORD(//
+                "feed.atom.admin.password", "", API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        PRINT_IMAP_ENABLE(//
+                "print.imap.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        PRINT_IMAP_HOST("print.imap.host", API_UPDATABLE_OFF),
+
+        /**
+         * The port to connect to on the IMAP server.
+         */
+        PRINT_IMAP_PORT("print.imap.port", IP_PORT_VALIDATOR, "143"),
+
+        /**
+         * Socket connection timeout value in milliseconds. Default is infinite
+         * timeout.
+         */
+        PRINT_IMAP_CONNECTION_TIMEOUT_MSECS(//
+                "print.imap.connectiontimeout-msecs", NUMBER_VALIDATOR,
+                IMAP_CONNECTION_TIMEOUT_V_DEFAULT.toString()),
+
+        /**
+         * Socket I/O timeout value in milliseconds. Default is infinite
+         * timeout.
+         */
+        PRINT_IMAP_TIMEOUT_MSECS(//
+                "print.imap.timeout-msecs", NUMBER_VALIDATOR,
+                IMAP_TIMEOUT_V_DEFAULT.toString()),
+
+        /**
+         *
+         */
+        PRINT_IMAP_SECURITY(//
+                "print.imap.security", IMAP_SECURITY_V_STARTTLS,
+                API_UPDATABLE_OFF),
+
+        /**
+         * Username for IMAP authentication.
+         */
+        PRINT_IMAP_USER_NAME("print.imap.user", API_UPDATABLE_OFF),
+
+        /**
+         * Password for IMAP authentication.
+         */
+        PRINT_IMAP_PASSWORD("print.imap.password", API_UPDATABLE_OFF),
+
+        /**
+         * Produces extra IMAP related logging for troubleshooting.
+         */
+        PRINT_IMAP_DEBUG("print.imap.debug", BOOLEAN_VALIDATOR, V_NO),
+
+        /**
+         *
+         */
+        PRINT_IMAP_INBOX_FOLDER(//
+                "print.imap.folder.inbox", "Inbox", API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        PRINT_IMAP_TRASH_FOLDER(//
+                "print.imap.folder.trash", "Trash", API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        PRINT_IMAP_TRASH_FOLDER_ENABLE(//
+                "print.imap.folder.trash.enable", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        PRINT_IMAP_SESSION_HEARTBEAT_SECS(//
+                "print.imap.session.heartbeat-secs", NUMBER_VALIDATOR, "300"),
+
+        /**
+         *
+         */
+        PRINT_IMAP_SESSION_DURATION_SECS(//
+                "print.imap.session.duration-secs", NUMBER_VALIDATOR, "3000"),
+
+        /**
+         *
+         */
+        PRINT_IMAP_MAX_FILE_MB(//
+                "print.imap.max-file-mb", NUMBER_VALIDATOR,
+                IMAP_MAX_FILE_MB_V_DEFAULT.toString(), API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        PRINT_IMAP_MAX_FILES(//
+                "print.imap.max-files", NUMBER_VALIDATOR,
+                IMAP_MAX_FILES_V_DEFAULT.toString(), API_UPDATABLE_ON),
+
+        /**
+         * Detain EML file of message body content in the JVM Temporary Files
+         * folder. OFF = never detain (default), ON = always detain, AUTO =
+         * detain when EML to HTML to PDF produces errors messages.
+         */
+        PRINT_IMAP_CONTENT_EML_DETAIN(//
+                "print-imap.content.eml.detain", ON_OFF_ENUM_VALIDATOR,
+                OnOffEnum.OFF.toString(), API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        PRINT_IMAP_TICKET_ENABLE(//
+                "print.imap.ticket.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+        /**
+         *
+         */
+        PRINT_IMAP_TICKET_OPERATOR(//
+                "print.imap.ticket.operator", API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        PRINT_IMAP_TICKET_INCLUDE_KNOWN_USERS(//
+                "print.imap.ticket.include-known-users", BOOLEAN_VALIDATOR,
+                V_NO, API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        PRINT_IMAP_TICKET_NO_FILES_CONTENT_ENABLE(//
+                "print.imap.ticket.no-files-content.enable", BOOLEAN_VALIDATOR,
+                V_YES, API_UPDATABLE_ON),
+
+        /**
+         * Send Mail Print ticket email notification with content-type as
+         * "text/html".
+         */
+        PRINT_IMAP_TICKET_REPLY_CONTENT_TYPE_HTML(//
+                "print.imap.ticket.reply.content-type.html", BOOLEAN_VALIDATOR,
+                V_YES, API_UPDATABLE_ON),
+
+        /**
+         * .
+         */
+        WEBAPP_INTERNET_MAILTICKETS_ENABLE(//
+                Key.WEBAPP_INTERNET_PFX + "mailtickets.enable",
+                BOOLEAN_VALIDATOR, V_YES, API_UPDATABLE_ON),
+
+        /** */
+        WEBAPP_INTERNET_MAILTICKETS_AUTH_MODE_ENABLE(//
+                Key.WEBAPP_INTERNET_PFX + "mailtickets.auth-mode.enable",
+                BOOLEAN_VALIDATOR, V_NO, API_UPDATABLE_ON),
+        /** */
+        WEBAPP_INTERNET_MAILTICKETS_AUTH_MODES(//
+                Key.WEBAPP_INTERNET_PFX + "mailtickets.auth-modes",
+                AUTHMODE_SET_VALIDATOR, AUTH_MODE_V_NAME, API_UPDATABLE_OFF),
+
+        /**
+         * .
+         */
+        WEBAPP_INTERNET_PAYMENT_ENABLE(//
+                Key.WEBAPP_INTERNET_PFX + "payment.enable", BOOLEAN_VALIDATOR,
+                V_YES, API_UPDATABLE_ON),
+
+        /** */
+        WEBAPP_INTERNET_PAYMENT_AUTH_MODE_ENABLE(//
+                Key.WEBAPP_INTERNET_PFX + "payment.auth-mode.enable",
+                BOOLEAN_VALIDATOR, V_NO, API_UPDATABLE_ON),
+        /** */
+        WEBAPP_INTERNET_PAYMENT_AUTH_MODES(//
+                Key.WEBAPP_INTERNET_PFX + "payment.auth-modes",
+                AUTHMODE_SET_VALIDATOR, AUTH_MODE_V_NAME, API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        PRINTER_SNMP_ENABLE(//
+                "printer.snmp.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        PRINTER_SNMP_READ_TRIGGER_MINS(//
+                "printer.snmp.read.trigger-mins", NUMBER_VALIDATOR, "240",
+                API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        PRINTER_SNMP_READ_RETRIES(//
+                "printer.snmp.read.retries", NUMBER_VALIDATOR, "2",
+                API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        PRINTER_SNMP_READ_TIMEOUT_MSECS(//
+                "printer.snmp.read.timeout-msec", NUMBER_VALIDATOR, "1500",
+                API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        PRINTER_SNMP_MARKER_PERC_WARN(//
+                "printer.snmp.marker.percent.warn", NUMBER_VALIDATOR, "30",
+                API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        PRINTER_SNMP_MARKER_PERC_ALERT(//
+                "printer.snmp.marker.percent.alert", NUMBER_VALIDATOR, "10",
+                API_UPDATABLE_ON),
+
+        /**
+         * .
+         */
+        SOFFICE_ENABLE(//
+                "soffice.enable", BOOLEAN_VALIDATOR, V_NO, API_UPDATABLE_ON),
+
+        /**
+         * The LibreOffice home location. When empty, a probe to likely
+         * candidates is performed to retrieve the location.
+         */
+        SOFFICE_HOME("soffice.home", API_UPDATABLE_OFF),
+
+        /**
+         * A temporary profile directory is created for each UNO connection
+         * process with its own defaults settings. With this config item you can
+         * provide a profile directory containing customized settings instead.
+         * This template directory will be copied to the temporary profile.
+         */
+        SOFFICE_PROFILE_TEMPLATE_DIR(//
+                "soffice.profile.template-dir", API_UPDATABLE_OFF),
+
+        /**
+         * A comma/space separated list of TCP/IP ports to localhost LibreOffice
+         * (UNO) connection instances to be launched by PrintFlowLite.
+         */
+        SOFFICE_CONNECTION_PORTS(//
+                "soffice.connection.ports", "2002,2003", API_UPDATABLE_OFF),
+
+        /**
+         * The number of executed tasks after which the UNO connection is
+         * restarted. When {@code 0} (zero) the process is <i>never</i>
+         * restarted.
+         */
+        SOFFICE_CONNECTION_RESTART_TASK_COUNT(//
+                "soffice.connection.restart-task-count", NUMBER_VALIDATOR,
+                "200"),
+
+        /**
+         * Wait time (milliseconds) for a UNO connection to become available for
+         * task execution.
+         */
+        SOFFICE_TASK_QUEUE_TIMEOUT_MSEC(//
+                "soffice.task.queue-timeout-msec", NUMBER_VALIDATOR, "10000"),
+
+        /**
+         * Wait time (milliseconds) for a conversion task to complete.
+         */
+        SOFFICE_TASK_EXEC_TIMEOUT_MSEC(//
+                "soffice.task.exec-timeout-msec", NUMBER_VALIDATOR, "20000"),
+
+        /**
+         * Retry interval (milliseconds) for host process to respond.
+         */
+        SOFFICE_RESPOND_RETRY_MSEC(//
+                "soffice.respond.retry-msec", NUMBER_VALIDATOR, "250"),
+
+        /**
+         * Wait time (milliseconds) for host process to respond (after retries).
+         */
+        SOFFICE_RESPOND_TIMEOUT_MSEC(//
+                "soffice.respond.timeout-msec", NUMBER_VALIDATOR, "30000"),
+
+        /**
+         * Retry interval (milliseconds) for host process to start.
+         */
+        SOFFICE_START_RETRY_MSEC(//
+                "soffice.start.retry-msec", NUMBER_VALIDATOR, "1000"),
+
+        /**
+         * Wait time (milliseconds) for host process to start (after retries).
+         */
+        SOFFICE_START_TIMEOUT_MSEC(//
+                "soffice.start.timeout-msec", NUMBER_VALIDATOR, "120000"),
+
+        /**
+         *
+         */
+        REPORTS_PDF_INTERNAL_FONT_FAMILY(//
+                "reports.pdf.font-family", INTERNAL_FONT_FAMILY_VALIDATOR,
+                DEFAULT_INTERNAL_FONT_FAMILY.toString()),
+
+        /**
+         * Boolean (Default is false). If true, prevents use of the non-standard
+         * AUTHENTICATE LOGIN command, instead using the plain LOGIN command.
+         */
+        MAIL_IMAP_AUTH_LOGIN_DISABLE(//
+                "print.imap.auth.login.disable", BOOLEAN_VALIDATOR, V_NO),
+
+        /**
+         * Boolean (Default is false). If true, prevents use of the AUTHENTICATE
+         * PLAIN command.
+         */
+        MAIL_IMAP_AUTH_PLAIN_DISABLE(//
+                "print.imap.auth.plain.disable", BOOLEAN_VALIDATOR, V_NO),
+
+        /**
+         * Boolean (Default is false). If true, prevents use of the AUTHENTICATE
+         * NTLM command.
+         */
+        MAIL_IMAP_AUTH_NTLM_DISABLE(//
+                "print.imap.auth.ntlm.disable", BOOLEAN_VALIDATOR, V_NO),
+
+        /**
+         *
+         */
+        MAIL_SMTP_HOST("mail.smtp.host", InetUtils.LOCAL_HOST,
+                API_UPDATABLE_ON),
+
+        /**
+         * The port to connect to on the SMTP server. Common ports include 25 or
+         * 587 for STARTTLS, and 465 for SMTPS.
+         */
+        MAIL_SMTP_PORT("mail.smtp.port", IP_PORT_VALIDATOR, "465",
+                API_UPDATABLE_ON),
+
+        /**
+         * STARTTLS is for connecting to an SMTP server port using a plain
+         * (non-encrypted) connection, then elevating to an encrypted connection
+         * on the same port.
+         */
+        MAIL_SMTP_SECURITY(//
+                "mail.smtp.security", SMTP_SECURITY_VALIDATOR,
+                SMTP_SECURITY_V_SSL, API_UPDATABLE_ON),
+
+        /**
+         * Username for SMTP authentication. Commonly an email address.
+         */
+        MAIL_SMTP_USER_NAME("mail.smtp.username", API_UPDATABLE_ON),
+
+        /**
+         * Password for SMTP authentication.
+         */
+        MAIL_SMTP_PASSWORD("mail.smtp.password", API_UPDATABLE_ON),
+
+        /**
+         * Produces extra SMTP related logging for troubleshooting.
+         */
+        MAIL_SMTP_DEBUG("mail.smtp.debug", BOOLEAN_VALIDATOR, V_NO),
+
+        /**
+         * .
+         */
+        MAIL_SMTP_MAX_FILE_KB(//
+                "mail.smtp.max-file-kb", NUMBER_VALIDATOR, "1024"),
+
+        /**
+         * Value for SMTP property: <b>mail.smtp.connectiontimeout</b>
+         * <p>
+         * Timeout (in milliseconds) for establishing the SMTP connection.
+         * </p>
+         * <p>
+         * This timeout is implemented by java.net.Socket.
+         * </p>
+         */
+        MAIL_SMTP_CONNECTIONTIMEOUT(//
+                "mail.smtp.connectiontimeout", NUMBER_VALIDATOR, "5000"),
+
+        /**
+         * Value for SMTP property: <b>mail.smtp.timeout</b>
+         * <p>
+         * The timeout (milliseconds) for sending the mail messages.
+         * </p>
+         * <p>
+         * This timeout is implemented by java.net.Socket.
+         * </p>
+         */
+        MAIL_SMTP_TIMEOUT("mail.smtp.timeout", NUMBER_VALIDATOR, "5000"),
+
+        /**
+         * Heartbeat (milliseconds) to poll the store-and-forward mail outbox
+         * for new messages.
+         */
+        MAIL_OUTBOX_POLL_HEARTBEAT_MSEC("mail.outbox.poll.heartbeat-msec",
+                NUMBER_VALIDATOR, "10000"),
+
+        /**
+         * Interval (milliseconds) between sending each message.
+         */
+        MAIL_OUTBOX_SEND_INTERVAL_MSEC("mail.outbox.send.interval-msec",
+                NUMBER_VALIDATOR, "1000"),
+
+        /**
+         *
+         */
+        MAIL_FROM_ADDRESS(//
+                "mail.from.address", NOT_EMPTY_VALIDATOR, API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        MAIL_FROM_NAME(//
+                "mail.from.name", CommunityDictEnum.PrintFlowLite.getWord(),
+                API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        MAIL_REPLY_TO_ADDRESS("mail.reply.to.address", API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        MAIL_REPLY_TO_NAME(//
+                "mail.reply.to.name", "DO NOT REPLY", API_UPDATABLE_ON),
+
+        /**
+         * If "Y", mail is PGP/MIME signed (if PGP Secret Key is present).
+         */
+        MAIL_PGP_MIME_SIGN("mail.pgp.mime.sign", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         * If "Y" <i>and</i> mail is PGP signed, it is also PGP encrypted, for
+         * each recipients.
+         */
+        MAIL_PGP_MIME_ENCRYPT(//
+                "mail.pgp.mime.encrypt", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         * OpenPGP Public Key Server URL (optional).
+         */
+        PGP_PKS_URL("pgp.pks.url", URL_VALIDATOR_OPT),
+
+        /**
+         * The path of the custom template files, relative to
+         * {@link ConfigManager#SERVER_REL_PATH_CUSTOM_TEMPLATE}.
+         */
+        CUSTOM_TEMPLATE_HOME("custom.template.home", API_UPDATABLE_ON),
+
+        /**
+         * The path of the custom Email template files, relative to
+         * {@link ConfigManager#SERVER_REL_PATH_CUSTOM_TEMPLATE}.
+         */
+        CUSTOM_TEMPLATE_HOME_MAIL(//
+                "custom.template.home.mail", API_UPDATABLE_ON),
+
+        /** */
+        PRINT_IN_IPP_DEFAULT_WAIT_AFTER_FAILURE_MSEC(
+                "print-in.ipp.default.wait-after-failure-msec",
+                NUMBER_VALIDATOR, "5000", API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        PRINT_IN_PDF_ENCRYPTED_ALLOW(//
+                "print-in.pdf.encrypted.allow", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * Enable PDF "repair" option for print-in PDF documents (Web Print)
+         * (boolean).
+         */
+        PRINT_IN_PDF_INVALID_REPAIR(//
+                "print-in.pdf.invalid.repair", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * Enable {@code pdffonts} validation/repair for print-in PDF documents
+         * (Web Print) (boolean).
+         */
+        PRINT_IN_PDF_FONTS_VERIFY(//
+                "print-in.pdf.fonts.verify", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * Reject PDF document if font repair for print-in PDF documents (Web
+         * Print) fails (boolean).
+         */
+        PRINT_IN_PDF_FONTS_VERIFY_REJECT(//
+                "print-in.pdf.fonts.verify.reject", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * Enable embedding of all fonts (including standard PDF fonts) if
+         * non-embedded/non-standard fonts are present in print-in PDF document
+         * (Web Print) (boolean).
+         */
+        PRINT_IN_PDF_FONTS_EMBED(//
+                "print-in.pdf.fonts.embed", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * Enable/disable cleaning of print-in PDF documents (Web Print).
+         */
+        PRINT_IN_PDF_CLEAN(//
+                "print-in.pdf.clean", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * Enable/disable optimization of print-in PDF documents (Web Print).
+         */
+        PRINT_IN_PDF_OPTIMIZE(//
+                "print-in.pdf.optimize", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         * Enable/disable prepress of print-in PDF documents (Web Print).
+         */
+        PRINT_IN_PDF_PREPRESS(//
+                "print-in.pdf.prepress", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         * Trigger to render all driver printed PostScript pages to images.
+         */
+        PRINT_IN_PS_DRIVER_IMAGES_TRIGGER(//
+                "print-in.ps.driver.images.trigger", ON_OFF_ENUM_VALIDATOR,
+                OnOffEnum.AUTO.toString(), API_UPDATABLE_ON),
+
+        /**
+         * Driver printed PostScript image DPI.
+         */
+        PRINT_IN_PS_DRIVER_IMAGES_DPI(//
+                "print-in.ps.driver.images.dpi", NUMBER_VALIDATOR, "300",
+                API_UPDATABLE_ON),
+
+        /**
+         * Temporarily detain driver printed PostScript file.
+         */
+        PRINT_IN_PS_DRIVER_DETAIN(//
+                "print-in.ps.driver.detain", ON_OFF_ENUM_VALIDATOR,
+                OnOffEnum.OFF.toString(), API_UPDATABLE_ON),
+
+        /**
+         * Trigger to render all driver printed PostScript pages to images.
+         */
+        PRINT_IN_PS_DRIVERLESS_IMAGES_TRIGGER(//
+                "print-in.ps.driverless.images.trigger", ON_OFF_ENUM_VALIDATOR,
+                OnOffEnum.AUTO.toString(), API_UPDATABLE_ON),
+
+        /**
+         * Driverless printed PostScript image DPI.
+         */
+        PRINT_IN_PS_DRIVERLESS_IMAGES_DPI(//
+                "print-in.ps.driverless.images.dpi", NUMBER_VALIDATOR, "300",
+                API_UPDATABLE_ON),
+
+        /**
+         * Number of minutes after which a print-in job expires. When zero (0)
+         * there is NO expiry.
+         */
+        PRINT_IN_JOB_EXPIRY_MINS(//
+                "print-in.job-expiry.mins", NUMBER_VALIDATOR, V_ZERO,
+                API_UPDATABLE_ON),
+
+        /**
+         * Number of minutes added to print-in job expiry (if applicable) after
+         * which job is considered ignored. Ignored jobs are removed by a
+         * scheduled monitor task.
+         */
+        PRINT_IN_JOB_EXPIRY_IGNORED_MINS(//
+                "print-in.job-expiry-ignored.mins", NUMBER_VALIDATOR, "10",
+                API_UPDATABLE_ON),
+
+        /**
+         * Enable Copy Job option for Job Ticket (boolean). When {@code true} a
+         * job ticket for a copy job can be created.
+         */
+        JOBTICKET_COPIER_ENABLE(//
+                "jobticket.copier.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         * Enable "delivery data/time" option for Job Ticket (boolean).
+         */
+        JOBTICKET_DELIVERY_DATETIME_ENABLE(//
+                "jobticket.delivery-datetime.enable", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * Enable "delivery time" option for Job Ticket (boolean).
+         */
+        JOBTICKET_DELIVERY_TIME_ENABLE(//
+                "jobticket.delivery-time.enable", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * Default delivery time (days-of-week count after ticket creation).
+         */
+        JOBTICKET_DELIVERY_DAYS(//
+                "jobticket.delivery-days", NUMBER_VALIDATOR, "1",
+                API_UPDATABLE_ON),
+
+        /**
+         * Minimal delivery time (days-of-week count).
+         */
+        JOBTICKET_DELIVERY_DAYS_MIN(//
+                "jobticket.delivery-days-min", NUMBER_VALIDATOR, "1",
+                API_UPDATABLE_ON),
+
+        /**
+         * Delivery days of week.
+         */
+        JOBTICKET_DELIVERY_DAYS_OF_WEEK(//
+                "jobticket.delivery-days-of-week",
+                CRON_EXPR_DAY_OF_WEEK_VALIDATOR, "MON-FRI", API_UPDATABLE_ON),
+
+        /**
+         * Time of delivery on delivery day as minutes after midnight. For
+         * instance: 8h30m = 8*60+30 = 510
+         */
+        JOBTICKET_DELIVERY_DAY_MINUTES(//
+                "jobticket.delivery-day-minutes", NUMBER_VALIDATOR, "510",
+                API_UPDATABLE_ON),
+
+        /**
+         * Enable notification by email to owner of job ticket when ticket is
+         * completed (Boolean).
+         */
+        JOBTICKET_NOTIFY_EMAIL_COMPLETED_ENABLE(//
+                "jobticket.notify-email.completed.enable", BOOLEAN_VALIDATOR,
+                V_YES, API_UPDATABLE_ON),
+
+        /**
+         * Enable notification by email to owner of job ticket when ticket is
+         * canceled (Boolean).
+         */
+        JOBTICKET_NOTIFY_EMAIL_CANCELED_ENABLE(//
+                "jobticket.notify-email.canceled.enable", BOOLEAN_VALIDATOR,
+                V_YES, API_UPDATABLE_ON),
+
+        /**
+         * Send job ticket email notification with content-type as "text/html".
+         */
+        JOBTICKET_NOTIFY_EMAIL_CONTENT_TYPE_HTML(//
+                "jobticket.notify-email.content-type.html", BOOLEAN_VALIDATOR,
+                V_YES, API_UPDATABLE_ON),
+
+        /**
+         * A comma separated list of Job Ticket domains to be applied as job
+         * ticket number prefix. Each domain on the list is formatted as
+         * "DOM/domain/n", where "DOM" is a unique N-letter upper-case mnemonic,
+         * "/" is a fixed separator, "domain" is a case-sensitive single word
+         * used in UI context, and n is a unique ID number.
+         *
+         * E.g. "A/DomainA/1,B/DomainB/2,C/DomainC/3". When "B" domain is
+         * applied, a generated ticket number looks like "B/EE1-FA3E-6596".
+         */
+        JOBTICKET_DOMAINS("jobticket.domains", KeyType.MULTI_LINE),
+
+        /**
+         * Enable {@link IConfigProp.Key#JOBTICKET_DOMAINS} (boolean).
+         */
+        JOBTICKET_DOMAINS_ENABLE(//
+                "jobticket.domains.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         * Is domains required, when
+         * {@link IConfigProp.Key#JOBTICKET_DOMAINS_ENABLE} ? (boolean).
+         */
+        JOBTICKET_DOMAINS_REQUIRED(//
+                "jobticket.domains.required", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * Retain last Job Ticket Domain choice.
+         */
+        JOBTICKET_DOMAINS_RETAIN(//
+                "jobticket.domains.retain", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * A comma separated list of Job Ticket uses (applications) within a
+         * domain to be applied as job ticket number prefix. Each use on the
+         * list is formatted as "USE/usage", where "USE" is a unique N-letter
+         * upper-case mnemonic, "/" is a fixed separator, and "usage" is a
+         * case-sensitive single word used in UI context.
+         *
+         * E.g. "TE/Test,TA/Task,EX/Exam". When "EX" usage is applied, a
+         * generated ticket number looks like "EX/EE1-FA3E-6596".
+         */
+        JOBTICKET_USES("jobticket.uses", KeyType.MULTI_LINE),
+
+        /**
+         * Enable {@link IConfigProp.Key#JOBTICKET_USES} (boolean).
+         */
+        JOBTICKET_USES_ENABLE(//
+                "jobticket.uses.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         * Is domains required, when
+         * {@link IConfigProp.Key#JOBTICKET_USES_ENABLE} ? (boolean).
+         */
+        JOBTICKET_USES_REQUIRED(//
+                "jobticket.uses.required", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * A comma separated list of Job Ticket tags to be applied as job ticket
+         * number prefix. Each tag on the list is formatted as "TAG/word", where
+         * "TAG" is a unique N-letter upper-case mnemonic, "/" is a fixed
+         * separator, and "word" is a case-sensitive single word used in UI
+         * context.
+         *
+         * E.g. "MATH/Maths,PHYS/Physics,CHEM/Chemistry". When "MATH" tag is
+         * applied, a generated ticket number looks like "MATH/EE1-FA3E-6596".
+         */
+        JOBTICKET_TAGS("jobticket.tags", KeyType.MULTI_LINE),
+
+        /** Part 2. **/
+        JOBTICKET_TAGS_1("jobticket.tags.1", KeyType.MULTI_LINE),
+
+        /**
+         * Enable {@link IConfigProp.Key#JOBTICKET_TAGS} (boolean).
+         */
+        JOBTICKET_TAGS_ENABLE(//
+                "jobticket.tags.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         * Is tag required, when {@link IConfigProp.Key#JOBTICKET_TAGS_ENABLE} ?
+         * (boolean).
+         */
+        JOBTICKET_TAGS_REQUIRED(//
+                "jobticket.tags.required", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * Enable Doc Store (boolean).
+         */
+        DOC_STORE_ENABLE(//
+                "doc.store.enable", BOOLEAN_VALIDATOR, V_NO, API_UPDATABLE_ON),
+
+        /** */
+        DOC_STORE_FREE_SPACE_LIMIT_MB(//
+                "doc.store.free-space-limit-mb", NUMBER_VALIDATOR, "5000",
+                API_UPDATABLE_ON),
+
+        /** .--------------------------. */
+        DOC_STORE_ARCHIVE_ENABLE(//
+                "doc.store.archive.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+        /** */
+        DOC_STORE_ARCHIVE_OUT_ENABLE(//
+                "doc.store.archive.out.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+        /** */
+        DOC_STORE_ARCHIVE_OUT_PRINT_ENABLE(//
+                "doc.store.archive.out.print.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+        /** */
+        DOC_STORE_ARCHIVE_OUT_PDF_ENABLE(//
+                "doc.store.archive.out.pdf.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+        /** */
+        DOC_STORE_ARCHIVE_IN_ENABLE(//
+                "doc.store.archive.in.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+        /** */
+        DOC_STORE_ARCHIVE_IN_PRINT_ENABLE(//
+                "doc.store.archive.in.print.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+        /** */
+        DOC_STORE_ARCHIVE_OUT_PRINT_DAYS_TO_KEEP(//
+                "doc.store.archive.out.print.days-to-keep", NUMBER_VALIDATOR,
+                "30", API_UPDATABLE_ON),
+        /** */
+        DOC_STORE_ARCHIVE_OUT_PDF_DAYS_TO_KEEP(//
+                "doc.store.archive.out.pdf.days-to-keep", NUMBER_VALIDATOR,
+                "30", API_UPDATABLE_ON),
+        /** */
+        DOC_STORE_ARCHIVE_IN_PRINT_DAYS_TO_KEEP(//
+                "doc.store.archive.in.print.days-to-keep", NUMBER_VALIDATOR,
+                "30", API_UPDATABLE_ON),
+
+        /** .--------------------------. */
+        DOC_STORE_JOURNAL_ENABLE(//
+                "doc.store.journal.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+        /** */
+        DOC_STORE_JOURNAL_OUT_ENABLE(//
+                "doc.store.journal.out.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+        /** */
+        DOC_STORE_JOURNAL_OUT_PRINT_ENABLE(//
+                "doc.store.journal.out.print.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+        /** */
+        DOC_STORE_JOURNAL_OUT_PDF_ENABLE(//
+                "doc.store.journal.out.pdf.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+        /** */
+        DOC_STORE_JOURNAL_IN_ENABLE(//
+                "doc.store.journal.in.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+        /** */
+        DOC_STORE_JOURNAL_IN_PRINT_ENABLE(//
+                "doc.store.journal.in.print.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+        /** */
+        DOC_STORE_JOURNAL_OUT_PRINT_DAYS_TO_KEEP(//
+                "doc.store.journal.out.print.days-to-keep", NUMBER_VALIDATOR,
+                "2", API_UPDATABLE_ON),
+        /** */
+        DOC_STORE_JOURNAL_OUT_PDF_DAYS_TO_KEEP(//
+                "doc.store.journal.out.pdf.days-to-keep", NUMBER_VALIDATOR, "2",
+                API_UPDATABLE_ON),
+        /** */
+        DOC_STORE_JOURNAL_IN_PRINT_DAYS_TO_KEEP(//
+                "doc.store.journal.in.print.days-to-keep", NUMBER_VALIDATOR,
+                "2", API_UPDATABLE_ON),
+
+        /**
+         * Enable Delegated Print (boolean).
+         */
+        PROXY_PRINT_DELEGATE_ENABLE(//
+                "proxy-print.delegate.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         * Enable delegated print account type {@link AccountTypeEnum#GROUP}
+         * (boolean).
+         */
+        PROXY_PRINT_DELEGATE_ACCOUNT_GROUP_ENABLE(//
+                "proxy-print.delegate.account.group.enable", BOOLEAN_VALIDATOR,
+                V_YES, API_UPDATABLE_ON),
+
+        /**
+         * Enable delegated print account type {@link AccountTypeEnum#USER}
+         * (boolean).
+         */
+        PROXY_PRINT_DELEGATE_ACCOUNT_USER_ENABLE(//
+                "proxy-print.delegate.account.user.enable", BOOLEAN_VALIDATOR,
+                V_YES, API_UPDATABLE_ON),
+
+        /**
+         * Enable preferred UserGroup IDs for delegated proxy print.
+         */
+        PROXY_PRINT_DELEGATE_GROUPS_PREFERRED_ENABLE(//
+                "proxy-print.delegate.groups.preferred.enable",
+                BOOLEAN_VALIDATOR, V_YES, API_UPDATABLE_ON),
+
+        /**
+         * Enable preferred Shared Account IDs for delegated proxy print.
+         */
+        PROXY_PRINT_DELEGATE_ACCOUNTS_PREFERRED_ENABLE(//
+                "proxy-print.delegate.accounts.preferred.enable",
+                BOOLEAN_VALIDATOR, V_YES, API_UPDATABLE_ON),
+
+        /**
+         * Enable delegated print account type {@link AccountTypeEnum#SHARED}
+         * (boolean).
+         */
+        PROXY_PRINT_DELEGATE_ACCOUNT_SHARED_ENABLE(//
+                "proxy-print.delegate.account.shared.enable", BOOLEAN_VALIDATOR,
+                V_YES, API_UPDATABLE_ON),
+
+        /**
+         * Enable delegated User Group selection for print account type
+         * {@link AccountTypeEnum#SHARED} (boolean).
+         */
+        PROXY_PRINT_DELEGATE_ACCOUNT_SHARED_GROUP_ENABLE(//
+                "proxy-print.delegate.account.shared.group.enable",
+                BOOLEAN_VALIDATOR, V_YES, API_UPDATABLE_ON),
+
+        /**
+         * Enable multiple delegated print copies (boolean).
+         */
+        PROXY_PRINT_DELEGATE_MULTIPLE_MEMBER_COPIES_ENABLE(//
+                "proxy-print.delegate.multiple-member-copies.enable",
+                BOOLEAN_VALIDATOR, V_YES, API_UPDATABLE_ON),
+
+        /**
+         * Enable direct input of group copies, bypassing calculation based on
+         * number of members (boolean).
+         */
+        PROXY_PRINT_DELEGATE_GROUP_COPIES_ENABLE(//
+                "proxy-print.delegate.group-copies.enable", BOOLEAN_VALIDATOR,
+                V_NO, API_UPDATABLE_ON),
+
+        /**
+         * Number of minutes after which a PaperCut print is set to error when
+         * the PaperCut print log is still not found.
+         */
+        PROXY_PRINT_PAPERCUT_PRINTLOG_MAX_MINS(// )
+                "proxy-print.papercut.print-log.max-mins", NUMBER_VALIDATOR,
+                "7200", API_UPDATABLE_ON),
+
+        /**
+         * Enable Personal Print integration with PaperCut (boolean).
+         */
+        PROXY_PRINT_PERSONAL_PAPERCUT_ENABLE(//
+                "proxy-print.personal.papercut.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         * Enable Delegated Print integration with PaperCut (boolean).
+         */
+        PROXY_PRINT_DELEGATE_PAPERCUT_ENABLE(//
+                "proxy-print.delegate.papercut.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         * Enable configuration option for proxy printers not technically tied
+         * to (managed by) PaperCut but acting as front-end for PaperCut
+         * accounting transactions in a Delegated Print scenario (boolean). Also
+         * see {@link PrinterAttrEnum#PAPERCUT_FRONT_END}.
+         */
+        PROXY_PRINT_DELEGATE_PAPERCUT_FRONTEND_ENABLE(//
+                "proxy-print.delegate.papercut.front-end.enable",
+                BOOLEAN_VALIDATOR, V_NO, API_UPDATABLE_ON),
+
+        /**
+         * The shared top-level account that must be present in PaperCut.
+         * Several sub-accounts will be lazy created by PrintFlowLite. Besides, any
+         * PaperCut printer assigned to Delegated Print will be configured to
+         * charge to this account.
+         */
+        PROXY_PRINT_DELEGATE_PAPERCUT_ACCOUNT_SHARED_PARENT(//
+                "proxy-print.delegate.papercut.account.shared.parent",
+                "PrintFlowLite", API_UPDATABLE_OFF),
+
+        /**
+         * The sub-account of
+         * {@link #PROXY_PRINT_DELEGATE_PAPERCUT_ACCOUNT_SHARED_PARENT} holding
+         * Print Job transactions.
+         */
+        PROXY_PRINT_DELEGATE_PAPERCUT_ACCOUNT_SHARED_CHILD_JOBS(//
+                "proxy-print.delegate.papercut.account.shared.child.jobs",
+                "Jobs", API_UPDATABLE_OFF),
+
+        /**
+         * This is one of the “Multiple Personal Accounts” in PaperCut and is
+         * used by PrintFlowLite to charge Delegated Print costs to individual
+         * persons.
+         */
+        PROXY_PRINT_DELEGATE_PAPERCUT_ACCOUNT_PERSONAL(//
+                "proxy-print.delegate.papercut.account.personal", "PrintFlowLite",
+                API_UPDATABLE_OFF),
+
+        /**
+         * The PaperCut account_type (like "USER-001", "USER-002") of the
+         * {@link #PROXY_PRINT_DELEGATE_PAPERCUT_ACCOUNT_PERSONAL}. This is a
+         * technical value determined by PaperCut. When a value is specified in
+         * this key it is used to filter personal transactions in JDBC queries
+         * (CSV downloads) for the Delegated Print context.
+         */
+        PROXY_PRINT_DELEGATE_PAPERCUT_ACCOUNT_PERSONAL_TYPE(//
+                "proxy-print.delegate.papercut.account.personal-type",
+                API_UPDATABLE_OFF),
+
+        /**
+         * Enable non-secure proxy printing (Boolean).
+         */
+        PROXY_PRINT_NON_SECURE(//
+                "proxy-print.non-secure", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         *
+         */
+        PROXY_PRINT_FAST_EXPIRY_MINS(//
+                "proxy-print.fast-expiry-mins", NUMBER_VALIDATOR, "10"),
+
+        /**
+         * Inherit IPP options as passed by PrintIn.
+         */
+        PROXY_PRINT_FAST_INHERIT_PRINTIN_IPP_ENABLE(//
+                "proxy-print.fast-inherit-printin-ipp.enable",
+                BOOLEAN_VALIDATOR, V_NO, API_UPDATABLE_ON),
+
+        /**
+         * Number of minutes after which a Hold Print Job expires. When
+         * expiration is detected in an active User Web App session, the job is
+         * removed.
+         */
+        PROXY_PRINT_HOLD_EXPIRY_MINS(//
+                "proxy-print.hold-expiry-mins", NUMBER_VALIDATOR, "60",
+                API_UPDATABLE_ON),
+
+        /**
+         * Number of minutes added to current time to determine a new expiry
+         * time. If this time is after the current Hold Print Job expiry time,
+         * expiry can be set to this new time at the request of the user.
+         */
+        PROXY_PRINT_HOLD_EXTEND_MINS(//
+                "proxy-print.hold-extend-mins", NUMBER_VALIDATOR, "10",
+                API_UPDATABLE_ON),
+
+        /**
+         * Number of minutes added to Hold Print Job expiry after which job is
+         * considered ignored. Ignored jobs are removed by a scheduled monitor
+         * task.
+         */
+        PROXY_PRINT_HOLD_IGNORED_MINS(//
+                "proxy-print.hold-ignored-mins", NUMBER_VALIDATOR, "10",
+                API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        PROXY_PRINT_DIRECT_EXPIRY_SECS(//
+                "proxy-print.direct-expiry-secs", NUMBER_VALIDATOR, "20"),
+
+        /**
+         * Maximum number of pages allowed for a proxy print job.
+         */
+        PROXY_PRINT_MAX_PAGES("proxy-print.max-pages", NUMBER_VALIDATOR_OPT),
+
+        /**
+         * Restrict non-secure proxy printing to this Printer Group. See:
+         * {@link PrinterGroup#getGroupName()}
+         */
+        PROXY_PRINT_NON_SECURE_PRINTER_GROUP(//
+                "proxy-print.non-secure-printer-group", API_UPDATABLE_OFF),
+
+        /**
+         * Enable "remove graphics" option for Proxy Print (boolean).
+         */
+        PROXY_PRINT_REMOVE_GRAPHICS_ENABLE(//
+                "proxy-print.remove-graphics.enable", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * Enable CUPS job state editing of PrintOut instance (boolean) in Admin
+         * Web App.
+         */
+        PROXY_PRINT_JOB_STATE_EDIT_ENABLE(//
+                "proxy-print.job-state.edit.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         * Enable "repair" option for Proxy Print (boolean).
+         *
+         * @deprecated Use {@link #PRINT_IN_PDF_FONTS_EMBED} = Y.
+         */
+        @Deprecated
+        PROXY_PRINT_REPAIR_ENABLE(//
+                "proxy-print.repair.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        PROXY_PRINT_CONVERT(//
+                "proxy-print.convert", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+        /** */
+        PROXY_PRINT_CONVERT_SUSPEND(//
+                "proxy-print.convert.suspend", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+        /** */
+        PROXY_PRINT_CONVERT_GRAYSCALE(//
+                "proxy-print.convert.grayscale", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+        /** */
+        PROXY_PRINT_CONVERT_RASTERIZE(//
+                "proxy-print.convert.rasterize", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+        /** */
+        PROXY_PRINT_CONVERT_RASTERIZE_DPI(//
+                "proxy-print.convert.rasterize.dpi", PDF_RESOLUTION_VALIDATOR,
+                PdfResolutionEnum.DPI_300.toString(), API_UPDATABLE_ON),
+        /** */
+        PROXY_PRINT_CONVERT_RASTERIZE_ZERO_FONTS(//
+                "proxy-print.convert.rasterize.zero.fonts", BOOLEAN_VALIDATOR,
+                V_NO, API_UPDATABLE_ON),
+        /** */
+        PROXY_PRINT_CONVERT_RASTERIZE_MAX_BYTES(//
+                "proxy-print.convert.rasterize.max.bytes",
+                NUMBER_VALIDATOR_ZERO_TO_MAX, V_ZERO, API_UPDATABLE_ON),
+        /** */
+        PROXY_PRINT_CONVERT_RASTERIZE_MAX_PAGES(//
+                "proxy-print.convert.rasterize.max.pages",
+                NUMBER_VALIDATOR_ZERO_TO_MAX, V_ZERO, API_UPDATABLE_ON),
+
+        /**
+         * Download of SafePages.
+         */
+        PDF_OUT_RASTERIZE_DPI_DOWNLOAD(//
+                "pdf-out.convert.rasterize.dpi.download",
+                PDF_RESOLUTION_VALIDATOR, //
+                PdfResolutionEnum.DPI_300.toString(), API_UPDATABLE_ON),
+        /** Sending SafePages by email. */
+        PDF_OUT_RASTERIZE_DPI_EMAIL(//
+                "pdf-out.convert.rasterize.dpi.email", PDF_RESOLUTION_VALIDATOR,
+                PdfResolutionEnum.DPI_300.toString(), API_UPDATABLE_ON),
+
+        /**
+         * CRON expression: 10 minutes past midnight.
+         */
+        SCHEDULE_DAILY(//
+                "schedule.daily", CRON_EXPR_VALIDATOR, "0 10 0 * * ?",
+                API_UPDATABLE_OFF),
+
+        /**
+         * CRON expression: 12:55am each day (before 1am to miss DST
+         * switch-overs).
+         */
+        SCHEDULE_DAILY_MAINT(//
+                "schedule.daily-maintenance", CRON_EXPR_VALIDATOR,
+                "0 55 0 * * ?", API_UPDATABLE_OFF),
+
+        /**
+         * CRON expression.
+         */
+        SCHEDULE_HOURLY(//
+                "schedule.hourly", CRON_EXPR_VALIDATOR, "0 0 * * * ?",
+                API_UPDATABLE_OFF),
+
+        /**
+         * CRON expression.
+         */
+        SCHEDULE_MONTHLY(//
+                "schedule.monthly", CRON_EXPR_VALIDATOR, "0 30 0 1 * ?",
+                API_UPDATABLE_OFF),
+
+        /**
+         * CRON expression: 20 minutes past midnight on Sunday morning.
+         */
+        SCHEDULE_WEEKLY(//
+                "schedule.weekly", CRON_EXPR_VALIDATOR, "0 20 0 ? * 1",
+                API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        SCHEDULE_AUTO_SYNC_USER(//
+                "schedule.auto-sync.user", BOOLEAN_VALIDATOR, V_YES),
+
+        /** */
+        STATS_PAYMENT_GATEWAY_ROLLING_DAY_COUNT(//
+                "stats.payment-gateway.rolling-day.count", API_UPDATABLE_OFF),
+        /** */
+        STATS_PAYMENT_GATEWAY_ROLLING_DAY_CENTS(//
+                "stats.payment-gateway.rolling-day.cents", API_UPDATABLE_OFF),
+
+        /** */
+        STATS_PAYMENT_GATEWAY_ROLLING_WEEK_COUNT(//
+                "stats.payment-gateway.rolling-week.count", API_UPDATABLE_OFF),
+        /** */
+        STATS_PAYMENT_GATEWAY_ROLLING_WEEK_CENTS(//
+                "stats.payment-gateway.rolling-week.cents", API_UPDATABLE_OFF),
+
+        /** */
+        STATS_PAYMENT_GATEWAY_ROLLING_MONTH_COUNT(//
+                "stats.payment-gateway.rolling-month.count", API_UPDATABLE_OFF),
+        /** */
+        STATS_PAYMENT_GATEWAY_ROLLING_MONTH_CENTS(//
+                "stats.payment-gateway.rolling-month.cents", API_UPDATABLE_OFF),
+
+        /**
+         * All print-in documents (day).
+         */
+        STATS_PRINT_IN_ROLLING_DAY_DOCS(//
+                "stats.print-in.rolling-day.docs", API_UPDATABLE_OFF),
+
+        /**
+         * All print-in PDF documents (day).
+         */
+        STATS_PRINT_IN_ROLLING_DAY_PDF(//
+                "stats.print-in.rolling-day.pdf", API_UPDATABLE_OFF),
+        STATS_PRINT_IN_ROLLING_DAY_PDF_REPAIR(//
+                "stats.print-in.rolling-day.pdf.repair", API_UPDATABLE_OFF),
+        STATS_PRINT_IN_ROLLING_DAY_PDF_REPAIR_FAIL(//
+                "stats.print-in.rolling-day.pdf.repair.fail",
+                API_UPDATABLE_OFF),
+        STATS_PRINT_IN_ROLLING_DAY_PDF_REPAIR_FONT(//
+                "stats.print-in.rolling-day.pdf.repair.font",
+                API_UPDATABLE_OFF),
+        STATS_PRINT_IN_ROLLING_DAY_PDF_REPAIR_FONT_FAIL(//
+                "stats.print-in.rolling-day.pdf.repair.font.fail",
+                API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_PRINT_IN_ROLLING_DAY_PAGES(//
+                "stats.print-in.rolling-day.pages", API_UPDATABLE_OFF),
+
+        /**
+         * All print-in documents (week).
+         */
+        STATS_PRINT_IN_ROLLING_WEEK_DOCS(//
+                "stats.print-in.rolling-week.docs", API_UPDATABLE_OFF),
+
+        /**
+         * All print-in PDF documents (week).
+         */
+        STATS_PRINT_IN_ROLLING_WEEK_PDF(//
+                "stats.print-in.rolling-week.pdf", API_UPDATABLE_OFF),
+        STATS_PRINT_IN_ROLLING_WEEK_PDF_REPAIR(//
+                "stats.print-in.rolling-week.pdf.repair", API_UPDATABLE_OFF),
+        STATS_PRINT_IN_ROLLING_WEEK_PDF_REPAIR_FAIL(//
+                "stats.print-in.rolling-week.pdf.repair.fail",
+                API_UPDATABLE_OFF),
+        STATS_PRINT_IN_ROLLING_WEEK_PDF_REPAIR_FONT(//
+                "stats.print-in.rolling-week.pdf.repair.font",
+                API_UPDATABLE_OFF),
+        STATS_PRINT_IN_ROLLING_WEEK_PDF_REPAIR_FONT_FAIL(//
+                "stats.print-in.rolling-week.pdf.repair.font.fail",
+                API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_PRINT_IN_ROLLING_WEEK_PAGES(//
+                "stats.print-in.rolling-week.pages", API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_PRINT_IN_ROLLING_WEEK_BYTES(//
+                "stats.print-in.rolling-week.bytes", API_UPDATABLE_OFF),
+
+        /**
+         * All print-in documents (month).
+         */
+        STATS_PRINT_IN_ROLLING_MONTH_DOCS(//
+                "stats.print-in.rolling-month.docs", API_UPDATABLE_OFF),
+
+        /**
+         * All print-in PDF documents (month).
+         */
+        STATS_PRINT_IN_ROLLING_MONTH_PDF(//
+                "stats.print-in.rolling-month.pdf", API_UPDATABLE_OFF),
+        STATS_PRINT_IN_ROLLING_MONTH_PDF_REPAIR(//
+                "stats.print-in.rolling-month.pdf.repair", API_UPDATABLE_OFF),
+        STATS_PRINT_IN_ROLLING_MONTH_PDF_REPAIR_FAIL(//
+                "stats.print-in.rolling-month.pdf.repair.fail",
+                API_UPDATABLE_OFF),
+        STATS_PRINT_IN_ROLLING_MONTH_PDF_REPAIR_FONT(//
+                "stats.print-in.rolling-month.pdf.repair.font",
+                API_UPDATABLE_OFF),
+        STATS_PRINT_IN_ROLLING_MONTH_PDF_REPAIR_FONT_FAIL(//
+                "stats.print-in.rolling-month.pdf.repair.font.fail",
+                API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_PRINT_IN_ROLLING_MONTH_PAGES(//
+                "stats.print-in.rolling-month.pages", API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_PRINT_IN_ROLLING_MONTH_BYTES(//
+                "stats.print-in.rolling-month.bytes", API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_PDF_OUT_ROLLING_DAY_PAGES(//
+                "stats.pdf-out.rolling-day.pages", API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_PDF_OUT_ROLLING_WEEK_PAGES(//
+                "stats.pdf-out.rolling-week.pages", API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_PDF_OUT_ROLLING_WEEK_BYTES(//
+                "stats.pdf-out.rolling-week.bytes", API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_PDF_OUT_ROLLING_MONTH_PAGES(//
+                "stats.pdf-out.rolling-month.pages", API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_PDF_OUT_ROLLING_MONTH_BYTES(//
+                "stats.pdf-out.rolling-month.bytes", API_UPDATABLE_OFF),
+
+        /** */
+        STATS_POS_DEPOSIT_ROLLING_DAY_COUNT(//
+                "stats.pos.deposit.rolling-day.count", API_UPDATABLE_OFF),
+        /** */
+        STATS_POS_DEPOSIT_ROLLING_DAY_CENTS(//
+                "stats.pos.deposit.rolling-day.cents", API_UPDATABLE_OFF),
+
+        /** */
+        STATS_POS_DEPOSIT_ROLLING_WEEK_COUNT(//
+                "stats.pos.deposit.rolling-week.count", API_UPDATABLE_OFF),
+        /** */
+        STATS_POS_DEPOSIT_ROLLING_WEEK_CENTS(//
+                "stats.pos.deposit.rolling-week.cents", API_UPDATABLE_OFF),
+
+        /** */
+        STATS_POS_DEPOSIT_ROLLING_MONTH_COUNT(//
+                "stats.pos.deposit.rolling-month.count", API_UPDATABLE_OFF),
+        /** */
+        STATS_POS_DEPOSIT_ROLLING_MONTH_CENTS(//
+                "stats.pos.deposit.rolling-month.cents", API_UPDATABLE_OFF),
+
+        /** */
+        STATS_POS_PURCHASE_ROLLING_DAY_COUNT(//
+                "stats.pos.purchase.rolling-day.count", API_UPDATABLE_OFF),
+        /** */
+        STATS_POS_PURCHASE_ROLLING_DAY_CENTS(//
+                "stats.pos.purchase.rolling-day.cents", API_UPDATABLE_OFF),
+
+        /** */
+        STATS_POS_PURCHASE_ROLLING_WEEK_COUNT(//
+                "stats.pos.purchase.rolling-week.count", API_UPDATABLE_OFF),
+        /** */
+        STATS_POS_PURCHASE_ROLLING_WEEK_CENTS(//
+                "stats.pos.purchase.rolling-week.cents", API_UPDATABLE_OFF),
+
+        /** */
+        STATS_POS_PURCHASE_ROLLING_MONTH_COUNT(//
+                "stats.pos.purchase.rolling-month.count", API_UPDATABLE_OFF),
+        /** */
+        STATS_POS_PURCHASE_ROLLING_MONTH_CENTS(//
+                "stats.pos.purchase.rolling-month.cents", API_UPDATABLE_OFF),
+        /**
+         *
+         */
+        STATS_PRINT_OUT_ROLLING_DAY_PAGES(//
+                "stats.print-out.rolling-day.pages", API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_PRINT_OUT_ROLLING_WEEK_PAGES(//
+                "stats.print-out.rolling-week.pages", API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_PRINT_OUT_ROLLING_WEEK_SHEETS(//
+                "stats.print-out.rolling-week.sheets", API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_PRINT_OUT_ROLLING_WEEK_ESU(//
+                "stats.print-out.rolling-week.esu", API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_PRINT_OUT_ROLLING_WEEK_BYTES(//
+                "stats.print-out.rolling-week.bytes", API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_PRINT_OUT_ROLLING_MONTH_PAGES(//
+                "stats.print-out.rolling-month.pages", API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_PRINT_OUT_ROLLING_MONTH_SHEETS(//
+                "stats.print-out.rolling-month.sheets", API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_PRINT_OUT_ROLLING_MONTH_ESU(//
+                "stats.print-out.rolling-month.esu", API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_PRINT_OUT_ROLLING_MONTH_BYTES(//
+                "stats.print-out.rolling-month.bytes", API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_TOTAL_RESET_DATE(//
+                "stats.total.reset-date",
+                String.valueOf(System.currentTimeMillis()), API_UPDATABLE_OFF),
+
+        STATS_TOTAL_RESET_DATE_PRINT_IN(//
+                "stats.total.reset-date.print-in",
+                String.valueOf(System.currentTimeMillis()), API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_TOTAL_PDF_OUT_PAGES(//
+                "stats.total.pdf-out.pages", V_ZERO, API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_TOTAL_PDF_OUT_BYTES(//
+                "stats.total.pdf-out.bytes", V_ZERO, API_UPDATABLE_OFF),
+
+        /**
+        *
+        */
+        STATS_TOTAL_PRINT_IN_DOCS(//
+                "stats.total.print-in.docs", V_ZERO, API_UPDATABLE_OFF),
+
+        STATS_TOTAL_PRINT_IN_PDF(//
+                "stats.total.print-in.pdf", V_ZERO, API_UPDATABLE_OFF),
+        STATS_TOTAL_PRINT_IN_PDF_REPAIR(//
+                "stats.total.print-in.pdf.repair", V_ZERO, API_UPDATABLE_OFF),
+        STATS_TOTAL_PRINT_IN_PDF_REPAIR_FAIL(//
+                "stats.total.print-in.pdf.repair.fail", V_ZERO,
+                API_UPDATABLE_OFF),
+        STATS_TOTAL_PRINT_IN_PDF_REPAIR_FONT(//
+                "stats.total.print-in.pdf.repair.font", V_ZERO,
+                API_UPDATABLE_OFF),
+        STATS_TOTAL_PRINT_IN_PDF_REPAIR_FONT_FAIL(//
+                "stats.total.print-in.pdf.repair.font.fail", V_ZERO,
+                API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_TOTAL_PRINT_IN_PAGES(//
+                "stats.total.print-in.pages", V_ZERO, API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_TOTAL_PRINT_IN_BYTES(//
+                "stats.total.print-in.bytes", V_ZERO, API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_TOTAL_PRINT_OUT_PAGES(//
+                "stats.total.print-out.pages", V_ZERO, API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_TOTAL_PRINT_OUT_SHEETS(//
+                "stats.total.print-out.sheets", V_ZERO, API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_TOTAL_PRINT_OUT_ESU(//
+                "stats.total.print-out.esu", V_ZERO, API_UPDATABLE_OFF),
+
+        /**
+         *
+         */
+        STATS_TOTAL_PRINT_OUT_BYTES(//
+                "stats.total.print-out.bytes", V_ZERO, API_UPDATABLE_OFF),
+
+        /**
+         * JSON string of {@link UserHomeStatsDto}.
+         */
+        STATS_USERHOME(//
+                "stats.userhome", API_UPDATABLE_OFF),
+
+        /**
+         * Make a backup before a database schema upgrade.
+         */
+        SYS_BACKUP_BEFORE_DB_UPGRADE(//
+                "system.backup.before-db-upgrade", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         * Time in milliseconds when last backup was run.
+         */
+        SYS_BACKUP_LAST_RUN_TIME(//
+                "system.backup.last-run-time", NUMBER_VALIDATOR, V_ZERO),
+
+        /**
+         *
+         */
+        SYS_BACKUP_DAYS_TO_KEEP(//
+                "system.backup.days-to-keep", NUMBER_VALIDATOR, "30"),
+
+        /**
+         *
+         */
+        SYS_BACKUP_ENABLE_AUTOMATIC(//
+                "system.backup.enable-automatic", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         *
+         */
+        SYS_BACKUP_XMLFORMATTER_ENABLE(//
+                "system.backup.xmlformatter.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        SYS_DEFAULT_LOCALE(//
+                "system.default-locale", LOCALE_VALIDATOR, API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        SYS_DEFAULT_PAPER_SIZE(//
+                "system.default-papersize", PAPERSIZE_V_SYSTEM,
+                API_UPDATABLE_OFF),
+
+        /**
+         * The DNS name of the server. Used to give user feedback for URL's,
+         * e.g. URL's to use for IPP printing.
+         */
+        SYS_SERVER_DNS_NAME("system.server.dns-name", API_UPDATABLE_ON),
+
+        /**
+         * The major database schema version.
+         * <p>
+         * Do NOT set a value since it is present in installation database.
+         * </p>
+         */
+        SYS_SCHEMA_VERSION("system.schema-version", API_UPDATABLE_OFF),
+
+        /**
+         * The minor database schema version.
+         * <p>
+         * This value is set in the installation database (since v0.9.3), but
+         * defaults to "0" for pre v0.9.3 databases.
+         * </p>
+         */
+        SYS_SCHEMA_VERSION_MINOR(//
+                "system.schema-version-minor", V_ZERO, API_UPDATABLE_OFF),
+
+        /**
+         * Do NOT set a value since it is present in installation database.
+         */
+        SYS_SETUP_COMPLETED("system.setup-completed", API_UPDATABLE_OFF),
+
+        /**
+         * Enable CUPS job status synchronization at startup.
+         */
+        SYS_STARTUP_CUPS_IPP_SYNC_PRINT_JOBS_ENABLE(//
+                "system.startup.cups.ipp.sync-print-jobs.enable",
+                BOOLEAN_VALIDATOR, V_YES, API_UPDATABLE_ON),
+
+        /**
+         * Inet Access filter.
+         */
+        SYS_INETFILTER_ENABLE("system.inetfilter.enable", BOOLEAN_VALIDATOR,
+                V_NO, API_UPDATABLE_ON),
+
+        /** */
+        SYS_INETFILTER_WHITELIST("system.inetfilter.whitelist",
+                API_UPDATABLE_ON),
+        /** */
+        SYS_INETFILTER_WHITELIST_EMPTY_ALLOW_ALL(
+                "system.inetfilter.whitelist.empty-allow-all",
+                BOOLEAN_VALIDATOR, V_YES, API_UPDATABLE_ON),
+        /** */
+        SYS_INETFILTER_BLACKLIST("system.inetfilter.blacklist",
+                API_UPDATABLE_ON),
+
+        /**
+         * Interval (minutes) within which Inet Filter events are totaled and
+         * written as warning in the {@link AppLog}. The expiration of the
+         * interval is triggered by an filter event.
+         */
+        SYS_INETFILTER_WARN_INTERVAL_APPLOG_MINS(//
+                "system.inetfilter.warn-interval.applog.mins", NUMBER_VALIDATOR,
+                "5", API_UPDATABLE_ON),
+        /**
+         * Interval (seconds) within which Init Filter events are totaled and
+         * send as Real-time Activity warning with a pop-up message to the Admin
+         * Web App.
+         */
+        SYS_INETFILTER_WARN_INTERVAL_WEBAPP_SECS(//
+                "system.inetfilter.warn-interval.webapp.secs", NUMBER_VALIDATOR,
+                "60", API_UPDATABLE_ON),
+
+        /**
+         * Denial of Service filter (DoSFilter).
+         */
+        SYS_DOSFILTER_ENABLE("system.dosfilter.enable", BOOLEAN_VALIDATOR,
+                V_YES, API_UPDATABLE_ON),
+
+        /**
+         * Delay (in milliseconds) that is applied to all requests over the rate
+         * limit, before they are considered at all. {@code -1} means just
+         * reject request, {@code 0} means no delay, otherwise it is the delay.
+         */
+        SYS_DOSFILTER_DELAY_MSEC("system.dosfilter.delay-msec",
+                new NumberValidator(Long.valueOf(-1), Long.MAX_VALUE, false),
+                "100", API_UPDATABLE_ON),
+
+        /**
+         * Set amount of time (in milliseconds) to async wait for semaphore.
+         */
+        SYS_DOSFILTER_THROTTLE_MSEC("system.dosfilter.throttle-msec",
+                NUMBER_VALIDATOR, "30000", API_UPDATABLE_ON),
+
+        /**
+         * Number of requests over the rate limit able to be considered at once.
+         */
+        SYS_DOSFILTER_THROTTLED_REQUESTS("system.dosfilter.throttled-requests",
+                NUMBER_VALIDATOR, "5", API_UPDATABLE_ON),
+
+        /**
+         * Status code to send if there are too many requests. Default
+         * {@link HttpStatus#TOO_MANY_REQUESTS_429}, but
+         * {@link HttpStatus#SERVICE_UNAVAILABLE_503} is another option.
+         */
+        SYS_DOSFILTER_TOO_MANY_CODE("system.dosfilter.too-many-code",
+                HTTP_CODE_429_503_VALIDATOR,
+                String.valueOf(HttpStatus.TOO_MANY_REQUESTS_429),
+                API_UPDATABLE_ON),
+
+        /**
+         * Maximum amount of time (in milliseconds) to allow the request to
+         * process.
+         */
+        SYS_DOSFILTER_MAX_REQUEST_MSEC("system.dosfilter.max-request-msec",
+                NUMBER_VALIDATOR, "30000", API_UPDATABLE_ON),
+        /**
+         * Maximum number of requests from a connection per second. Requests in
+         * excess of this are first delayed, then throttled.
+         */
+        SYS_DOSFILTER_MAX_REQUESTS_PER_SEC(
+                "system.dosfilter.max-requests-per-sec", NUMBER_VALIDATOR, "75",
+                API_UPDATABLE_ON),
+
+        /**
+         * Maximum amount of time (in milliseconds) to keep track of request
+         * rates for a connection, before deciding that the user has gone away,
+         * and discarding it.
+         */
+        SYS_DOSFILTER_MAX_IDLE_TRACKER_MSEC(
+                "system.dosfilter.max-idle-tracker-msec", NUMBER_VALIDATOR,
+                "30000", API_UPDATABLE_ON),
+
+        /**
+         * Comma-separated list of host names or IP addresses, either in the
+         * form of a dotted decimal notation A.B.C.D or in the CIDR notation
+         * A.B.C.D/M, that will not be rate limited in DoSFilter.
+         * <p>
+         * Note: localhost, 127.0.0.1 and 0:0:0:0:0:0:0:1 are implicitly
+         * whitelisted.
+         * </p>
+         */
+        SYS_DOSFILTER_WHITELIST("system.dosfilter.whitelist", API_UPDATABLE_ON),
+
+        /**
+         * Interval (minutes) within which DoSFilter events are totaled and
+         * written as warning in the {@link AppLog}. The expiration of the
+         * interval is triggered by a DoSFilter event.
+         */
+        SYS_DOSFILTER_WARN_INTERVAL_APPLOG_MINS(//
+                "system.dosfilter.warn-interval.applog.mins", NUMBER_VALIDATOR,
+                "5", API_UPDATABLE_ON),
+
+        /**
+         * Interval (seconds) within which DoSFilter events are totaled and send
+         * as Real-time Activity warning with a pop-up message to the Admin Web
+         * App.
+         */
+        SYS_DOSFILTER_WARN_INTERVAL_WEBAPP_SECS(//
+                "system.dosfilter.warn-interval.webapp.secs", NUMBER_VALIDATOR,
+                "60", API_UPDATABLE_ON),
+
+        /**
+         * Interval (minutes) within which HTTP/2 rate control events are
+         * totaled and written as warning in the {@link AppLog}. The expiration
+         * of the interval is triggered by an HTTP/2 rate control event.
+         */
+        SYS_HTTP2_MAX_REQUESTS_WARN_INTERVAL_APPLOG_MINS(//
+                "system.http2.max-requests.warn-interval.applog.mins",
+                NUMBER_VALIDATOR, "5", API_UPDATABLE_ON),
+
+        /**
+         * Interval (seconds) within which HTTP/2 rate control events are
+         * totaled and send as Real-time Activity warning with a pop-up message
+         * to the Admin Web App.
+         */
+        SYS_HTTP2_MAX_REQUESTS_WARN_INTERVAL_WEBAPP_SECS(//
+                "system.http2.max-requests.warn-interval.webapp.secs",
+                NUMBER_VALIDATOR, "60", API_UPDATABLE_ON),
+
+        /**
+         * Rate Limiting.
+         */
+        SYS_RATE_LIMITING_ENABLE("system.ratelimiting.enable",
+                BOOLEAN_VALIDATOR, V_YES, API_UPDATABLE_ON),
+
+        /** */
+        SYS_RATE_LIMITING_USER_AUTH_ENABLE(
+                "system.ratelimiting.user-auth.enable", BOOLEAN_VALIDATOR,
+                V_YES, API_UPDATABLE_ON),
+        /** */
+        SYS_RATE_LIMITING_USER_AUTH_FAILURES_PER_MIN(
+                "system.ratelimiting.user-auth.failures-per-min",
+                NUMBER_VALIDATOR, "5", API_UPDATABLE_ON),
+
+        /** */
+        SYS_RATE_LIMITING_USER_REG_ENABLE("system.ratelimiting.user-reg.enable",
+                BOOLEAN_VALIDATOR, V_YES, API_UPDATABLE_ON),
+        /** */
+        SYS_RATE_LIMITING_USER_REG_MAX_PER_HOUR(
+                "system.ratelimiting.user-reg.max-per-hour", NUMBER_VALIDATOR,
+                "10", API_UPDATABLE_ON),
+
+        /** */
+        SYS_RATE_LIMITING_API_ENABLE("system.ratelimiting.api.enable",
+                BOOLEAN_VALIDATOR, V_YES, API_UPDATABLE_ON),
+        /** */
+        SYS_RATE_LIMITING_API_FAILURES_PER_MIN(
+                "system.ratelimiting.api.failures-per-min", NUMBER_VALIDATOR,
+                "5", API_UPDATABLE_ON),
+
+        /** */
+        SYS_RATE_LIMITING_PRINT_IN_ENABLE("system.ratelimiting.print-in.enable",
+                BOOLEAN_VALIDATOR, V_YES, API_UPDATABLE_ON),
+        /** */
+        SYS_RATE_LIMITING_PRINT_IN_FAILURES_PER_MIN(
+                "system.ratelimiting.print-in.failures-per-min",
+                NUMBER_VALIDATOR, "5", API_UPDATABLE_ON),
+
+        /**
+         * When system is in maintenance mode, only admins can login to Web Apps
+         * (regular users cannot).
+         */
+        SYS_MAINTENANCE("system.maintenance", BOOLEAN_VALIDATOR, V_NO),
+
+        /**
+         * Heartbeat (seconds) to monitor system errors like deadlocked threads.
+         */
+        SYS_MONITOR_HEARTBEAT_SEC("system.monitor.heartbeat-sec",
+                NUMBER_VALIDATOR, "120"),
+
+        /**
+         *
+         */
+        SYS_HOST_CMD_PDFTOCAIRO_IMG_STRATEGY(
+                "system.host.cmd.pdftocairo.img.strategy",
+                new EnumValidator<>(Pdf2ImgCairoCmd.Strategy.class),
+                Pdf2ImgCairoCmd.Strategy.AUTO.toString(), API_UPDATABLE_ON),
+
+        /**
+         * Enable {@link SystemInfo.Command#WKHTMLTOPDF}.
+         */
+        SYS_CMD_WKHTMLTOPDF_ENABLE("system.cmd.wkhtmltopdf.enable",
+                BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         *
+         */
+        USER_CAN_CHANGE_PIN(//
+                "user.can-change-pin", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * .
+         */
+        USER_PIN_LENGTH_MIN("user.pin-length-min", NUMBER_VALIDATOR, "4"),
+
+        /**
+         * .
+         */
+        USER_PIN_LENGTH_MAX(//
+                "user.pin-length-max", NUMBER_VALIDATOR,
+                NUMBER_V_NONE.toString()),
+
+        /**
+         *
+         */
+        USER_ID_NUMBER_LENGTH_MIN(//
+                "user.id-number-length-min", NUMBER_VALIDATOR, "4"),
+
+        /**
+         *
+         */
+        USER_ID_NUMBER_GENERATE_ENABLE(//
+                "user.id-number-generate.enable", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         *
+         */
+        USER_ID_NUMBER_GENERATE_LENGTH(//
+                "user.id-number-generate.length",
+                USER_ID_NUMBER_LENGTH_VALIDATOR, "8"),
+
+        /**
+         * Insert users ad-hoc after successful authentication at the login
+         * page.
+         */
+        USER_INSERT_LAZY_LOGIN(//
+                "user.insert.lazy-login", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         * Insert users ad-hoc when printing to a PrintFlowLite printer.
+         * <p>
+         * WARNING: this option assumes that the user is TRUSTED.
+         * </p>
+         * <p>
+         * NOTE: when 'false', the user needs to exist in the database before
+         * any PrintFlowLite printer can be used.
+         * </p>
+         */
+        USER_INSERT_LAZY_PRINT(//
+                "user.insert.lazy-print", BOOLEAN_VALIDATOR, V_NO),
+
+        /**
+         *
+         */
+        USER_SOURCE_GROUP("user-source.group", API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        USER_SOURCE_UPDATE_USER_DETAILS(//
+                "user-source.update-user-details", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         * Enable sending User TOTP 2FA code via Telegram bot.
+         */
+        USER_EXT_TELEGRAM_TOTP_ENABLE("user.ext.telegram.totp.enable",
+                BOOLEAN_VALIDATOR, V_YES, API_UPDATABLE_ON),
+
+        /**
+         * Enable TOTP 2FA authentication.
+         */
+        USER_TOTP_ENABLE("user.totp.enable", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * Overwrite for Community Member name as issuer in
+         * "otpauth://totp/[issuer]" URI.
+         *
+         */
+        USER_TOTP_ISSUER("user.totp.issuer", "", API_UPDATABLE_ON),
+
+        /**
+         * Client IP addresses (CIDR) that are allowed to use the User Client
+         * App (when void, all client addresses are allowed).
+         */
+        CLIAPP_IP_ADDRESSES_ALLOWED(//
+                "cliapp.ip-addresses-allowed", CIDR_RANGES_VALIDATOR_OPT,
+                API_UPDATABLE_ON),
+
+        /**
+         * Enable Client App authentication for clients that are denied for
+         * their IP address.
+         */
+        CLIAPP_AUTH_IP_ADDRESSES_DENIED_ENABLE(//
+                "cliapp.auth.ip-addresses-denied.enable", BOOLEAN_VALIDATOR,
+                V_NO),
+
+        /**
+         * (boolean) Trust the User Client App system account name as user
+         * identification?
+         */
+        CLIAPP_AUTH_TRUST_USER_ACCOUNT(//
+                "cliapp.auth.trust-user-account", BOOLEAN_VALIDATOR, V_NO),
+
+        /**
+         * Secret administrator passkey of User Client App.
+         */
+        CLIAPP_AUTH_ADMIN_PASSKEY(//
+                "cliapp.auth.admin-passkey", API_UPDATABLE_OFF),
+
+        /**
+         * Trust authenticated user in User Web App on same IP address as Client
+         * App (Boolean, default TRUE).
+         */
+        CLIAPP_AUTH_TRUST_WEBAPP_USER_AUTH(//
+                "cliapp.auth.trust-webapp-user-auth", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         * The query string to be appended to the base URL when opening the User
+         * Web App in response to a print-in event. Do <i>not</i> prefix the
+         * value with a {@code '?'} or {@code '&'} character.
+         */
+        CLIAPP_PRINT_IN_URL_QUERY(//
+                "cliapp.print-in.url-query", API_UPDATABLE_OFF),
+
+        /**
+         * Action button text on print-in action dialog for opening User Web
+         * App.
+         */
+        CLIAPP_PRINT_IN_DIALOG_BUTTON_OPEN(//
+                "cliapp.print-in.dialog.button-open", API_UPDATABLE_OFF),
+
+        /**
+         * .
+         */
+        ECO_PRINT_ENABLE("eco-print.enable", BOOLEAN_VALIDATOR, V_NO),
+
+        /**
+         * Threshold for automatically creating an EcoPrint shadow file when PDF
+         * arrives in SafePages inbox: if number of PDF pages is GT threshold
+         * the shadow is not created.
+         */
+        ECO_PRINT_AUTO_THRESHOLD_SHADOW_PAGE_COUNT(//
+                "eco-print.auto-threshold.page-count", NUMBER_VALIDATOR,
+                V_ZERO),
+
+        /**
+         * .
+         */
+        ECO_PRINT_RESOLUTION_DPI(//
+                "eco-print.resolution-dpi", NUMBER_VALIDATOR, "300"),
+
+        /**
+         * Discount percentage for EcoPrint proxy printing.
+         */
+        ECO_PRINT_DISCOUNT_PERC(//
+                "eco-print.discount-percent", NUMBER_VALIDATOR, "15"),
+
+        /**
+         * (boolean) Show Document title in the DocLog.
+         */
+        WEBAPP_DOCLOG_SHOW_DOC_TITLE(//
+                "webapp.doclog.show-doc-title", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         *
+         */
+        WEBAPP_NUMBER_UP_PREVIEW_ENABLE(//
+                "webapp.number-up-preview.enable", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+        /**
+         *
+         */
+        WEBAPP_WATCHDOG_INTERVAL_SECS(//
+                "webapp.watchdog.interval-secs", NUMBER_VALIDATOR,
+                DEFAULT_WEBAPP_WATCHDOG_INTERVAL_SECS, API_UPDATABLE_ON),
+        /** */
+        WEBAPP_WATCHDOG_ALLOWED_DELAY_SECS(//
+                "webapp.watchdog.allowed-delay-secs", NUMBER_VALIDATOR,
+                DEFAULT_WEBAPP_WATCHDOG_ALLOWED_DELAY_SECS, API_UPDATABLE_ON),
+        /** */
+        WEBAPP_WATCHDOG_MESSAGE_ENABLE(//
+                "webapp.watchdog.message.enable", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * Admin WebApp: show technical info on dashboard?
+         */
+        WEBAPP_ADMIN_DASHBOARD_SHOW_TECH_INFO(//
+                "webapp.admin.dashboard.show-tech-info", BOOLEAN_VALIDATOR,
+                V_NO, API_UPDATABLE_ON),
+
+        /**
+         * Admin WebApp: show environmental effect on dashboard?
+         */
+        WEBAPP_ADMIN_DASHBOARD_SHOW_ENV_INFO(//
+                "webapp.admin.dashboard.show-env-info", BOOLEAN_VALIDATOR,
+                V_YES, API_UPDATABLE_ON),
+
+        /**
+         * Enable PDF/PGP page in Admin WebApp.
+         */
+        WEBAPP_PDFPGP_ENABLE(//
+                "webapp.pdfpgp.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+        /** */
+        WEBAPP_PDFPGP_MAX_UPLOAD_FILE_MB(//
+                "webapp.pdfpgp.max-upload-file-mb", NUMBER_VALIDATOR,
+                WEBAPP_PDFPGP_MAX_UPLOAD_FILE_MB_V_DEFAULT.toString()),
+
+        /** */
+        PDFPGP_VERIFICATION_ENABLE(//
+                "pdfpgp.verification.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+        /** */
+        PDFPGP_VERIFICATION_HOST(//
+                "pdfpgp.verification.host", API_UPDATABLE_ON),
+        /** */
+        PDFPGP_VERIFICATION_PORT(//
+                "pdfpgp.verification.port", NUMBER_VALIDATOR_OPT,
+                API_UPDATABLE_ON),
+
+        /**
+         * See <a href="https://securitytxt.org/">securitytxt.org</a> and
+         * <a href="https://tools.ietf.org/html/rfc8615">RFC8615</a>.
+         */
+        SECURITYTXT_ENABLE(//
+                "securitytxt.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+        /**
+         * One of the three "securitytxt.contact.*" is [REQUIRED].
+         */
+        SECURITYTXT_CONTACT_MAILTO(//
+                "securitytxt.contact.mailto", EMAIL_VALIDATOR_OPT,
+                API_UPDATABLE_ON),
+        /** */
+        SECURITYTXT_CONTACT_TEL(//
+                "securitytxt.contact.tel", API_UPDATABLE_ON),
+        /** */
+        SECURITYTXT_CONTACT_URL(//
+                "securitytxt.contact.url", URL_VALIDATOR_OPT, API_UPDATABLE_ON),
+        /**
+         * A link to a PGP key which security researchers should use to securely
+         * talk to you.
+         */
+        SECURITYTXT_ENCRYPTION_URI(//
+                "securitytxt.encryption.uri", URI_VALIDATOR_OPT,
+                API_UPDATABLE_ON),
+        /**
+         * A link to a web page where you say thank you to security researchers
+         * who have helped you.
+         */
+        SECURITYTXT_ACKNOWLEDGMENTS_URL(//
+                "securitytxt.acknowledgments.url", URL_VALIDATOR_OPT,
+                API_UPDATABLE_ON),
+        /**
+         * A comma-separated list of language codes that your security team
+         * speaks.
+         */
+        SECURITYTXT_PREFERRED_LANGUAGES(//
+                "securitytxt.preferred-languages", "en", API_UPDATABLE_ON),
+        /**
+         * A link to a policy detailing what security researchers should do when
+         * searching for or reporting security issues.
+         */
+        SECURITYTXT_POLICY_URL(//
+                "securitytxt.policy.url", URL_VALIDATOR_OPT, API_UPDATABLE_ON),
+        /**
+         * A link to any security-related job openings in your organisation.
+         */
+        SECURITYTXT_HIRING_URL(//
+                "securitytxt.hiring.url", URL_VALIDATOR_OPT, API_UPDATABLE_ON),
+
+        /** .-------------------------. */
+        WEBAPP_JOBTICKETS_CANCEL_ALL_ENABLE(//
+                "webapp.jobtickets.cancel-all.enable", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /** */
+        WEBAPP_JOBTICKETS_PRINT_ALL_ENABLE(//
+                "webapp.jobtickets.print-all.enable", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /** */
+        WEBAPP_JOBTICKETS_CLOSE_ALL_ENABLE(//
+                "webapp.jobtickets.close-all.enable", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /** */
+        WEBAPP_JOBTICKETS_REOPEN_ENABLE(//
+                "webapp.jobtickets.reopen.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         * Number of job tickets to show in the list. A value of zero means all
+         * available tickets are shown.
+         */
+        WEBAPP_JOBTICKETS_LIST_SIZE(//
+                "webapp.jobtickets.list-size", NUMBER_VALIDATOR, "10"),
+
+        /**
+         * The minimum number of job tickets that can be shown in the list. A
+         * value of zero means all available tickets are shown.
+         */
+        WEBAPP_JOBTICKETS_LIST_SIZE_MIN(//
+                "webapp.jobtickets.list-size-min", NUMBER_VALIDATOR, "5"),
+
+        /**
+         * The maximum number of job tickets that can be shown in the list.
+         */
+        WEBAPP_JOBTICKETS_LIST_SIZE_MAX(//
+                "webapp.jobtickets.list-size-max", NUMBER_VALIDATOR, "50"),
+
+        /**
+         * URL with Payment WebApp help information.
+         */
+        WEBAPP_PAYMENT_HELP_URL(//
+                "webapp.payment.help.url", URL_VALIDATOR_OPT, API_UPDATABLE_ON),
+
+        /**
+         * Payment WebApp: must text of navigation buttons on main window be
+         * shown?
+         */
+        WEBAPP_PAYMENT_MAIN_NAV_BUTTON_TEXT(//
+                "webapp.payment.main.nav-button-text", ON_OFF_ENUM_VALIDATOR,
+                OnOffEnum.ON.toString(), API_UPDATABLE_ON),
+
+        /**
+         * Payment WebApp: show help URL in web app.
+         */
+        WEBAPP_PAYMENT_HELP_URL_ENABLE(//
+                "webapp.payment.help.url.enable", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * POS Web App: success event sound file (mp3, wav, ...) as present in
+         * the {@code server/custom/web/} folder.
+         */
+        WEBAPP_POS_SOUND_SUCCESS(//
+                "webapp.pos.sound.success", API_UPDATABLE_ON),
+
+        /**
+         * POS Web App: failure event sound file (mp3, wav, ...) as present in
+         * the {@code server/custom/web/} folder.
+         */
+        WEBAPP_POS_SOUND_FAILURE(//
+                "webapp.pos.sound.failure", API_UPDATABLE_ON),
+        /**
+         * The maximum number of items labels that make items show as buttons
+         * before a select list is shown. See
+         * {@link #FINANCIAL_POS_SALES_LABEL_ITEMS}.
+         */
+        WEBAPP_POS_SALES_LABEL_ITEMS_BUTTON_MAX(//
+                "webapp.pos.sales.label.items.button-max", NUMBER_VALIDATOR,
+                "7"),
+
+        /**
+         * The maximum number of price labels that make prices show as buttons
+         * before a select list is shown. See
+         * {@link #FINANCIAL_POS_SALES_LABEL_PRICES}.
+         */
+        WEBAPP_POS_SALES_LABEL_PRICES_BUTTON_MAX(//
+                "webapp.pos.sales.label.prices.button-max", NUMBER_VALIDATOR,
+                "10"),
+        /**
+         * Trust authenticated user in Client App on same IP address as User Web
+         * App (Boolean, default TRUE).
+         */
+        WEBAPP_USER_AUTH_TRUST_CLIAPP_AUTH(//
+                "webapp.user.auth.trust-cliapp-auth", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         *
+         */
+        WEBAPP_USER_DOCLOG_SELECT_TYPE_DEFAULT_ORDER(//
+                "webapp.user.doclog.select.type.default-order",
+                new EnumSetValidator<>(DocLogScopeEnum.class),
+                API_UPDATABLE_ON),
+
+        /**
+         * Is GDPR enabled in User Web App.
+         */
+        WEBAPP_USER_GDPR_ENABLE(//
+                "webapp.user.gdpr.enable", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * Is PrintFlowLite-Draw enabled in User Web App Page Browser.
+         */
+        WEBAPP_USER_PAGE_BROWSER_DRAW_ENABLE(//
+                "webapp.user.page-browser.draw.enable", BOOLEAN_VALIDATOR,
+                V_YES, API_UPDATABLE_ON),
+
+        /**
+         * Contact email address for GDPR (erase) requests.
+         */
+        WEBAPP_USER_GDPR_CONTACT_EMAIL(//
+                "webapp.user.gdpr.contact.email", EMAIL_VALIDATOR_OPT,
+                API_UPDATABLE_ON),
+
+        /**
+         * Max idle seconds after which automatic logout occurs.
+         */
+        WEBAPP_USER_MAX_IDLE_SECS(//
+                "webapp.user.max-idle-secs", NUMBER_VALIDATOR,
+                WEBAPP_MAX_IDLE_SECS_V_NONE.toString()),
+
+        /**
+         * Delete all print-in jobs at User WebApp logout.
+         */
+        WEBAPP_USER_LOGOUT_CLEAR_INBOX(//
+                "webapp.user.logout.clear-inbox", BOOLEAN_VALIDATOR, V_NO),
+
+        /**
+         * User WebApp: The number of minutes before job expiration when a job
+         * is signaled as nearing expiration. When zero (0) the expiration is
+         * <i>not</i> signaled.
+         */
+        WEBAPP_USER_PRINT_IN_JOB_EXPIRY_SIGNAL_MINS(//
+                "webapp.user.print-in.job-expiry.signal-mins", NUMBER_VALIDATOR,
+                V_ZERO),
+
+        /** */
+        WEBAPP_USER_PROXY_PRINT_SCALING_MEDIA_MATCH_SHOW(//
+                "webapp.user.proxy-print.scaling.media-match.show",
+                BOOLEAN_VALIDATOR, V_NO, API_UPDATABLE_ON),
+
+        /** */
+        WEBAPP_USER_PROXY_PRINT_SCALING_MEDIA_CLASH_SHOW(//
+                "webapp.user.proxy-print.scaling.media-clash.show",
+                BOOLEAN_VALIDATOR, V_YES, API_UPDATABLE_ON),
+
+        /** */
+        WEBAPP_USER_PROXY_PRINT_SCALING_MEDIA_MATCH_DEFAULT(//
+                "webapp.user.proxy-print.scaling.media-match.default",
+                new EnumValidator<>(PrintScalingMatchEnum.class),
+                PrintScalingMatchEnum.AUTO.toString(), API_UPDATABLE_ON),
+
+        /** */
+        WEBAPP_USER_PROXY_PRINT_SCALING_MEDIA_CLASH_DEFAULT(//
+                "webapp.user.proxy-print.scaling.media-clash.default",
+                new EnumValidator<>(PrintScalingClashEnum.class),
+                PrintScalingClashEnum.FIT.toString(), API_UPDATABLE_ON),
+
+        /**
+         * User WebApp: Max. copies for proxy printing.
+         */
+        WEBAPP_USER_PROXY_PRINT_MAX_COPIES(//
+                "webapp.user.proxy-print.max-copies", NUMBER_VALIDATOR, "30",
+                API_UPDATABLE_ON),
+
+        /**
+         * Max number of printers shown in quick search.
+         */
+        WEBAPP_USER_PRINTERS_QUICK_SEARCH_MAX(//
+                "webapp.user.printers.quick-search.max",
+                new NumberValidator(Long.valueOf(1), Long.MAX_VALUE, false),
+                "5"),
+
+        /**
+         * User WebApp: show archive scope (Boolean).
+         */
+        WEBAPP_USER_DOC_STORE_ARCHIVE_OUT_PRINT_PROMPT(//
+                "webapp.user.doc.store.archive.out.print.prompt",
+                BOOLEAN_VALIDATOR, V_YES, API_UPDATABLE_ON),
+
+        /** */
+        WEBAPP_USER_DATABASE_USER_ROW_LOCKING_ENABLED(//
+                "webapp.user.database-user-row-locking.enabled",
+                BOOLEAN_VALIDATOR, V_YES, API_UPDATABLE_ON),
+        /**
+         * User WebApp: enable a fixed inbox clearing scope after a proxy print
+         * job is issued.
+         */
+        WEBAPP_USER_PROXY_PRINT_CLEAR_INBOX_ENABLE(//
+                "webapp.user.proxy-print.clear-inbox.enable", BOOLEAN_VALIDATOR,
+                V_NO, API_UPDATABLE_ON),
+
+        /**
+         * User WebApp: the fixed inbox clearing scope after proxy printing.
+         */
+        WEBAPP_USER_PROXY_PRINT_CLEAR_INBOX_SCOPE(//
+                "webapp.user.proxy-print.clear-inbox.scope",
+                new EnumValidator<>(InboxSelectScopeEnum.class),
+                InboxSelectScopeEnum.ALL.toString(), API_UPDATABLE_ON),
+
+        /**
+         * User WebApp: show clearing scope (Boolean).
+         */
+        WEBAPP_USER_PROXY_PRINT_CLEAR_INBOX_PROMPT(//
+                "webapp.user.proxy-print.clear-inbox.prompt", BOOLEAN_VALIDATOR,
+                V_YES, API_UPDATABLE_ON),
+
+        /**
+         * User WebApp: clear selected printer (including options) after proxy
+         * printing.
+         */
+        WEBAPP_USER_PROXY_PRINT_CLEAR_PRINTER(//
+                "webapp.user.proxy-print.clear-printer", BOOLEAN_VALIDATOR,
+                V_NO, API_UPDATABLE_ON),
+
+        /**
+         * User WebApp: clear print delegate data after proxy printing.
+         */
+        WEBAPP_USER_PROXY_PRINT_CLEAR_DELEGATE(//
+                "webapp.user.proxy-print.clear-delegate", BOOLEAN_VALIDATOR,
+                V_NO, API_UPDATABLE_ON),
+
+        /**
+         * User WebApp: shows the collate option for proxy printing (Boolean).
+         * If {@code true} the option is shown. If {@code false} it is hidden
+         * and the print job will be collated.
+         */
+        WEBAPP_USER_PROXY_PRINT_COLLATE_SHOW(//
+                "webapp.user.proxy-print.collate.show", BOOLEAN_VALIDATOR,
+                V_YES, API_UPDATABLE_ON),
+
+        /**
+         * User WebApp: Can application of selected copies for delegates be
+         * switched off in Print Dialog?
+         */
+        WEBAPP_USER_PROXY_PRINT_DELEGATE_COPIES_APPLY_SWITCH(//
+                "webapp.user.proxy-print.delegate-copies-apply-switch",
+                BOOLEAN_VALIDATOR, V_YES, API_UPDATABLE_ON),
+
+        /**
+         * User WebApp: show confirmation dialog (with printing costs) after
+         * submitting print job in Print Dialog?
+         */
+        WEBAPP_USER_PROXY_PRINT_CONFIRM(//
+                "webapp.user.proxy-print.confirm", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         * User WebApp: Is userid hidden of Delegator User?
+         */
+        @Deprecated
+        WEBAPP_USER_PROXY_PRINT_DELEGATOR_USER_HIDE_ID(//
+                "webapp.user.proxy-print.delegator-user.hide-id",
+                BOOLEAN_VALIDATOR, V_NO, API_UPDATABLE_ON),
+
+        /**
+         * User WebApp: Field(s) to display of Delegator User.
+         */
+        WEBAPP_USER_PROXY_PRINT_DELEGATOR_USER_DETAIL(//
+                "webapp.user.proxy-print.delegator-user.detail",
+                new EnumValidator<>(
+                        QuickSearchUserGroupMemberFilterDto.UserDetail.class),
+                QuickSearchUserGroupMemberFilterDto.UserDetail.FULL.toString()),
+
+        /**
+         * User WebApp: Is group name (id) hidden of Delegator Group?
+         */
+        @Deprecated
+        WEBAPP_USER_PROXY_PRINT_DELEGATOR_GROUP_HIDE_ID(//
+                "webapp.user.proxy-print.delegator-group.hide-id",
+                BOOLEAN_VALIDATOR, V_NO, API_UPDATABLE_ON),
+
+        /**
+         * User WebApp: Field(s) to display of Delegator Group.
+         */
+        WEBAPP_USER_PROXY_PRINT_DELEGATOR_GROUP_DETAIL(//
+                "webapp.user.proxy-print.delegator-group.detail",
+                new EnumValidator<>(
+                        QuickSearchFilterUserGroupDto.GroupDetail.class),
+                QuickSearchFilterUserGroupDto.GroupDetail.FULL.toString(),
+                API_UPDATABLE_ON),
+
+        /**
+         * User WebApp: enable the "Print documents separately" option for proxy
+         * printing (Boolean). If {@code true} the option is enabled (shown).
+         */
+        WEBAPP_USER_PROXY_PRINT_SEPARATE_ENABLE(//
+                "webapp.user.proxy-print.separate.enable", BOOLEAN_VALIDATOR,
+                V_NO, API_UPDATABLE_ON),
+
+        /**
+         * User WebApp: the (default) "Print documents separately" option value
+         * for proxy printing when "All Documents" are selected (Boolean). If
+         * {@code true}, a separate proxy print job is created for each vanilla
+         * inbox document. If {@code false}, one (1) proxy print job is printed
+         * for a vanilla inbox.
+         */
+        WEBAPP_USER_PROXY_PRINT_SEPARATE(//
+                "webapp.user.proxy-print.separate", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         * URL with User WebApp help information.
+         */
+        WEBAPP_USER_HELP_URL(//
+                "webapp.user.help.url", URL_VALIDATOR_OPT, API_UPDATABLE_ON),
+
+        /**
+         * User WebApp: show help URL in web app.
+         */
+        WEBAPP_USER_HELP_URL_ENABLE(//
+                "webapp.user.help.url.enable", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * User WebApp: must text of navigation buttons on main window be shown?
+         */
+        WEBAPP_USER_MAIN_NAV_BUTTON_TEXT(//
+                "webapp.user.main.nav-button-text", ON_OFF_ENUM_VALIDATOR,
+                OnOffEnum.AUTO.toString(), API_UPDATABLE_ON),
+
+        /**
+         * User WebApp: show environmental effect?
+         */
+        WEBAPP_USER_SHOW_ENV_INFO(//
+                "webapp.user.show-env-info", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * User WebApp: show pagometer?
+         */
+        WEBAPP_USER_SHOW_PAGOMETER(//
+                "webapp.user.show-pagometer", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * WebApp: enable PDF Validation dialog?
+         */
+        WEBAPP_PDF_VALIDATE_ENABLE(//
+                V_TEST_KEY_PREFIX + "webapp.pdfvalidate.enable",
+                BOOLEAN_VALIDATOR, V_NO, API_UPDATABLE_ON),
+
+        /** */
+        WEBAPP_PDF_VALIDATE_MAX_UPLOAD_FILE_MB(//
+                "webapp.pdfvalidate.max-upload-file-mb", NUMBER_VALIDATOR,
+                WEBAPP_PDFVALIDATE_MAX_UPLOAD_FILE_MB_V_DEFAULT.toString()),
+
+        /**
+         * WebApp: enable (show) driver download in About Dialog?
+         */
+        WEBAPP_ABOUT_DRIVER_DOWNLOAD_ENABLE(//
+                "webapp.about.driver-download.enable", BOOLEAN_VALIDATOR,
+                V_YES),
+
+        /**
+         * Time limit (milliseconds) to capture the keystrokes of the card
+         * number from a Local Card Reader.
+         */
+        WEBAPP_CARD_LOCAL_KEYSTROKES_MAX_MSECS(//
+                "webapp.card-local.keystrokes-max-msecs", NUMBER_VALIDATOR,
+                "500"),
+
+        /**
+         * Time limit (milliseconds) to capture the keystrokes of the YubiKey
+         * OTP.
+         */
+        WEBAPP_YUBIKEY_KEYSTROKES_MAX_MSECS(//
+                "webapp.yubikey.keystrokes-max-msecs", NUMBER_VALIDATOR,
+                "1500"),
+
+        /**
+         * Time limit (seconds) for a user to associate a new Card to his
+         * account. After the time limit the dialog is automatically closed.
+         */
+        WEBAPP_CARD_ASSOC_DIALOG_MAX_SECS(//
+                "webapp.card-assoc.dialog-max-secs", NUMBER_VALIDATOR, "30"),
+
+        /**
+         * Enable default WebApp style.
+         */
+        WEBAPP_STYLE_DEFAULT(//
+                Key.WEBAPP_STYLE_PFX + "default.enable", BOOLEAN_VALIDATOR,
+                V_YES, API_UPDATABLE_ON),
+
+        /**
+         * The custom jQuery Mobile Theme CSS file for the Admin Web App as
+         * present in the {@code server/custom/web/themes/} folder.
+         */
+        WEBAPP_THEME_ADMIN(//
+                Key.WEBAPP_THEME_PFX + "admin", API_UPDATABLE_ON),
+
+        /**
+         * The custom jQuery Mobile Theme CSS file for the Copy Shop Web App as
+         * present in the {@code server/custom/web/themes/} folder.
+         */
+        WEBAPP_THEME_PRINTSITE(//
+                Key.WEBAPP_THEME_PFX + "printsite", API_UPDATABLE_ON),
+
+        /**
+         * The custom jQuery Mobile Theme CSS file for the Job Tickets Web App
+         * as present in the {@code server/custom/web/themes/} folder.
+         */
+        WEBAPP_THEME_JOBTICKETS(//
+                Key.WEBAPP_THEME_PFX + "jobtickets", API_UPDATABLE_ON),
+
+        /**
+         * The custom jQuery Mobile Theme CSS file for the Mail Tickets Web App
+         * as present in the {@code server/custom/web/themes/} folder.
+         */
+        WEBAPP_THEME_MAILTICKETS(//
+                Key.WEBAPP_THEME_PFX + "mailtickets", API_UPDATABLE_ON),
+
+        /**
+         * The custom jQuery Mobile Theme CSS file for the POS Web App as
+         * present in the {@code server/custom/web/themes/} folder.
+         */
+        WEBAPP_THEME_POS(Key.WEBAPP_THEME_PFX + "pos", API_UPDATABLE_ON),
+
+        /**
+         * The custom jQuery Mobile Theme CSS file for the User Web App as
+         * present in the {@code server/custom/web/themes/} folder.
+         */
+        WEBAPP_THEME_USER(Key.WEBAPP_THEME_PFX + "user", API_UPDATABLE_ON),
+
+        /**
+         * The custom jQuery Mobile Theme CSS file for the Payment Web App as
+         * present in the {@code server/custom/web/themes/} folder.
+         */
+        WEBAPP_THEME_PAYMENT(Key.WEBAPP_THEME_PFX + "payment",
+                API_UPDATABLE_ON),
+
+        /**
+         * The custom CSS file for the Admin Web App as present in the
+         * {@code server/custom/web/} folder.
+         */
+        WEBAPP_CUSTOM_ADMIN(Key.WEBAPP_CUSTOM_PFX + "admin", API_UPDATABLE_ON),
+
+        /**
+         * The custom CSS file for the Cop Shop Web App as present in the
+         * {@code server/custom/web/} folder.
+         */
+        WEBAPP_CUSTOM_PRINTSITE(//
+                Key.WEBAPP_CUSTOM_PFX + "printsite", API_UPDATABLE_ON),
+
+        /**
+         * The custom CSS file for the Job Tickets Web App as present in the
+         * {@code server/custom/web/} folder.
+         */
+        WEBAPP_CUSTOM_JOBTICKETS(//
+                Key.WEBAPP_CUSTOM_PFX + "jobtickets", API_UPDATABLE_ON),
+
+        /**
+         * The custom CSS file for the Mail Tickets Web App as present in the
+         * {@code server/custom/web/} folder.
+         */
+        WEBAPP_CUSTOM_MAILTICKETS(//
+                Key.WEBAPP_CUSTOM_PFX + "mailtickets", API_UPDATABLE_ON),
+
+        /**
+         * The custom CSS file for the POS Web App as present in the
+         * {@code server/custom/web/} folder.
+         */
+        WEBAPP_CUSTOM_POS(Key.WEBAPP_CUSTOM_PFX + "pos", API_UPDATABLE_ON),
+
+        /**
+         * The custom CSS file for the User Web App as present in the
+         * {@code server/custom/web/} folder.
+         */
+        WEBAPP_CUSTOM_USER(Key.WEBAPP_CUSTOM_PFX + "user", API_UPDATABLE_ON),
+
+        /**
+         * The custom CSS file for the Payment Web App as present in the
+         * {@code server/custom/web/} folder.
+         */
+        WEBAPP_CUSTOM_PAYMENT(Key.WEBAPP_CUSTOM_PFX + "payment",
+                API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        WEBAPP_HTML_ADMIN_ABOUT(//
+                Key.WEBAPP_HTML_PFX + "admin.about", API_UPDATABLE_ON),
+        /** */
+        WEBAPP_HTML_PRINTSITE_ABOUT(//
+                Key.WEBAPP_HTML_PFX + "printsite.about", API_UPDATABLE_ON),
+        /** */
+        WEBAPP_HTML_JOBTICKETS_ABOUT(//
+                Key.WEBAPP_HTML_PFX + "jobtickets.about", API_UPDATABLE_ON),
+        /** */
+        WEBAPP_HTML_MAILTICKETS_ABOUT(//
+                Key.WEBAPP_HTML_PFX + "mailtickets.about", API_UPDATABLE_ON),
+        /** */
+        WEBAPP_HTML_POS_ABOUT(//
+                Key.WEBAPP_HTML_PFX + "pos.about", API_UPDATABLE_ON),
+        /** */
+        WEBAPP_HTML_USER_ABOUT(//
+                Key.WEBAPP_HTML_PFX + "user.about", API_UPDATABLE_ON),
+        /** */
+        WEBAPP_HTML_PAYMENT_ABOUT(//
+                Key.WEBAPP_HTML_PFX + "payment.about", API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        WEBAPP_HTML_ADMIN_LOGIN(//
+                Key.WEBAPP_HTML_PFX + "admin.login", API_UPDATABLE_ON),
+        /** */
+        WEBAPP_HTML_PRINTSITE_LOGIN(//
+                Key.WEBAPP_HTML_PFX + "printsite.login", API_UPDATABLE_ON),
+        /** */
+        WEBAPP_HTML_JOBTICKETS_LOGIN(//
+                Key.WEBAPP_HTML_PFX + "jobtickets.login", API_UPDATABLE_ON),
+        /** */
+        WEBAPP_HTML_MAILTICKETS_LOGIN(//
+                Key.WEBAPP_HTML_PFX + "mailtickets.login", API_UPDATABLE_ON),
+        /** */
+        WEBAPP_HTML_POS_LOGIN(//
+                Key.WEBAPP_HTML_PFX + "pos.login", API_UPDATABLE_ON),
+        /** */
+        WEBAPP_HTML_USER_LOGIN(//
+                Key.WEBAPP_HTML_PFX + "user.login", API_UPDATABLE_ON),
+        /** */
+        WEBAPP_HTML_PAYMENT_LOGIN(//
+                Key.WEBAPP_HTML_PFX + "payment.login", API_UPDATABLE_ON),
+
+        /**
+         * .
+         */
+        WEBAPP_INTERNET_ENABLE(//
+                Key.WEBAPP_INTERNET_PFX + "enable", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /** */
+        WEBAPP_INTERNET_ADMIN_ENABLE(//
+                Key.WEBAPP_INTERNET_PFX + "admin.enable", BOOLEAN_VALIDATOR,
+                V_YES, API_UPDATABLE_ON),
+        /** */
+        WEBAPP_INTERNET_ADMIN_AUTH_MODE_ENABLE(//
+                Key.WEBAPP_INTERNET_PFX + "admin.auth-mode.enable",
+                BOOLEAN_VALIDATOR, V_NO, API_UPDATABLE_ON),
+        /** */
+        WEBAPP_INTERNET_ADMIN_AUTH_MODES(//
+                Key.WEBAPP_INTERNET_PFX + "admin.auth-modes",
+                AUTHMODE_SET_VALIDATOR, AUTH_MODE_V_NAME, API_UPDATABLE_OFF),
+
+        /**
+         * .
+         */
+        WEBAPP_INTERNET_JOBTICKETS_ENABLE(//
+                Key.WEBAPP_INTERNET_PFX + "jobtickets.enable",
+                BOOLEAN_VALIDATOR, V_YES, API_UPDATABLE_ON),
+        /** */
+        WEBAPP_INTERNET_JOBTICKETS_AUTH_MODE_ENABLE(//
+                Key.WEBAPP_INTERNET_PFX + "jobtickets.auth-mode.enable",
+                BOOLEAN_VALIDATOR, V_NO, API_UPDATABLE_ON),
+        /** */
+        WEBAPP_INTERNET_JOBTICKETS_AUTH_MODES(//
+                Key.WEBAPP_INTERNET_PFX + "jobtickets.auth-modes",
+                AUTHMODE_SET_VALIDATOR, AUTH_MODE_V_NAME, API_UPDATABLE_OFF),
+
+        /**
+         * .
+         */
+        WEBAPP_INTERNET_PRINTSITE_ENABLE(//
+                Key.WEBAPP_INTERNET_PFX + "printsite.enable", BOOLEAN_VALIDATOR,
+                V_NO, API_UPDATABLE_ON),
+        /** */
+        WEBAPP_INTERNET_PRINTSITE_AUTH_MODE_ENABLE(//
+                Key.WEBAPP_INTERNET_PFX + "printsite.auth-mode.enable",
+                BOOLEAN_VALIDATOR, V_NO, API_UPDATABLE_ON),
+        /** */
+        WEBAPP_INTERNET_PRINTSITE_AUTH_MODES(//
+                Key.WEBAPP_INTERNET_PFX + "printsite.auth-modes",
+                AUTHMODE_SET_VALIDATOR, AUTH_MODE_V_NAME, API_UPDATABLE_OFF),
+
+        /**
+         * .
+         */
+        WEBAPP_INTERNET_POS_ENABLE(//
+                Key.WEBAPP_INTERNET_PFX + "pos.enable", BOOLEAN_VALIDATOR,
+                V_YES, API_UPDATABLE_ON),
+        /** */
+        WEBAPP_INTERNET_POS_AUTH_MODE_ENABLE(//
+                Key.WEBAPP_INTERNET_PFX + "pos.auth-mode.enable",
+                BOOLEAN_VALIDATOR, V_NO, API_UPDATABLE_ON),
+        /** */
+        WEBAPP_INTERNET_POS_AUTH_MODES(//
+                Key.WEBAPP_INTERNET_PFX + "pos.auth-modes",
+                AUTHMODE_SET_VALIDATOR, AUTH_MODE_V_NAME, API_UPDATABLE_OFF),
+
+        /**
+         * .
+         */
+        WEBAPP_INTERNET_USER_ENABLE(//
+                Key.WEBAPP_INTERNET_PFX + "user.enable", BOOLEAN_VALIDATOR,
+                V_YES, API_UPDATABLE_ON),
+        /** */
+        WEBAPP_INTERNET_USER_AUTH_MODE_ENABLE(//
+                Key.WEBAPP_INTERNET_PFX + "user.auth-mode.enable",
+                BOOLEAN_VALIDATOR, V_NO, API_UPDATABLE_ON),
+        /** */
+        WEBAPP_INTERNET_USER_AUTH_MODES(//
+                Key.WEBAPP_INTERNET_PFX + "user.auth-modes",
+                AUTHMODE_SET_VALIDATOR, AUTH_MODE_V_NAME, API_UPDATABLE_OFF),
+
+        /**
+         * A comma/space separated list with {@link Locale#getLanguage()} codes
+         * that are available for users to choose for their Web App locale. When
+         * blank, all languages choices are offered to the user.
+         */
+        WEBAPP_LANGUAGE_AVAILABLE(//
+                "webapp.language.available", API_UPDATABLE_ON),
+
+        /**
+         * .
+         */
+        WEB_LOGIN_AUTHTOKEN_ENABLE(//
+                "web-login.authtoken.enable", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         * Is web login via Trusted Third Party (TTP) enabled?
+         */
+        WEB_LOGIN_TTP_ENABLE(//
+                "web-login.ttp.enable", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         * Trusted Third Party API Key for Web Login.
+         */
+        WEB_LOGIN_TTP_API_KEY(//
+                "web-login.ttp.apikey", API_UPDATABLE_OFF),
+        //
+        /**
+         * Number of msecs after after which an {@link OneTimeAuthToken}
+         * expires.
+         */
+        WEB_LOGIN_TTP_TOKEN_EXPIRY_MSECS(//
+                "web-login.ttp.token.expiry-msecs", NUMBER_VALIDATOR, "5000"),
+
+        /**
+         * Inactivity timeout (minutes) for the admin web interface.
+         */
+        WEB_LOGIN_ADMIN_SESSION_TIMEOUT_MINS(//
+                "web-login.admin.session-timeout-mins", NUMBER_VALIDATOR,
+                "1440"),
+
+        /**
+         * Inactivity timeout (minutes) for the user web interface.
+         */
+        WEB_LOGIN_USER_SESSION_TIMEOUT_MINS(//
+                "web-login.user.session-timeout-mins", NUMBER_VALIDATOR, "60"),
+
+        /**
+         * Enable Web Print.
+         */
+        WEB_PRINT_ENABLE(//
+                "web-print.enable", BOOLEAN_VALIDATOR, V_NO, API_UPDATABLE_OFF),
+
+        /**
+         * Enable drag & drop zone for Web Print.
+         */
+        WEB_PRINT_DROPZONE_ENABLE(//
+                "web-print.dropzone-enable", BOOLEAN_VALIDATOR, V_YES),
+
+        /**
+         *
+         */
+        WEB_PRINT_MAX_FILE_MB(//
+                "web-print.max-file-mb", NUMBER_VALIDATOR,
+                WEBPRINT_MAX_FILE_MB_V_DEFAULT.toString()),
+
+        /**
+         * Enable graphics files for Web Print.
+         */
+        WEB_PRINT_GRAPHICS_ENABLE(//
+                "web-print.graphics.enable", BOOLEAN_VALIDATOR, V_YES,
+                API_UPDATABLE_ON),
+
+        /**
+         * A comma/space separated list of file extensions (without leading
+         * point), that are excluded for Web Print. For example:
+         * "rtf,html,ps,txt".
+         */
+        WEB_PRINT_FILE_EXT_EXCLUDE(//
+                "web-print.file-ext.exclude", API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        WEB_PRINT_LIMIT_IP_ADDRESSES(//
+                "web-print.limit-ip-addresses", CIDR_RANGES_VALIDATOR_OPT,
+                API_UPDATABLE_ON),
+
+        /**
+         * Use X-Forwarded-For (XFF) HTTP header to retrieve Client IP address?
+         */
+        WEBSERVER_HTTP_HEADER_XFF_ENABLE(//
+                "webserver.http.header.xff.enable", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         *
+         */
+        WEBSERVER_HTTP_HEADER_XFF_DEBUG(//
+                "webserver.http.header.xff.debug", BOOLEAN_VALIDATOR, V_NO,
+                API_UPDATABLE_ON),
+
+        /**
+         * If empty all XFF proxies are allowed.
+         */
+        WEBSERVER_HTTP_HEADER_XFF_PROXIES_ALLOWED(//
+                "webserver.http.header.xff.proxies.allowed",
+                CIDR_RANGES_VALIDATOR_OPT, API_UPDATABLE_ON);
+
+        /**
+         * Prefix for Web App style keys.
+         */
+        public final static String WEBAPP_STYLE_PFX = "webapp.style.";
+
+        /**
+         * Prefix for Web App theme keys.
+         */
+        public final static String WEBAPP_THEME_PFX = "webapp.theme.";
+
+        /**
+         * Prefix for Web App custom keys.
+         */
+        public final static String WEBAPP_CUSTOM_PFX = "webapp.custom.";
+
+        /**
+         * Prefix for Web App HTML keys.
+         */
+        public final static String WEBAPP_HTML_PFX = "webapp.html.";
+
+        /**
+         * Prefix for Web App keys when accessed from Internet.
+         */
+        public final static String WEBAPP_INTERNET_PFX = "webapp.internet.";
+
+        /**
+         *
+         */
+        private final Prop property;
+
+        /**
+         *
+         * @param name
+         *            The property name.
+         * @param isApiUpdatable
+         *            {@code true} if value can be updated with
+         *            {@link JsonRpcMethodName#SET_CONFIG_PROPERTY}.
+         */
+        Key(final String name, final boolean isApiUpdatable) {
+            this.property = this.createProperty(KeyType.SINGLE_LINE, name, null,
+                    "", null, isApiUpdatable);
+        }
+
+        /**
+         *
+         * @param name
+         *            The property name.
+         * @param keyType
+         *            Type of key.
+         */
+        Key(final String name, final KeyType keyType) {
+            this.property = this.createProperty(keyType, name, null, "", null);
+        }
+
+        /**
+         *
+         * @param name
+         *            The property name.
+         * @param defaultValue
+         *            The initial value.
+         * @param isApiUpdatable
+         *            {@code true} if value can be updated with
+         *            {@link JsonRpcMethodName#SET_CONFIG_PROPERTY}.
+         */
+        Key(final String name, final String defaultValue,
+                final boolean isApiUpdatable) {
+            this.property = this.createProperty(KeyType.SINGLE_LINE, name, null,
+                    defaultValue, null, isApiUpdatable);
+        }
+
+        /**
+         *
+         * @param name
+         *            The property name.
+         * @param validator
+         *            The validator.
+         */
+        Key(final String name, final ConfigPropValidator validator) {
+            this.property = this.createProperty(KeyType.SINGLE_LINE, name,
+                    validator, "", null);
+        }
+
+        /**
+         *
+         * @param name
+         *            The property name.
+         * @param validator
+         *            The validator.
+         * @param isApiUpdatable
+         *            {@code true} if value can be updated with
+         *            {@link JsonRpcMethodName#SET_CONFIG_PROPERTY}.
+         */
+        Key(final String name, final ConfigPropValidator validator,
+                final boolean isApiUpdatable) {
+            this.property = this.createProperty(KeyType.SINGLE_LINE, name,
+                    validator, "", null, isApiUpdatable);
+        }
+
+        /**
+         *
+         * @param name
+         *            The property name.
+         * @param keyType
+         *            Type of key.
+         * @param defaultValue
+         *            The initial value.
+         */
+        Key(final String name, final KeyType keyType,
+                final String defaultValue) {
+            this.property = this.createProperty(keyType, name, null,
+                    defaultValue, null);
+        }
+
+        /**
+         *
+         * @param name
+         *            The property name.
+         * @param keyType
+         *            Type of key.
+         * @param validator
+         *            The validator.
+         * @param defaultValue
+         *            The initial value.
+         */
+        Key(final String name, final KeyType keyType,
+                final ConfigPropValidator validator,
+                final String defaultValue) {
+            this.property = this.createProperty(keyType, name, validator,
+                    defaultValue, null);
+        }
+
+        /**
+         *
+         * @param name
+         *            The property name.
+         * @param validator
+         *            The validator.
+         * @param defaultValue
+         *            The initial value.
+         */
+        Key(final String name, final ConfigPropValidator validator,
+                final String defaultValue) {
+            this.property = this.createProperty(KeyType.SINGLE_LINE, name,
+                    validator, defaultValue, null);
+        }
+
+        /**
+         *
+         * @param name
+         *            The property name.
+         * @param validator
+         *            The validator.
+         * @param defaultValue
+         *            The initial value.
+         * @param isApiUpdatable
+         *            {@code true} if value can be updated with
+         *            {@link JsonRpcMethodName#SET_CONFIG_PROPERTY}.
+         */
+        Key(final String name, final ConfigPropValidator validator,
+                final String defaultValue, final boolean isApiUpdatable) {
+            this.property = this.createProperty(KeyType.SINGLE_LINE, name,
+                    validator, defaultValue, null, isApiUpdatable);
+        }
+
+        /**
+         *
+         * @param name
+         *            The property name.
+         * @param validator
+         *            The validator.
+         * @param defaultValue
+         *            The initial value.
+         * @param values
+         *            List of possible values.
+         * @param isApiUpdatable
+         *            {@code true} if value can be updated with
+         *            {@link JsonRpcMethodName#SET_CONFIG_PROPERTY}.
+         */
+        Key(final String name, final ConfigPropValidator validator,
+                final String defaultValue, final String[] values,
+                final boolean isApiUpdatable) {
+            this.property = this.createProperty(KeyType.SINGLE_LINE, name,
+                    validator, defaultValue, values, isApiUpdatable);
+        }
+
+        /**
+         * Creates property.
+         *
+         * @param keyType
+         *            Type of key.
+         * @param name
+         *            The property name.
+         * @param validator
+         *            The validator.
+         * @param defaultValue
+         *            The initial value.
+         * @param values
+         *            List of possible values.
+         * @return The property.
+         */
+        private Prop createProperty(final KeyType keyType, final String name,
+                final ConfigPropValidator validator, final String defaultValue,
+                final String[] values) {
+
+            switch (keyType) {
+
+            case BIG_DECIMAL:
+                return new BigDecimalProp(this, name, defaultValue);
+
+            case LOCALIZED_MULTI_LINE:
+                return new LocalizedProp(this, name, true);
+
+            case LOCALIZED_SINGLE_LINE:
+                return new LocalizedProp(this, name, false);
+
+            case MULTI_LINE:
+                return new MultiLineProp(this, name);
+
+            case SINGLE_LINE:
+                return new Prop(this, name, validator, defaultValue, values);
+
+            default:
+                throw new SpException("Oops [" + keyType + "] not handled");
+            }
+        }
+
+        /**
+         *
+         * @param keyType
+         *            Type of key.
+         * @param name
+         *            The property name.
+         * @param validator
+         *            The validator.
+         * @param defaultValue
+         *            The initial value.
+         * @param values
+         *            List of possible values.
+         * @param isApiUpdatable
+         *            {@code true} if value can be updated with
+         *            {@link JsonRpcMethodName#SET_CONFIG_PROPERTY}.
+         * @return The property.
+         */
+        private Prop createProperty(final KeyType keyType, final String name,
+                final ConfigPropValidator validator, final String defaultValue,
+                final String[] values, final boolean isApiUpdatable) {
+            final Prop prop = this.createProperty(keyType, name, validator,
+                    defaultValue, values);
+            prop.setApiUpdatable(isApiUpdatable);
+            return prop;
+        }
+
+        /**
+         *
+         * @return The property.
+         */
+        public Prop getProperty() {
+            return property;
+        }
+
+    };
+
+    /** */
+    UserAuthModeSetValidator AUTHMODE_SET_VALIDATOR =
+            new UserAuthModeSetValidator(false);
+
+    /** */
+    EmailDomainSetValidator EMAIL_DOMAIN_SET_VALIDATOR_OPT =
+            new EmailDomainSetValidator(true);
+
+    /** */
+    BooleanValidator BOOLEAN_VALIDATOR = new BooleanValidator(false);
+
+    /** */
+    UriAuthorityValidator URI_AUTHORITY_VALIDATOR_OPT =
+            new UriAuthorityValidator(true);
+
+    /** */
+    BooleanValidator BOOLEAN_VALIDATOR_OPT = new BooleanValidator(true);
+
+    /** */
+    CidrRangesValidator CIDR_RANGES_VALIDATOR_OPT =
+            new CidrRangesValidator(true);
+
+    /**
+     * URI is not required (may be empty).
+     */
+    EmailAddressValidator EMAIL_VALIDATOR_OPT = new EmailAddressValidator(true);
+
+    /** */
+    IpPortValidator IP_PORT_VALIDATOR = new IpPortValidator();
+
+    /** */
+    NumberValidator NUMBER_VALIDATOR = new NumberValidator(false);
+
+    /** */
+    NumberValidator NUMBER_VALIDATOR_OPT = new NumberValidator(true);
+
+    /** */
+    NumberValidator NUMBER_VALIDATOR_ZERO_TO_MAX =
+            new NumberValidator(Long.valueOf(0), Long.MAX_VALUE, false);
+
+    /** */
+    LocaleValidator LOCALE_VALIDATOR = new LocaleValidator();
+
+    /** */
+    CurrencyCodeValidator CURRENCY_VALIDATOR = new CurrencyCodeValidator(false);
+
+    /** */
+    NotEmptyValidator NOT_EMPTY_VALIDATOR = new NotEmptyValidator();
+
+    /** */
+    UrlValidator URL_VALIDATOR = new UrlValidator(false);
+
+    /**
+     * URL is not required (may be empty).
+     */
+    UrlValidator URL_VALIDATOR_OPT = new UrlValidator(true);
+
+    /**
+     * URI is not required (may be empty).
+     */
+    UriValidator URI_VALIDATOR_OPT = new UriValidator(true);
+
+    /** */
+    UuidValidator UUID_VALIDATOR = new UuidValidator(false);
+
+    /** */
+    NumberValidator ACCOUNTING_DECIMAL_VALIDATOR = new NumberValidator(0L,
+            Integer.valueOf(MAX_FINANCIAL_DECIMALS_IN_DB).longValue(), false);
+
+    /** */
+    NumberValidator USER_ID_NUMBER_LENGTH_VALIDATOR = new NumberValidator(6L,
+            Integer.valueOf(UserNumber.COL_ID_NUMBER_LENGTH).longValue(),
+            false);
+
+    /** */
+    InternalFontFamilyValidator INTERNAL_FONT_FAMILY_VALIDATOR =
+            new InternalFontFamilyValidator();
+
+    /** */
+    CronExpressionValidator CRON_EXPR_VALIDATOR = new CronExpressionValidator();
+    /** */
+    CronExpressionDaysOfWeekValidator CRON_EXPR_DAY_OF_WEEK_VALIDATOR =
+            new CronExpressionDaysOfWeekValidator();
+
+    /** */
+    ConfigPropValidator ON_OFF_ENUM_VALIDATOR =
+            new EnumValidator<>(OnOffEnum.class);
+
+    /** */
+    ConfigPropValidator PULL_PUSH_ENUM_VALIDATOR =
+            new EnumValidator<>(PullPushEnum.class);
+
+    /** */
+    ConfigPropValidator PDF_RESOLUTION_VALIDATOR =
+            new EnumValidator<>(PdfResolutionEnum.class);
+
+    /** */
+    ConfigPropValidator HTTP_CODE_429_503_VALIDATOR =
+            new AbstractSetValidator(false) {
+                @Override
+                protected boolean onItem(final String item) {
+                    return item.equals(
+                            String.valueOf(HttpStatus.TOO_MANY_REQUESTS_429))
+                            || item.equals(String.valueOf(
+                                    HttpStatus.SERVICE_UNAVAILABLE_503));
+                }
+            };
+    /** */
+    ConfigPropValidator SMTP_SECURITY_VALIDATOR =
+            new AbstractSetValidator(true) {
+                @Override
+                protected boolean onItem(final String item) {
+                    return item.equals(SMTP_SECURITY_V_NONE)
+                            || item.equals(SMTP_SECURITY_V_SSL)
+                            || item.equals(SMTP_SECURITY_V_STARTTLS);
+                }
+            };
+
+    /**
+     * .
+     */
+    static class MultiLineProp extends Prop {
+
+        MultiLineProp(final Key key, final String name) {
+            super(key, name, null, "");
+        }
+
+        @Override
+        public boolean isMultiLine() {
+            return true;
+        }
+    }
+
+    /**
+     * .
+     */
+    static class Prop {
+
+        final private Key key;
+        final private String name;
+
+        private String defaultValue = null;
+        private String value = null;
+
+        private String[] values = null;
+
+        private ConfigPropValidator validator = null;
+        private ValidationResult validationResult = null;
+
+        /**
+         * {@code true} if value can be updated by public API.
+         */
+        private boolean apiUpdatable;
+
+        private Prop(final Key key, final String name) {
+            this.key = key;
+            this.name = name;
+        }
+
+        Prop(final Key key, final String name,
+                final ConfigPropValidator validator) {
+            this(key, name);
+            this.validator = validator;
+        }
+
+        Prop(final Key key, final String name,
+                final ConfigPropValidator validator,
+                final String defaultValue) {
+            this(key, name, validator);
+            this.defaultValue = defaultValue;
+        }
+
+        Prop(final Key key, final String name,
+                final ConfigPropValidator validator, final String defaultValue,
+                String[] values) {
+            this(key, name, validator, defaultValue);
+            this.values = values;
+        }
+
+        /**
+         *
+         * @return {@code true} if value can be updated by public API.
+         */
+        public boolean isApiUpdatable() {
+            return apiUpdatable;
+        }
+
+        /**
+         *
+         * @param updatable
+         *            {@code true} if value can be updated by public API.
+         */
+        public void setApiUpdatable(final boolean updatable) {
+            this.apiUpdatable = updatable;
+        }
+
+        /**
+         *
+         * @return
+         */
+        public boolean isMultiLine() {
+            return false;
+        }
+
+        /**
+         *
+         * @return
+         */
+        public boolean isBigDecimal() {
+            return false;
+        }
+
+        /**
+         * Validates a candidate value using the validator of a property.
+         *
+         * @param prop
+         *            Property.
+         * @param value
+         *            The candidate value.
+         * @return The {@link ValidationResult}.
+         */
+        public static ValidationResult validate(final Prop prop,
+                final String value) {
+
+            final ValidationResult validationResult;
+
+            if (value.length() > ConfigProperty.COL_VALUE_LENGTH) {
+                final String abbrev = StringUtils.abbreviate(value, 20);
+                validationResult = new ValidationResult(abbrev,
+                        ValidationStatusEnum.ERROR_MAX_LEN_EXCEEDED,
+                        String.format(
+                                "[%s] length %d exceeds maximum length %s.",
+                                abbrev, value.length(),
+                                ConfigProperty.COL_VALUE_LENGTH));
+            } else {
+                final ConfigPropValidator validator = prop.getValidator();
+                if (validator == null) {
+                    validationResult = new ValidationResult(value);
+                } else {
+                    validationResult = validator.validate(value);
+                }
+            }
+            return validationResult;
+        }
+
+        /**
+         * Validates this property using the validator and private value.
+         *
+         * @return The {@link ValidationResult}.
+         */
+        public ValidationResult validate() {
+            if (validator == null) {
+                validationResult = new ValidationResult(value);
+                if (value == null && defaultValue == null) {
+                    validationResult
+                            .setStatus(ValidationStatusEnum.ERROR_EMPTY);
+                    validationResult.setMessage("value is required");
+                }
+            } else {
+                validationResult = validator.validate(valueAsString());
+            }
+            return validationResult;
+        }
+
+        public String valueAsString() {
+            if (value == null) {
+                return defaultValue;
+            }
+            return value;
+        }
+
+        public String getDefaultValue() {
+            return defaultValue;
+        }
+
+        public void setDefaultValue(String defaultValue) {
+            this.defaultValue = defaultValue;
+        }
+
+        public String[] getValues() {
+            return values;
+        }
+
+        public void setValues(String[] values) {
+            this.values = values;
+        }
+
+        public Key getKey() {
+            return key;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        public ValidationResult getValidationResult() {
+            return validationResult;
+        }
+
+        public ConfigPropValidator getValidator() {
+            return validator;
+        }
+
+        public void setValidator(ConfigPropValidator validator) {
+            this.validator = validator;
+        }
+
+    };
+
+    /**
+     *
+     */
+    static class BigDecimalProp extends Prop {
+
+        final static DecimalValidator VALIDATOR = new DecimalValidator();
+
+        BigDecimalProp(Key key, String name, String defaultValue) {
+            super(key, name, VALIDATOR, defaultValue);
+        }
+
+        @Override
+        public boolean isBigDecimal() {
+            return true;
+        }
+
+    };
+
+    /**
+     * Uses the property name as entry key in messages.xml to get its value.
+     */
+    static class LocalizedProp extends Prop {
+
+        private boolean multiLine = false;
+
+        /**
+         *
+         * @param key
+         *            The property {@link Key}.
+         * @param name
+         *            The unique text key as used in the database and in
+         *            {@code messages.xml}.
+         * @param multiLine
+         *            If {@code true} this represents a multi-line text value.
+         */
+        public LocalizedProp(Key key, String name, boolean multiLine) {
+            super(key, name, null, Messages.getMessage(LocalizedProp.class,
+                    name, (String[]) null));
+            this.multiLine = multiLine;
+        }
+
+        @Override
+        public boolean isMultiLine() {
+            return multiLine;
+        }
+
+    };
+
+    /**
+     *
+     * @author rijk
+     *
+     */
+    enum LdapTypeEnum {
+
+        /**
+         * OpenLDAP.
+         */
+        OPEN_LDAP,
+
+        /**
+         * Apple Open Directory.
+         */
+        OPEN_DIR,
+
+        /**
+         * Novell eDirectory.
+         */
+        EDIR,
+
+        /**
+         * FreeIPA
+         */
+        FREE_IPA,
+
+        /**
+         * Microsoft Active Directory.
+         */
+        ACTD,
+
+        /**
+         * Google Cloud Directory.
+         */
+        GOOGLE_CLOUD
+    };
+
+    /**
+     *
+     * @author rijk
+     *
+     */
+    static class LdapProp {
+
+        private LdapTypeEnum ldapType;
+        private Key key;
+        private String value;
+
+        @SuppressWarnings("unused")
+        private LdapProp() {
+        }
+
+        public LdapProp(final LdapTypeEnum ldapType, final Key key,
+                final String value) {
+            this.ldapType = ldapType;
+            this.key = key;
+            this.value = value;
+        }
+
+        public LdapTypeEnum getLdapType() {
+            return ldapType;
+        }
+
+        public void setLdapType(LdapTypeEnum ldapType) {
+            this.ldapType = ldapType;
+        }
+
+        public Key getKey() {
+            return key;
+        }
+
+        public void setKey(Key key) {
+            this.key = key;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+    };
+
+    /**
+     * @return Array with all default LDAP properties for the different LDAP
+     *         types.
+     */
+    LdapProp[] getLdapProps();
+
+    /**
+     * Initializes the component for basic dictionary functions.
+     * <p>
+     * Note: Database access SHOULD NOT be used for this action.
+     * </p>
+     *
+     * @param defaultProps
+     *            The default properties.
+     */
+    void init(Properties defaultProps);
+
+    /**
+     * Initializes the component to be fully runnable.
+     * <p>
+     * Note: Database access CAN BE used for this action.
+     * </p>
+     */
+    void initRunnable();
+
+    /**
+     * Checks whether the value for a {@link Prop} key is valid.
+     *
+     * @param key
+     *            The property key.
+     * @param value
+     *            The value.
+     * @return The {@link ValidationResult}.
+     */
+    ValidationResult validate(Key key, String value);
+
+    /**
+     * Gets the runnable status of the configuration, i.e. is application ready
+     * to run.
+     *
+     * @return
+     */
+    boolean isRunnable();
+
+    /**
+     * Calculates the runnable status of the configuration.
+     *
+     * @return <code>true</code if runnable.
+     */
+    boolean calcRunnable();
+
+    /**
+     * Updates the string value of a configuration key.
+     *
+     * @param key
+     *            The key.
+     * @param value
+     *            The string value.
+     * @param actor
+     *            The actor, one of {@link Entity#ACTOR_ADMIN},
+     *            {@link Entity#ACTOR_INSTALL} or {@link Entity#ACTOR_SYSTEM}.
+     */
+    void updateValue(Key key, String value, String actor);
+
+    /**
+     * Saves the string value of a configuration key. The key is lazy created.
+     *
+     * @param key
+     *            The key.
+     * @param value
+     *            The string value.
+     */
+    void saveValue(Key key, String value);
+
+    /**
+     * Does this property represent a multi-line value?
+     *
+     * @return
+     */
+    boolean isMultiLine(Key key);
+
+    /**
+     * Does this property represent a {@link BigDecimal} value?
+     *
+     * @return
+     */
+    boolean isBigDecimal(Key key);
+
+    /**
+     *
+     * @param key
+     *            The key.
+     * @return {@code true} if value of key can be updated with Public API, like
+     *         JSON-RPC.
+     */
+    boolean isApiUpdatable(Key key);
+
+    /**
+     * Gets the value of a configuration key as string.
+     *
+     * @param key
+     *            The key.
+     * @return The string value.
+     */
+    String getString(Key key);
+
+    /**
+     * Gets the value of an LDAP configuration key as string.
+     *
+     * @param ldapType
+     *            The LDAP type.
+     * @param key
+     *            The key.
+     * @return The string value or {@code null} when not found.
+     */
+    String getString(LdapTypeEnum ldapType, Key key);
+
+    /**
+     * Gets the value of an LDAP configuration key as Boolean.
+     *
+     * @param ldapType
+     *            The LDAP type.
+     * @param key
+     *            The key.
+     * @return The boolean value or {@code null} when not found.
+     */
+    Boolean getBoolean(LdapTypeEnum ldapType, Key key);
+
+    /**
+     * Gets the value of a configuration key as double.
+     *
+     * @param key
+     *            The key.
+     * @return The double value.
+     */
+    double getDouble(Key key);
+
+    /**
+     * Gets the value of a configuration key as {@link BigDecimal}.
+     *
+     * @param key
+     *            The key.
+     * @return The {@link BigDecimal} value.
+     */
+    BigDecimal getBigDecimal(Key key);
+
+    /**
+     * Gets the value of a configuration key as long.
+     *
+     * @param key
+     *            The key.
+     * @return The long value.
+     */
+    long getLong(Key key);
+
+    /**
+     * Gets the value of a configuration key as int.
+     *
+     * @param key
+     *            The key.
+     * @return The int value.
+     */
+    int getInt(Key key);
+
+    /**
+     * Gets the value of a configuration key as {@link Integer}.
+     *
+     * @param key
+     *            The key.
+     * @return The int value or {@code null} when not specified.
+     */
+    Integer getInteger(Key key);
+
+    /**
+     * Gets the value of a configuration key as boolean.
+     *
+     * @param key
+     *            The key.
+     * @return The boolean value.
+     */
+    boolean getBoolean(Key key);
+
+    /**
+     * Gets the value (comma separated list) of a configuration key as
+     * {@link Set} of values.
+     *
+     * @param key
+     *            The key.
+     * @return The {@link Set} of values.
+     */
+    Set<String> getSet(Key key);
+
+    /**
+     * Gets the string representation of the configuration key.
+     *
+     * @param key
+     *            The enum representation of the key.
+     * @return The string representation of the key.
+     */
+    String getKey(Key key);
+
+    /**
+     * Gets the enum of the configuration key.
+     *
+     * @param key
+     *            The string representation of the key.
+     * @return The enum representation of the key, or {@code null} when the key
+     *         is not found.
+     */
+    Key getKey(String key);
+
+    /**
+     *
+     * @param key
+     *            The key.
+     * @return {@code null} when not found.
+     */
+    Prop getProp(Key key);
+
+    /**
+     *
+     * @param name
+     *            The name.
+     * @return {@code null} when not found.
+     */
+    Prop getProp(String name);
+
+}

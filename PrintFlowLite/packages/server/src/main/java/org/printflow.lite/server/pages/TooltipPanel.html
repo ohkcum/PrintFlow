@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+    <!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<wicket:panel>
+	<a wicket:id="tooltip-anchor" href="[#popupInfo]" data-rel="popup"
+		data-transition="pop"
+		class="sp-tooltip-btn ui-btn ui-alt-icon ui-nodisc-icon ui-btn-inline 
+	       ui-icon-info ui-btn-icon-notext"
+	       style="margin-right: 0px !important;"
+		title="[Learn more]">[Learn more]</a>
+	<div wicket:id="tooltip-content" data-role="popup" id="[popupInfo]"
+		class="ui-content" data-theme="a" style="max-width: 350px;" />
+</wicket:panel>
+</html>

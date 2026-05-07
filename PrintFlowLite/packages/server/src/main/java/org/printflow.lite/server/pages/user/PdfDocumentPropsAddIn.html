@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2024 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2024 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<wicket:enclosure child="props-header">
+	<div data-role="collapsible" data-collapsed="true">
+		<h3>
+			&nbsp;<span wicket:id="props-header" />
+		</h3>
+		<table data-role="table" data-mode="reflow"
+			class="ui-responsive table-stroke ui-mini">
+			<thead>
+				<tr>
+					<th data-priority="1" />
+					<th data-priority="2" />
+					<th data-priority="2" />
+				</tr>
+			</thead>
+			<tbody>
+				<tr wicket:id="prop-entry">
+					<td wicket:id="prop-name" />
+					<td>:</td>
+					<td class="sp-txt-wrap" wicket:id="prop-value" />
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</wicket:enclosure>
+
+</html>

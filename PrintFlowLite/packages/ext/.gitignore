@@ -1,0 +1,54 @@
+# SPDX-FileCopyrightText: 2011-2020 Datraverse BV <info@datraverse.com>
+# SPDX-License-Identifier: CC0-1.0
+
+### Eclipse ###
+*.pydevproject
+.metadata
+.gradle
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+
+# External tool builders
+.externalToolBuilders/
+
+# Locally stored "Eclipse launch configurations"
+*.launch
+
+# CDT-specific
+.cproject
+
+# PDT-specific
+.buildpath
+
+# sbteclipse plugin 
+.target
+
+# TeXlipse plugin
+.texlipse
+
+
+### Maven ###
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+/.classpath
+/.project
+/.checkstyle
+/.eclipse-pmd
+/derby.log
+/target
+/plugins
+
+/target
+.pmd

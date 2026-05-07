@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2025 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2025 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<wicket:panel>
+
+	<li data-role="list-divider" wicket:id="header-title" />
+	<li>
+		<table data-role="table" data-mode="reflow" style="width: 50%"
+			class="ui-responsive ui-mini table-stroke">
+			<thead>
+				<tr>
+					<th data-priority="1" wicket:id="period" />
+					<th data-priority="1" wicket:id="delay" style="text-align: right;" />
+					<th data-priority="1" wicket:id="throttle"
+						style="text-align: right;" />
+					<th data-priority="1" wicket:id="reject" style="text-align: right;" />
+					<th data-priority="1" wicket:id="abort" style="text-align: right;" />
+					<th data-priority="1" wicket:id="denied" style="text-align: right;" />
+					<th data-priority="1" wicket:id="closed" style="text-align: right;" />
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td class="sp-txt-info">
+						<span wicket:id="hour" />
+						<div wicket:id="day" />
+					</td>
+					<td class="sp-txt-warn" style="text-align: right;">
+						<span wicket:id="delay-hour" />
+						<div wicket:id="delay-day" />
+					</td>
+					<td class="sp-txt-warn" style="text-align: right;">
+						<span wicket:id="throttle-hour" />
+						<div wicket:id="throttle-day" />
+					</td>
+					<td class="sp-txt-error" style="text-align: right;">
+						<span wicket:id="reject-hour" />
+						<div wicket:id="reject-day" />
+					</td>
+					<td class="sp-txt-error" style="text-align: right;">
+						<span wicket:id="abort-hour" />
+						<div wicket:id="abort-day" />
+					</td>
+					<td class="sp-txt-error" style="text-align: right;">
+						<span wicket:id="denied-hour" />
+						<div wicket:id="denied-day" />
+					</td>
+					<td class="sp-txt-error" style="text-align: right;">
+						<span wicket:id="closed-hour" />
+						<div wicket:id="closed-day" />
+					</td>
+				</tr>
+				<wicket:enclosure child="subjects-day">
+					<tr>
+						<td colspan="6" wicket:id="subjects-day"></td>
+					</tr>
+				</wicket:enclosure>
+			</tbody>
+		</table>
+	</li>
+
+</wicket:panel>
+</html>

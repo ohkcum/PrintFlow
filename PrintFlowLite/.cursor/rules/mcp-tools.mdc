@@ -1,0 +1,54 @@
+---
+description: MCP tools available in this workspace
+alwaysApply: true
+---
+
+# Available MCP Tools
+
+This workspace has the following MCP servers configured for browser automation and memory:
+
+## Playwright MCP (`playwright`)
+
+Browser automation for frontend testing. Use when you need to:
+- Test UI changes interactively
+- Verify frontend functionality
+- Navigate, click, type, and interact with the web UI
+- Take screenshots or snapshots of pages
+- Check console errors
+
+**Key tools:**
+- `browser_navigate` — Navigate to a URL
+- `browser_snapshot` — Get accessibility tree snapshot
+- `browser_click` — Click on elements
+- `browser_type` — Type text into fields
+- `browser_fill_form` — Fill multiple form fields
+- `browser_take_screenshot` — Screenshot of current page
+- `browser_console_messages` — Get browser console logs
+
+**Coordinate-based tools (vision mode):**
+- `browser_mouse_click_xy` — Click at x,y coordinates
+- `browser_mouse_move_xy` — Move mouse to position
+- `browser_mouse_drag_xy` — Drag from one point to another
+- `browser_mouse_wheel` — Scroll wheel
+- `browser_annotate` — Draw annotations on screenshot for debugging
+
+**Usage:** Call the appropriate tool from the available MCP tools when testing or verifying frontend functionality.
+
+## Codebase Memory (`codebase-memory-mcp`)
+
+Stores and retrieves project memory. Use when:
+- The user asks about previous decisions or discussions
+- You need to recall architecture decisions
+- Remembering context across long sessions
+
+## Agent Memory (`agentmemory`)
+
+Agent-level memory for context retention.
+
+---
+
+## When to Use
+
+- **Frontend testing/verification:** Use `playwright` to test UI changes, verify buttons work, check forms submit correctly, etc.
+- **Recalling project decisions:** Use `codebase-memory-mcp` or `agentmemory` to access stored context
+- **Live browser interaction:** Use `playwright` when the user wants you to see or interact with the running application

@@ -1,0 +1,329 @@
+/*
+ * This file is part of the PrintFlowLite project <https://printflowlite.local>.
+ * Copyright (c) 2020 Datraverse B.V.
+ * Author: Rijk Ravestein.
+ *
+ * SPDX-FileCopyrightText: © 2020 Datraverse B.V. <info@datraverse.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For more information, please contact Datraverse B.V. at this
+ * address: info@datraverse.com
+ */
+package org.printflow.lite.core.services.impl;
+
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.printflow.lite.core.dao.UserGroupMemberDao;
+import org.printflow.lite.core.dao.enums.ACLRoleEnum;
+import org.printflow.lite.core.dao.helpers.JsonPrintDelegation;
+import org.printflow.lite.core.jpa.Account;
+import org.printflow.lite.core.jpa.Account.AccountTypeEnum;
+import org.printflow.lite.core.jpa.User;
+import org.printflow.lite.core.jpa.UserAccount;
+import org.printflow.lite.core.jpa.UserGroup;
+import org.printflow.lite.core.services.PrintDelegationService;
+import org.printflow.lite.core.services.helpers.AccountTrxInfo;
+import org.printflow.lite.core.services.helpers.AccountTrxInfoSet;
+
+/**
+ *
+ * @author Rijk Ravestein
+ *
+ */
+public final class PrintDelegationServiceImpl extends AbstractService
+        implements PrintDelegationService {
+
+    /**
+     * Creates an {@link AccountTrxInfo}.
+     *
+     * @param account
+     *            The account.
+     * @param weight
+     *            The transaction weight.
+     * @param weightUnit
+     *            The transaction weight unit.
+     * @param groupName
+     *            The name of the group the user was selected by, or
+     *            {@code null} when selected as single user.
+     * @return The account info.
+     */
+    private static AccountTrxInfo createAccountTrxInfo(final Account account,
+            final Integer weight, final int weightUnit,
+            final String groupName) {
+
+        final AccountTrxInfo trx = new AccountTrxInfo();
+
+        trx.setAccount(account);
+
+        trx.setWeight(weight);
+        trx.setWeightUnit(Integer.valueOf(weightUnit));
+
+        /*
+         * Use free format external details to set the group name.
+         */
+        trx.setExtDetails(groupName);
+
+        return trx;
+    }
+
+    /**
+     * Adds an {@link AccountTrxInfo} for a user account to target list.
+     *
+     * @param targetList
+     *            The target list.
+     * @param user
+     *            The {@link User}.
+     * @param weight
+     *            The transaction weight.
+     * @param weightUnit
+     *            The transaction weight unit.
+     * @param groupName
+     *            The name of the group the user was selected by, or
+     *            {@code null} when a single user.
+     * @return The weight of the added {@link AccountTrxInfo} (same value as
+     *         weight parameter).
+     */
+    private static int addUserAccountToTrxList(
+            final List<AccountTrxInfo> targetList, final User user,
+            final Integer weight, final int weightUnit,
+            final String groupName) {
+
+        final UserAccount userAccount = accountingService()
+                .lazyGetUserAccount(user, AccountTypeEnum.USER);
+
+        targetList.add(createAccountTrxInfo(userAccount.getAccount(), weight,
+                weightUnit, groupName));
+
+        return weight.intValue();
+    }
+
+    @Override
+    public AccountTrxInfoSet
+            createAccountTrxInfoSet(final JsonPrintDelegation source) {
+
+        final List<AccountTrxInfo> targetList = new ArrayList<>();
+
+        final Map<Long, Integer> sharedAccountCopies = new HashMap<>();
+
+        int copiesTotal = 0;
+
+        /*
+         * Settle with Users.
+         */
+        for (final Entry<Long, Integer> idUser : source.getUsers().entrySet()) {
+
+            final User user = userDAO().findActiveUserById(idUser.getKey());
+
+            /*
+             * INVARIANT: User must be present.
+             */
+            if (user == null) {
+                continue;
+            }
+
+            final int copiesWlk = addUserAccountToTrxList(targetList, user,
+                    idUser.getValue(), 1, null);
+
+            copiesTotal += copiesWlk;
+        }
+
+        /*
+         * Groups: settle with GROUP account.
+         */
+        for (final Entry<Long, Integer> idGroup : source.getGroupsAccountGroup()
+                .entrySet()) {
+
+            final UserGroup userGroup =
+                    userGroupDAO().findById(idGroup.getKey());
+
+            // TODO: logically deleted?
+            if (userGroup == null) {
+                continue;
+            }
+
+            final int copiesWlk = idGroup.getValue().intValue();
+
+            if (copiesWlk == 0) {
+                continue;
+            }
+
+            final Account groupAccount =
+                    accountingService().lazyGetUserGroupAccount(userGroup);
+
+            targetList.add(
+                    createAccountTrxInfo(groupAccount, copiesWlk, 1, null));
+
+            copiesTotal += copiesWlk;
+        }
+
+        /*
+         * Groups: settle with USER accounts.
+         */
+        final UserGroupMemberDao.GroupFilter groupMemberFilterWlk =
+                new UserGroupMemberDao.GroupFilter();
+
+        groupMemberFilterWlk.setAclRoleNotFalse(ACLRoleEnum.PRINT_DELEGATOR);
+        groupMemberFilterWlk.setDisabledPrintOut(Boolean.FALSE);
+
+        for (final Entry<Long, Integer> idGroup : source.getGroupsAccountUser()
+                .entrySet()) {
+
+            final int copiesGroupWlk = idGroup.getValue().intValue();
+
+            copiesTotal += copiesGroupWlk;
+
+            groupMemberFilterWlk.setGroupId(idGroup.getKey());
+
+            final List<User> groupMembers = userGroupMemberDAO().getUserChunk(
+                    groupMemberFilterWlk, null, null,
+                    UserGroupMemberDao.UserField.USER_NAME, true);
+
+            int weightMemberTotal = 0;
+
+            final int weightMember;
+            final int weightMemberUnit;
+
+            if (copiesGroupWlk % groupMembers.size() == 0) {
+                weightMember = copiesGroupWlk / groupMembers.size();
+                weightMemberUnit = 1;
+            } else {
+                weightMember = copiesGroupWlk;
+                weightMemberUnit = groupMembers.size();
+            }
+
+            final UserGroup userGroup =
+                    userGroupDAO().findById(idGroup.getKey());
+
+            for (final User user : groupMembers) {
+
+                if (user.getDeleted()) {
+                    continue;
+                }
+
+                if (user.getDisabledPrintOut()) {
+                    continue;
+                }
+
+                addUserAccountToTrxList(targetList, user, weightMember,
+                        weightMemberUnit, userGroup.getGroupName());
+
+                weightMemberTotal += weightMember;
+            }
+
+            // Extra trx for group.
+            if (weightMemberTotal > 0) {
+                final Account groupAccount =
+                        accountingService().lazyGetUserGroupAccount(userGroup);
+                targetList.add(createAccountTrxInfo(groupAccount,
+                        Integer.valueOf(weightMemberTotal), weightMemberUnit,
+                        null));
+            }
+        }
+
+        /*
+         * Groups: settle with SHARED accounts.
+         */
+        for (final Entry<Long, SimpleEntry<Long, Integer>> entry : source
+                .getGroupsAccountShared().entrySet()) {
+
+            final Long idGroup = entry.getKey();
+            final UserGroup userGroup = userGroupDAO().findById(idGroup);
+
+            // TODO: logically deleted?
+            if (userGroup == null) {
+                continue;
+            }
+
+            final int copiesWlk = entry.getValue().getValue();
+
+            if (copiesWlk == 0) {
+                continue;
+            }
+
+            final Long idAccount = entry.getValue().getKey();
+
+            Integer sharedCopies = sharedAccountCopies.get(idAccount);
+
+            if (sharedCopies == null) {
+                sharedCopies = Integer.valueOf(0);
+            }
+
+            sharedCopies += copiesWlk;
+            sharedAccountCopies.put(idAccount, sharedCopies);
+        }
+
+        /*
+         * Extra copies: SHARED accounts.
+         */
+        for (final Entry<Long, Integer> entry : source.getCopiesAccountShared()
+                .entrySet()) {
+
+            final int copiesWlk = entry.getValue().intValue();
+
+            if (copiesWlk == 0) {
+                continue;
+            }
+
+            final Long idAccount = entry.getKey();
+
+            Integer copiesShared = sharedAccountCopies.get(idAccount);
+
+            if (copiesShared == null) {
+                copiesShared = Integer.valueOf(0);
+            }
+
+            copiesShared += copiesWlk;
+            sharedAccountCopies.put(idAccount, copiesShared);
+        }
+
+        /*
+         * Process shared account totals.
+         */
+        for (final Entry<Long, Integer> entry : sharedAccountCopies
+                .entrySet()) {
+
+            final Long idAccount = entry.getKey();
+            final Account account = accountDAO().findById(idAccount);
+
+            /*
+             * INVARIANT: Account must be available.
+             */
+            if (account == null || account.getDeleted()
+                    || account.getDisabled()) {
+                continue;
+            }
+
+            final Integer sharedCopies = entry.getValue();
+
+            targetList
+                    .add(createAccountTrxInfo(account, sharedCopies, 1, null));
+
+            copiesTotal += sharedCopies.intValue();
+        }
+
+        /*
+         * Wrap-up
+         */
+        final AccountTrxInfoSet target = new AccountTrxInfoSet(copiesTotal);
+        target.setAccountTrxInfoList(targetList);
+        return target;
+    }
+}

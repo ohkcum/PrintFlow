@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+    <!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<wicket:panel>
+
+	<div data-role="header" id="header-zero-page">
+		<h1 wicket:id="zero-page-title"></h1>
+	</div>
+
+	<div class="ui-content">
+		<h3>
+			<wicket:message key="zero-page-saluation" />
+		</h3>
+		<form wicket:id="refresh-page-form" action="#" method="post">
+			<input wicket:id="refresh-page-submit" id="button-refresh-webapp"
+				type="button" data-inline="true" value="[Continue]" />
+		</form>
+	</div>
+</wicket:panel>
+</html>

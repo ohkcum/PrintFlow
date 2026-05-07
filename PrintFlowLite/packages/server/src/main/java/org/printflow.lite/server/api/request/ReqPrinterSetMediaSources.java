@@ -1,0 +1,78 @@
+/*
+ * This file is part of the PrintFlowLite project <https://www.PrintFlowLite.org>.
+ * Copyright (c) 2020 Datraverse B.V.
+ * Author: Rijk Ravestein.
+ *
+ * SPDX-FileCopyrightText: © 2020 Datraverse B.V. <info@datraverse.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * For more information, please contact Datraverse B.V. at this
+ * address: info@datraverse.com
+ */
+package org.printflow.lite.server.api.request;
+
+import java.io.IOException;
+
+import org.printflow.lite.core.dao.PrinterDao;
+import org.printflow.lite.core.dto.ProxyPrinterMediaSourcesDto;
+import org.printflow.lite.core.jpa.Printer;
+import org.printflow.lite.core.jpa.User;
+import org.printflow.lite.core.json.JsonAbstractBase;
+import org.printflow.lite.core.json.rpc.AbstractJsonRpcMethodResponse;
+import org.printflow.lite.core.services.ServiceContext;
+
+/**
+ * Sets the Media Sources of a Proxy {@link Printer}.
+ *
+ * @author Rijk Ravestein
+ *
+ */
+public final class ReqPrinterSetMediaSources extends ApiRequestMixin {
+
+    @Override
+    protected void onRequest(final String requestingUser, final User lockedUser)
+            throws IOException {
+
+        final PrinterDao printerDao =
+                ServiceContext.getDaoContext().getPrinterDao();
+
+        final ProxyPrinterMediaSourcesDto dto = JsonAbstractBase
+                .create(ProxyPrinterMediaSourcesDto.class, getParmValueDto());
+
+        final long id = dto.getId();
+
+        final Printer jpaPrinter = printerDao.findById(id);
+
+        /*
+         * INVARIANT: printer MUST exist.
+         */
+        if (jpaPrinter == null) {
+            setApiResult(ApiResultCodeEnum.ERROR, "msg-printer-not-found",
+                    String.valueOf(id));
+            return;
+        }
+
+        final AbstractJsonRpcMethodResponse rpcResponse = PROXY_PRINT_SERVICE
+                .setProxyPrinterCostMediaSources(jpaPrinter, dto);
+
+        if (rpcResponse.isResult()) {
+            setApiResult(ApiResultCodeEnum.OK, "msg-printer-saved-ok");
+        } else {
+            setApiResultText(rpcResponse);
+        }
+    }
+
+}

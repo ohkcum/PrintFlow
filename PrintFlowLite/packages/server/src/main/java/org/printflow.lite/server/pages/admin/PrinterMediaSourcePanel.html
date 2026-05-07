@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+    <!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<wicket:panel>
+
+	<div class="ui-mini">
+		<wicket:enclosure child="use-grayscale-as-default">
+			<label for="sp-printer-use-monochrome-as-default">
+				<wicket:message key="use-grayscale-as-default" />
+			</label>
+			<input type="checkbox" id="sp-printer-use-monochrome-as-default"
+				wicket:id="use-grayscale-as-default" />
+		</wicket:enclosure>
+
+		<wicket:enclosure child="client-side-monochrome-conversion">
+			<label for="sp-printer-client-side-monochrome">
+				<wicket:message key="client-side-monochrome-conversion" />
+			</label>
+			<input type="checkbox" id="sp-printer-client-side-monochrome"
+				wicket:id="client-side-monochrome-conversion" />
+		</wicket:enclosure>
+
+	</div>
+
+	<table data-role="table" data-mode="reflow"
+		class="ui-responsive ui-mini">
+		<thead>
+			<tr>
+				<th>
+					<wicket:message key="media-source-short" />
+				</th>
+				<th colspan="2">
+					<span wicket:id="th-one-sided" />
+					<wicket:message key="one-sided" />
+				</th>
+				<th colspan="2">
+					<span wicket:id="th-two-sided" />
+					<!--  -->
+					<span wicket:id="th-two-sided-txt"> <wicket:message
+							key="two-sided" />
+					</span>
+				</th>
+			</tr>
+			<tr>
+				<th>
+					<wicket:enclosure child="signal-media-source-auto">
+						<span wicket:id="signal-media-source-auto" />
+						<br />
+					</wicket:enclosure>
+					<img src="/famfamfam-silk/star.png" height="10"/>&nbsp; 
+					<span wicket:id="legend-source-preferred"
+						style="margin: 0px; padding: 0px;" class="sp-txt-info sp-txt-wrap" />
+				</th>
+				<th data-priority="1">
+					<span wicket:id="th-grayscale-1" />
+					<wicket:message key="grayscale" />
+				</th>
+				<th data-priority="1">
+					<span wicket:id="th-color-1" />
+					<!--  -->
+					<span wicket:id="th-color-1-txt"> <wicket:message
+							key="color" />
+					</span>
+				</th>
+				<th data-priority="2">
+					<span wicket:id="th-grayscale-2" />
+					<!--  -->
+					<span wicket:id="th-grayscale-2-txt"> <wicket:message
+							key="grayscale" /></span>
+				</th>
+				<th data-priority="2">
+					<span wicket:id="th-color-2" />
+					<!--  -->
+					<span wicket:id="th-color-2-txt"> <wicket:message
+							key="color" />
+					</span>
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+
+			<wicket:enclosure child="media-source-auto-display-name">
+				<tr>
+					<td colspan="5">
+						<hr />
+					</td>
+				</tr>
+				<tr>
+					<td style="vertical-align: middle">
+						<label for="" wicket:id="media-source-checkbox-auto-label"
+							value="1" />
+						<input class="sp-printer-media-source" type="checkbox" id=""
+							wicket:id="media-source-checkbox-auto" />
+					</td>
+					<td colspan="2">
+						<input id="media-source-auto-display"
+							wicket:id="media-source-auto-display-name" type="text" />
+					</td>
+				</tr>
+			</wicket:enclosure>
+
+			<wicket:panel wicket:id="media-source-row">
+				<tr>
+					<td colspan="5">
+						<hr />
+					</td>
+				</tr>
+				<tr class="sp-printer-media-source-row">
+					<td style="vertical-align: middle">
+						<label for="" wicket:id="media-source-checkbox-label" value="1" />
+						<input class="sp-printer-media-source" type="checkbox" id=""
+							wicket:id="media-source-checkbox" />
+					</td>
+					<td wicket:id="one-sided-grayscale-td">
+						<input class="sp-printer-cost-1-g" type="text" maxlength=""
+							wicket:id="one-sided-grayscale" pattern="[0-9]*" />
+					</td>
+					<td wicket:id="one-sided-color-td">
+						<input class="sp-printer-cost-1-c" type="text" maxlength=""
+							wicket:id="one-sided-color" pattern="[0-9]*" />
+					</td>
+					<td wicket:id="two-sided-grayscale-td">
+						<input class="sp-printer-cost-2-g" type="text" maxlength=""
+							wicket:id="two-sided-grayscale" pattern="[0-9]*" />
+					</td>
+					<td wicket:id="two-sided-color-td">
+						<input class="sp-printer-cost-2-c" type="text" maxlength=""
+							wicket:id="two-sided-color" pattern="[0-9]*" />
+					</td>
+				</tr>
+				<tr>
+					<td colspan="3" style="padding-top: 0px; padding-left: 0px;">
+						<table style="margin: 0px; padding: 0px;" cellspacing="0"
+							padding="0" width="100%">
+							<tr>
+								<td style="padding: 0px;">
+									<button wicket:id="btn-preferred-switch"
+										class="sp-btn-preferred-switch ui-btn ui-btn-inline ui-mini ui-btn-icon-notext" />
+								</td>
+								<td width="100%" style="padding: 0px;">
+									<input type="text" wicket:id="media-source-display-name" />
+								</td>
+							</tr>
+						</table>
+					</td>
+					<td colspan="2"
+						style="vertical-align: middle; horizontal-align: right; padding: 0px;">
+						<select id="" data-native-menu="true" class="ui-mini">
+							<option value=""><wicket:message key="media-size" /></option>
+							<wicket:panel wicket:id="media-source-media-select">
+								<option wicket:id="media-source-media" />
+							</wicket:panel>
+						</select>
+					</td>
+				</tr>
+			</wicket:panel>
+
+			<wicket:enclosure child="job-sheets-label">
+				<tr>
+					<td colspan="5">
+						<hr />
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2" style="vertical-align: middle; text-align: center;">
+						<label wicket:id="job-sheets-label" />
+					</td>
+					<td colspan="3">
+						<select id="sp-printer-job-sheets-media-source"
+							multiple="multiple" data-native-menu="false" class="ui-mini">
+							<option value="">&mdash;</option>
+							<wicket:panel wicket:id="job-sheets-media-source-select">
+								<option wicket:id="job-sheets-media-source" />
+							</wicket:panel>
+						</select>
+					</td>
+				</tr>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="media-source-manual-display-name">
+				<tr>
+					<td colspan="5">
+						<hr />
+					</td>
+				</tr>
+				<tr>
+					<td style="vertical-align: middle">
+
+						<label for="" wicket:id="media-source-checkbox-manual-label"
+							value="1" />
+						<input class="sp-printer-media-source" type="checkbox" id=""
+							wicket:id="media-source-checkbox-manual" />
+
+					</td>
+					<td colspan="2">
+						<input id="media-source-manual-display"
+							wicket:id="media-source-manual-display-name" type="text" />
+					</td>
+				</tr>
+			</wicket:enclosure>
+
+		</tbody>
+	</table>
+
+</wicket:panel>
+</html>

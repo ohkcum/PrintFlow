@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<div data-role="header" data-theme="b">
+	<h1>
+		<div class="sp-shared-account-edit">
+			<wicket:message key="title-shared-account" />
+		</div>
+		<div class="sp-group-account-edit">
+			<wicket:message key="title-group-account" />
+		</div>
+	</h1>
+</div>
+
+<div class="ui-content">
+
+	<ul data-role="listview" data-inset="true">
+
+		<li data-role="list-divider">
+			<span><img class="sp-shared-account-edit" width="16"
+				height="16" wicket:id="sharedAccountImage" /> <img
+				class="sp-group-account-edit" width="16" height="16"
+				wicket:id="groupAccountImage" />&nbsp; </span> <span
+				class="sp-shared-account-edit"><wicket:message
+					key="label-account-name" /></span> <span class="sp-group-account-edit"
+				id="sp-group-account-name" />
+		</li>
+		<li class="sp-shared-account-edit">
+			<input type="text" id="sp-shared-account-name" value=""
+				maxlength="255" autofocus autocomplete="on" autocorrect="off"
+				autocapitalize="off" spellcheck="false" />
+		</li>
+
+		<li class="sp-shared-account-edit" data-role="list-divider">
+			<span> <img width="16" height="16"
+				wicket:id="parentAccountImage" />&nbsp;&nbsp;
+			</span><span><wicket:message key="label-account-name-parent" /></span>
+		</li>
+		<li class="sp-shared-account-edit">
+			<input type="text" id="sp-shared-account-name-parent" value=""
+				maxlength="255" autofocus autocomplete="on" autocorrect="off"
+				autocapitalize="off" spellcheck="false" />
+		</li>
+
+		<li class="sp-shared-account-edit">
+			<div data-mini="true" data-role="controlgroup">
+				<label for="sp-shared-account-disabled">
+					<wicket:message key="label-disabled" />
+				</label>
+				<input type="checkbox" id="sp-shared-account-disabled" value="0" />
+			</div>
+		</li>
+
+	</ul>
+
+	<ul data-role="listview" data-inset="true"
+		class="sp-shared-account-edit">
+
+		<li data-role="list-divider">
+			<span> <img width="16" height="16"
+				wicket:id="accessControlImage" />&nbsp;&nbsp;
+			</span><span><wicket:message key="header-access-control" /></span>
+		</li>
+		<li>
+			<label class="sp-txt-wrap" for="sp-shared-account-group-access">
+				<wicket:message key="label-user-groups" />
+			</label>
+			<textarea id="sp-shared-account-group-access" autocomplete="off"
+				autocorrect="off" autocapitalize="off" spellcheck="false" />
+		</li>
+	</ul>
+
+	<ul data-role="listview" data-inset="true">
+		<li>
+			<label for="sp-shared-account-balance">
+				<wicket:message key="label-balance" />
+			</label>
+			<input type="text" id="sp-shared-account-balance" value=""
+				maxlength="10" pattern="[0-9]*" />
+
+			<label for="sp-shared-account-notes">
+				<wicket:message key="label-account-notes" />
+			</label>
+			<textarea id="sp-shared-account-notes" autocomplete="off"
+				autocorrect="off" autocapitalize="off" spellcheck="false" />
+
+			<div class="sp-shared-account_user-defined-section">
+				<label for="sp-shared-account-deleted">
+					<wicket:message key="label-account-deleted" />
+				</label>
+				<input type="checkbox" id="sp-shared-account-deleted" value="0" />
+			</div>
+		</li>
+	</ul>
+
+	<button id="sp-button-save-shared-account"
+		class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-check">
+		<wicket:message key="button-ok" />
+	</button>
+
+	<a href="#" data-rel="back" data-direction="reverse"
+		class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-back">
+		<wicket:message key="button-cancel" />
+	</a>
+
+</div>
+
+<wicket:remove>
+	<!-- 
+THIS POPUP MUST BE PRESENT IN EVERY PAGE AND DIALOG 
+-->
+</wicket:remove>
+<div data-role="popup" data-position-to="window"
+	class="sp-msg-popup ui-content" />
+
+</html>

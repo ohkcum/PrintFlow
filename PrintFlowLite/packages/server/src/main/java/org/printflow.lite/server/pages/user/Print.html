@@ -1,0 +1,571 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<div class="ui-content" id="content-print">
+
+	<!-- <span wicket:id="title" /> -->
+
+	<ul data-role="listview" data-inset="true">
+
+		<li data-role="list-divider" id="sp-printer-page-name"
+			wicket:id="header-printer" />
+
+		<li>
+			<div data-role="controlgroup" data-type="horizontal" class="ui-mini">
+
+				<button tabindex="-1"
+					class="ui-shadow ui-btn ui-corner-all ui-btn-icon-notext sp-copy-job-info">
+					<span wicket:id="label-copy" /> &nbsp; <span
+						class="sp-txt-wrap sp-copy-job-media-sources-info sp-ipp-media-info-match" />
+				</button>
+
+				<button tabindex="-1"
+					class="ui-shadow ui-btn ui-corner-all ui-btn-icon-notext sp-print-job-info">
+					<span class="sp-txt-wrap sp-print-job-media-sources-info">&nbsp;</span>
+				</button>
+
+				<button tabindex="-1"
+					class="ui-shadow ui-btn ui-corner-all ui-btn-icon-notext sp-print-job-media-info" />
+
+				<button tabindex="-1"
+					class="sp-button-mini-print-color ui-icon-mini-print-color ui-shadow ui-btn ui-corner-all ui-btn-icon-notext">&nbsp;</button>
+				<button tabindex="-1"
+					class="sp-button-mini-print-mono ui-icon-mini-print-mono ui-shadow ui-btn ui-corner-all ui-btn-icon-notext">&nbsp;</button>
+				<button tabindex="-1"
+					class="sp-button-mini-print-duplex ui-icon-mini-duplex ui-shadow ui-btn ui-corner-all ui-btn-icon-notext">&nbsp;</button>
+				<button tabindex="-1"
+					class="sp-button-mini-print-n-up ui-icon-mini-n-up ui-shadow ui-btn ui-corner-all ui-btn-icon-notext">&nbsp;</button>
+
+			</div>
+
+			<div id="sp-print-quicksearch-printer-div">
+				<wicket:panel wicket:id="quicksearch-printer" />
+			</div>
+
+			<ul class="printer-selected" data-role="listview" data-inset="true">
+				<li class="ui-li-has-icon sp-txt-wrap" data-icon="gear">
+					<a href="#" id="button-print-settings" />
+				</li>
+			</ul>
+		</li>
+	</ul>
+
+	<ul class="printer-fast-print-info" data-role="listview"
+		data-inset="true">
+		<li class="ui-li-has-icon" data-icon="refresh">
+			<a href="#" id="button-printer-fast-print-renew"
+				title="Push button to refesh.">
+				<img width="16" height="16"
+					src="/images/device-card-reader-16x16.png" /> <span
+					class="ui-mini sp-txt-info sp-txt-wrap"> <wicket:message
+						key="prompt-fast-print-expiry" />
+				</span> <span class="ui-li-count" id="printer-fast-print-expiry">hh:ss</span>
+			</a>
+		</li>
+	</ul>
+
+	<ul class="printer-selected" data-role="listview" data-inset="true">
+
+		<li data-role="list-divider" id="sp-printer-page-name">
+			<span class="sp-proxyprint" wicket:id="header-job" /> <span
+				class="sp-jobticket"><span wicket:id="title_ticket" /> <span
+				id="sp-jobticket-number" /></span>
+		</li>
+
+		<li data-mini="true">
+
+			<wicket:enclosure child="jobticket-type">
+				<div class="ui-field-contain sp-jobticket">
+					<fieldset data-role="controlgroup" data-type="horizontal"
+						class="ui-mini">
+
+						<legend class="sp-txt-wrap" wicket:id="jobticket-type" />
+
+						<label for="sp-print-jobticket-type-print" class="sp-txt-wrap">
+							<wicket:message key="jobticket-type-print" />
+						</label>
+						<input type="radio" name="sp-print-jobticket-type"
+							wicket:id="jobticket-type-print"
+							id="sp-print-jobticket-type-print" checked="checked"
+							value="PRINT" />
+
+						<label for="sp-print-jobticket-type-copy" class="sp-txt-wrap">
+							<wicket:message key="jobticket-type-copy" />
+						</label>
+						<input type="radio" name="sp-print-jobticket-type"
+							wicket:id="jobticket-type-copy" id="sp-print-jobticket-type-copy"
+							value="COPY" />
+
+					</fieldset>
+				</div>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="button-print-delegation">
+
+				<div class="ui-field-contain">
+
+					<label data-mini="true" class="sp-txt-wrap"
+						for="sp-print-invoicing-div" wicket:id="label-invoicing" />
+
+					<div data-role="controlgroup" data-type="horizontal"
+						id="sp-print-invoicing-div" class="ui-mini">
+
+						<div style="float: left;">
+
+							<div data-role="controlgroup" data-type="horizontal"
+								class="ui-mini" style="float: left; margin-right: 15px;">
+								<button id="button-print-delegation"
+									class="ui-btn ui-shadow ui-corner-all ui-btn-icon-right ui-icon-user">
+									<span wicket:id="button-print-delegation" /> &nbsp; <span
+										class="sp-button-mini-print-delegation sp-txt-info" />
+									&nbsp;&nbsp;
+								</button>
+							</div>
+
+							<input type="checkbox" data-role="flipswitch" data-on-text="On"
+								wicket:id="flipswitch-print-as-delegate" style="float: right;"
+								data-off-text="Off" id="print-as-delegate" value="1" checked />
+
+						</div>
+					</div>
+				</div>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="label-jobticket-domain">
+				<div class="ui-field-contain sp-jobticket-labels">
+
+					<label data-mini="true" class="sp-txt-wrap"
+						for="sp-jobticket-domain-list" wicket:id="label-jobticket-domain" />
+					<wicket:remove>
+						<!-- Native <select> menu: consistent with use and tag selects. -->
+					</wicket:remove>
+					<select id="sp-jobticket-domain-list" data-mini="true"
+						data-native-menu="true">
+						<option value="" wicket:id="jobticket-domain-option-select" />
+						<optgroup label="&#11835;&#11835;&#11835;&#11835;">
+							<wicket:panel wicket:id="jobticket-domain-option">
+								<option value="the-key" wicket:id="option"></option>
+							</wicket:panel>
+						</optgroup>
+					</select>
+				</div>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="label-jobticket-use">
+				<div class="ui-field-contain sp-jobticket-labels">
+
+					<label data-mini="true" class="sp-txt-wrap"
+						for="sp-jobticket-use-list" wicket:id="label-jobticket-use" />
+					<wicket:remove>
+						<!-- Native <select> menu because use <option> hide/show is dependent on domain. -->
+					</wicket:remove>
+					<select id="sp-jobticket-use-list" data-mini="true"
+						data-native-menu="true">
+						<option value="" wicket:id="jobticket-use-option-select" />
+						<optgroup label="&#11835;&#11835;&#11835;&#11835;">
+							<wicket:panel wicket:id="jobticket-use-option">
+								<option value="the-key" wicket:id="option"></option>
+							</wicket:panel>
+						</optgroup>
+					</select>
+				</div>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="label-jobticket-tag">
+				<div class="ui-field-contain sp-jobticket-labels">
+
+					<label data-mini="true" class="sp-txt-wrap"
+						for="sp-jobticket-tag-list" wicket:id="label-jobticket-tag" />
+					<wicket:remove>
+						<!-- Native <select> menu because tag <option> hide/show is dependent on use. -->
+					</wicket:remove>
+					<select id="sp-jobticket-tag-list" data-mini="true"
+						data-native-menu="true">
+						<option value="" wicket:id="jobticket-tag-option-select" />
+						<optgroup label="&#11835;&#11835;&#11835;&#11835;">
+							<wicket:panel wicket:id="jobticket-tag-option">
+								<option value="the-key" wicket:id="option"></option>
+							</wicket:panel>
+						</optgroup>
+					</select>
+				</div>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="print-account-type">
+				<div class="ui-field-contain sp-print-account"
+					id="sp-print-shared-account-div">
+
+					<label data-mini="true" class="sp-txt-wrap"
+						for="sp-print-shared-account-list" wicket:id="print-account-type" />
+
+					<select data-mini="true" id="sp-print-shared-account-list"
+						data-native-menu=true>
+
+						<wicket:enclosure child="print-account-type-personal">
+							<option value="0" selected
+								wicket:id="print-account-type-personal" />
+							<optgroup label="&#11835;&#11835;&#11835;&#11835;">
+								<wicket:panel wicket:id="print-shared-account-option-extra">
+									<option value="the-key" wicket:id="option-extra" />
+								</wicket:panel>
+							</optgroup>
+						</wicket:enclosure>
+
+						<wicket:enclosure child="print-shared-account-option-only">
+							<option value="-1" wicket:id="btn-select-shared-account" />
+							<optgroup label="&#11835;&#11835;&#11835;&#11835;">
+								<wicket:panel wicket:id="print-shared-account-option-only">
+									<option value="the-key" wicket:id="option-only" />
+								</wicket:panel>
+							</optgroup>
+						</wicket:enclosure>
+
+					</select>
+
+				</div>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="print-account-separator">
+				<hr style="opacity: 0.2;" />
+			</wicket:enclosure>
+
+			<div class="ui-field-contain sp-proxyprint sp-jobticket-print">
+				<label data-mini="true" for="print-job-list" class="sp-txt-wrap"
+					wicket:id="print-job-document" />
+				<select data-mini="true" id="print-job-list" data-iconpos="right"
+					data-native-menu="false" />
+			</div>
+
+			<div class="ui-field-contain">
+				<label for="print-title" class="sp-txt-wrap" wicket:id="print-title" />
+				<input type="text" data-clear-btn="true" id="print-title" value="" />
+			</div>
+
+			<div class="ui-field-contain" id="slider-print-copies-div">
+				<label for="slider-print-copies" class="sp-txt-wrap"
+					wicket:id="print-copies-1" />
+				<input type="range" id="slider-print-copies"
+					wicket:id="slider-print-copies" value="1" min="1" max="<var>" />
+			</div>
+
+			<div class="ui-field-contain" id="number-print-copies-div">
+				<label for="number-print-copies" class="sp-txt-wrap"
+					wicket:id="print-copies-2" />
+				<input type="number" id="number-print-copies" value="1" min="1" />
+			</div>
+
+			<div class="ui-field-contain" id="delegated-print-copies-div">
+				<label for="delegated-print-copies" class="sp-txt-wrap"
+					wicket:id="print-copies-3" />
+				<input type="text" id="delegated-print-copies" disabled />
+			</div>
+
+			<div class="ui-field-contain" id="sp-print-page-ranges-div">
+				<label for="print-page-ranges" class="sp-txt-wrap"
+					wicket:id="print-page-ranges-label" />
+				<input type="text" data-clear-btn="true" id="print-page-ranges"
+					value="" pattern="[0-9]*" autocomplete="off" autocorrect="off"
+					autocapitalize="off" spellcheck="false"
+					wicket:id="print-page-ranges" />
+			</div>
+
+			<div class="ui-field-contain" id="sp-jobticket-copy-pages-div">
+				<label for="sp-jobticket-copy-pages" class="sp-txt-wrap">
+					<wicket:message key="sp-jobticket-copy-pages-label" />
+				</label>
+				<input type="number" id="sp-jobticket-copy-pages" value="1" min="1"
+					wicket:id="jobticket-copy-pages" title="[]" />
+			</div>
+
+			<wicket:enclosure child="prompt-letterhead">
+				<div data-mini="true"
+					class="ui-field-contain sp-proxyprint sp-jobticket-print">
+					<label wicket:id="prompt-letterhead" data-mini="true"
+						class="sp-txt-wrap" for="print-letterhead-list" />
+					<select data-mini="true" id="print-letterhead-list"
+						data-iconpos="left" data-native-menu="false"></select>
+				</div>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="print-ecoprint">
+				<div data-mini="true" data-role="controlgroup"
+					class="sp-proxyprint sp-jobticket-print">
+					<label for="print-ecoprint" class="sp-txt-wrap">
+						&nbsp;&nbsp; <img height="12"
+							src="/glyphicons/glyphicons_001_leaf.png" /> &nbsp;&nbsp; <span
+							wicket:id="print-ecoprint-label" />
+					</label>
+					<input type="checkbox" wicket:id="print-ecoprint"
+						id="print-ecoprint" value="1" />
+				</div>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="print-remove-graphics-label">
+				<div data-mini="true" data-role="controlgroup"
+					class="sp-proxyprint sp-jobticket-print">
+					<label for="print-remove-graphics">
+						&nbsp;&nbsp; <img height="12"
+							src="/glyphicons/glyphicons_092_tint.png" /> &nbsp;&nbsp; <span
+							wicket:id="print-remove-graphics-label" />
+					</label>
+					<input type="checkbox" id="print-remove-graphics" value="1" />
+				</div>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="prompt-collate">
+				<div data-mini="true" data-role="controlgroup" class="print-collate">
+					<label for="print-collate">
+						<table>
+							<tr>
+								<td>
+									<span wicket:id="prompt-collate" /> &nbsp;
+								</td>
+								<td>
+									<div class="print_collate_sheet_next  print_collate_sheet_1_2">2</div>
+									<div class="print_collate_sheet_first print_collate_sheet_1_1">1</div>
+								</td>
+								<td>
+									<div class="print_collate_sheet_next  print_collate_sheet_2_2">2</div>
+									<div class="print_collate_sheet_first print_collate_sheet_2_1">1</div>
+								</td>
+							</tr>
+						</table>
+					</label>
+					<input type="checkbox" id="print-collate" value="1" checked />
+				</div>
+			</wicket:enclosure>
+			<wicket:enclosure child="print-documents-separate-ticket">
+				<div id="print-documents-separate-ticket-div">
+					<div data-mini="true" data-role="controlgroup"
+						class="sp-jobticket sp-jobticket-print">
+						<label for="print-documents-separate-ticket">
+							<wicket:message key="print-documents-separate" />
+						</label>
+						<input type="checkbox" id="print-documents-separate-ticket"
+							wicket:id="print-documents-separate-ticket" value="1" />
+					</div>
+				</div>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="print-documents-separate-print">
+				<div data-mini="true" data-role="controlgroup"
+					id="print-documents-separate-print-div" class="sp-proxyprint">
+					<label for="print-documents-separate-print">
+						<wicket:message key="print-documents-separate" />
+					</label>
+					<input type="checkbox" id="print-documents-separate-print"
+						wicket:id="print-documents-separate-print" value="1" />
+				</div>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="delete-pages-after-print">
+				<div class="sp-proxyprint sp-jobticket-print">
+					<div data-mini="true" data-role="controlgroup">
+						<label for="delete-pages-after-print">
+							<wicket:message key="delete-pages-after-print" />
+						</label>
+						<input type="checkbox" id="delete-pages-after-print"
+							wicket:id="delete-pages-after-print" value="1" />
+					</div>
+
+					<div class="delete-pages-after-print-scope-enabled"
+						style="margin-left: 20px;">
+						<legend>
+							<small> <wicket:message
+									key="delete-pages-after-print-scope" /></small>
+						</legend>
+						<fieldset data-role="controlgroup" data-mini="true"
+							id="delete-pages-after-print-scope">
+							<wicket:panel wicket:id="delete-pages-after-print-scope" />
+						</fieldset>
+					</div>
+				</div>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="delete-pages-after-print-warn">
+				<div class="sp-proxyprint sp-jobticket-print">
+					<small class="sp-txt-wrap sp-txt-info"
+						wicket:id="delete-pages-after-print-warn" />
+				</div>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="archive-print-job-prompt">
+				<div
+					class="sp-proxyprint sp-jobticket-print sp-proxyprint-archive sp-txt-wrap">
+					<hr style="opacity: 0.2; margin-top: 15px;" />
+					<span wicket:id="archive-print-job-prompt" />
+				</div>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="archive-print-job">
+				<div
+					class="ui-mini sp-proxyprint sp-jobticket-print sp-proxyprint-archive">
+					<label for="print-archive-print-job" wicket:id="archive-print-job" />
+					<input type="checkbox" id="print-archive-print-job" value="0" />
+				</div>
+			</wicket:enclosure>
+
+		</li>
+
+		<li class="sp-jobticket" data-mini="true">
+
+			<wicket:enclosure child="prompt-jobticket-delivery-datetime">
+				<span class="sp-txt-wrap"
+					wicket:id="prompt-jobticket-delivery-datetime" />
+				<span style="font-size: small;">&bull;</span>
+				<span style="font-size: small;" class="sp-txt-wrap"
+					wicket:id="prompt-jobticket-delivery-datetime-weekdays" />
+				<table width="100%" style="font-size: 90%;">
+					<tr>
+						<wicket:enclosure child="btn-jobticket-datetime-default">
+							<td>
+								<div wicket:id="btn-jobticket-datetime-default"
+									id="sp-btn-jobticket-datetime-default"
+									class="ui-input-btn ui-btn ui-icon-recycle ui-btn-icon-notext ui-corner-all" />
+							</td>
+						</wicket:enclosure>
+						<td style="padding-left: 0px;">
+							<input id="sp-jobticket-date" />
+						</td>
+						<wicket:enclosure child="jobticket-delivery-time-hr">
+							<td style="padding: 0px; width: 60px;">
+								<input wicket:id="jobticket-delivery-time-hr" type="number"
+									id="sp-jobticket-hrs" min="0" max="23" step="1" value="" />
+							</td>
+							<td align="center">:</td>
+							<td style="padding: 0px; width: 60px;">
+								<input type="number" id="sp-jobticket-min" min="0" max="45"
+									step="15" value="" />
+							</td>
+						</wicket:enclosure>
+					</tr>
+				</table>
+			</wicket:enclosure>
+
+			<span class="sp-txt-wrap" wicket:id="prompt-jobticket-remark" />
+			<textarea name="textarea" id="sp-jobticket-remark" maxlength="255" />
+		</li>
+	</ul>
+
+	<button id="button-printer-back" wicket:id="button-inbox"
+		class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-home"></button>
+
+	<wicket:enclosure child="btn-print-and-close-popup">
+		<button id="button-print-and-close-popup"
+			class="sp-proxyprint ui-btn ui-btn-inline printer-selected ui-btn-icon-left ui-icon-check">
+			<span wicket:id="btn-print-and-close-popup" />
+		</button>
+	</wicket:enclosure>
+
+	<wicket:enclosure child="btn-print-and-close">
+		<button id="button-print-and-close"
+			class="sp-proxyprint ui-btn ui-btn-inline printer-selected ui-btn-icon-left ui-icon-check">
+			<span wicket:id="btn-print-and-close" />
+		</button>
+	</wicket:enclosure>
+
+	<button id="button-send-jobticket" wicket:id="button-send-jobticket"
+		class="sp-jobticket ui-btn ui-btn-inline printer-selected ui-btn-icon-left ui-icon-check" />
+
+	<button wicket:id="proxy-print-wait-msg" disabled
+		class="sp-proxy-print-wait ui-btn ui-btn-inline" />
+
+</div>
+
+<wicket:remove>
+	<!-- 
+POPUP for Proxy Print Cost Preview
+-->
+</wicket:remove>
+<div data-role="popup" id="sp-popup-print-and-close" data-theme="a"
+	data-arrow="true" class="ui-content">
+
+	<table data-role="table" data-mode="reflow"
+		class="ui-responsive table-stroke">
+		<thead>
+			<tr>
+				<th data-priority="1" />
+				<th data-priority="2" />
+			</tr>
+		</thead>
+		<tbody style="font-size: larger;" class="sp-txt-wrap">
+			<tr>
+				<th class="sp-txt-info" wicket:id="sp-popup-print-and-close-title" />
+				<td class="sp-txt-warn" id="sp-popup-print-and-close-cost" />
+			</tr>
+		</tbody>
+	</table>
+
+	<a href="#" data-rel="back"
+		class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right" />
+
+	<button id="button-print-and-close-popup-ok"
+		class="ui-btn ui-btn-icon-left ui-icon-check">
+		<wicket:message key="button-print-and-close" />
+	</button>
+	<button id="button-print-and-close-popup-cancel"
+		wicket:id="btn-print-and-close-popup-cancel"
+		class="ui-btn ui-btn-icon-left ui-icon-back" />
+	<button wicket:id="print-and-close-popup-wait-msg" disabled
+		class="sp-proxy-print-wait ui-btn ui-btn-inline" />
+</div>
+
+<wicket:remove>
+	<!-- 
+POPUP for Proxy Print Authentication
+-->
+</wicket:remove>
+<div data-role="popup" id="sp-popup-print-auth" data-dismissible="false"
+	class="ui-content">
+
+	<div id="auth-popup-content-wait" class="ui-corner-bottom ui-content">
+		<p class="sp-txt-info" id="sp-print-auth-countdown"
+			style="position: absolute; right: 20px;" />
+		<h3 class="ui-title">
+			<wicket:message key="auth-popup-title" />
+		</h3>
+
+		<div id="sp-popup-print-auth-cost" class="sp-txt-warn" />
+
+		<p>
+			<wicket:message key="auth-popup-message" />
+		</p>
+		<button id="sp-button-print-auth-cancel" class="ui-btn ui-btn-inline"
+			wicket:id="button-cancel" />
+	</div>
+
+	<div id="auth-popup-content-msg" class="ui-corner-bottom ui-content">
+		<h3 class="ui-title">
+			<span id="auth-popup-user-msg-title" />
+		</h3>
+		<p id="auth-popup-user-msg" />
+		<a href="#" data-rel="back"
+			class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-back"
+			wicket:id="button-ok" />
+	</div>
+
+</div>
+
+<wicket:remove>
+	<!-- 
+THIS POPUP MUST BE PRESENT IN EVERY PAGE AND DIALOG 
+-->
+</wicket:remove>
+<div data-role="popup" data-position-to="window"
+	class="sp-msg-popup ui-content" />
+
+</html>

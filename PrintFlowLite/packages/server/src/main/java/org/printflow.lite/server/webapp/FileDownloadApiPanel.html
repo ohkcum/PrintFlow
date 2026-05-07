@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+    <!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<wicket:panel>
+
+	<wicket:remove>
+		<!--
+NOTE: Method GET is used, because Android native browser cannot handle POST. 
+I.e. the commit on the form is issued twice + the 2nd time the values of the
+hidden input is void.   
+-->
+	</wicket:remove>
+
+	<form id="sp-file-download-api-form" action="/api" method="get"
+		target="_blank">
+		<input type="hidden" name="" value="" wicket:id="webAppType" />
+		<input type="hidden" name="request" wicket:id="request" />
+		<input type="hidden" name="request-sub" wicket:id="request-sub" />
+		<input type="hidden" name="request-parm" wicket:id="request-parm" />
+		<input type="hidden" name="user" wicket:id="user" />
+		<input type="hidden" name="data" wicket:id="data" />
+	</form>
+
+</wicket:panel>
+</html>

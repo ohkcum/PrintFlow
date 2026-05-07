@@ -1,0 +1,65 @@
+/*
+ * This file is part of the PrintFlowLite project <https://printflowlite.local>.
+ * Copyright (c) 2011-2026 Datraverse B.V.
+ * Author: Rijk Ravestein.
+ *
+ * SPDX-FileCopyrightText: (c) 2011-2026 Datraverse B.V. <info@datraverse.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For more information, please contact Datraverse B.V. at this
+ * address: info@datraverse.com
+ */
+package org.printflow.lite.core.doc;
+
+import java.io.File;
+
+import org.printflow.lite.core.system.SystemInfo.ArgumentGS;
+import org.printflow.lite.core.system.SystemInfo.Command;
+
+/**
+ *
+ * @author Rijk Ravestein
+ *
+ */
+public abstract class AbstractPsToPdf extends AbstractDocFileConverter {
+
+    /**
+     *
+     */
+    public AbstractPsToPdf() {
+        super(ExecMode.MULTI_THREADED);
+    }
+
+    @Override
+    protected final ExecType getExecType() {
+        return ExecType.ADVANCED;
+    }
+
+    @Override
+    protected final String getOsCommand(final DocContentTypeEnum contentType,
+            final File fileIn, final File fileOut) {
+        // Although font embedding is default, make it explicit.
+        return Command.PS2PDF.cmdLineExt(ArgumentGS.STDOUT_TO_STDOUT.getArg(),
+                ArgumentGS.EMBED_ALL_FONTS.getArg(), fileIn.getAbsolutePath(),
+                fileOut.getAbsolutePath());
+    }
+
+    @Override
+    public final boolean notifyStdOutMsg() {
+        return this.hasStdout();
+    }
+
+}

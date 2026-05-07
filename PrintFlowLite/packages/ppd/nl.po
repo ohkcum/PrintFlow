@@ -1,0 +1,69 @@
+msgid "PrintFlowLite"
+msgstr "PrintFlowLite"
+
+msgid "US Letter"
+msgstr "US Letter"
+
+msgid "A4"
+msgstr "A4"
+
+msgid "A3"
+msgstr "A3"
+
+msgid "A2"
+msgstr "A2"
+
+msgid "A1"
+msgstr "A1"
+
+msgid "A0"
+msgstr "A0"
+
+msgid "Color Mode"
+msgstr "Kleur Modus"
+
+msgid "Grayscale"
+msgstr "Grijswaarde"
+
+msgid "Color(RGB)"
+msgstr "Kleur(RGB)"
+
+msgid "Color(CMYK)"
+msgstr "Kleur(CMYK)"
+
+msgid "Resolution"
+msgstr "Resolutie"
+
+msgid "72 DPI"
+msgstr "72 DPI"
+
+msgid "96 DPI"
+msgstr "96 DPI"
+
+msgid "144 DPI"
+msgstr "144 DPI"
+
+msgid "150 DPI"
+msgstr "150 DPI"
+
+msgid "300 DPI"
+msgstr "300 DPI"
+
+msgid "600 DPI"
+msgstr "600 DPI"
+
+msgid "620 DPI"
+msgstr "620 DPI"
+
+msgid "1200 DPI"
+msgstr "1200 DPI"
+
+msgid "240 DPI"
+msgstr "240 DPI"
+
+msgid "3600 DPI"
+msgstr "3600 DPI"
+
+msgid "4000 DPI"
+msgstr "4000 DPI"
+

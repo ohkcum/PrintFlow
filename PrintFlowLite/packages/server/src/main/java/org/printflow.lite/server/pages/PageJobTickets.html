@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<div data-role="header" data-theme="b">
+	<h1>
+		<wicket:message key="title" />
+	</h1>
+</div>
+
+<div class="ui-content">
+
+	<div data-role="tabs" id="sp-jobtickets-tabs" data-active="0">
+
+		<div data-role="navbar">
+			<ul>
+				<li>
+					<a href="#sp-jobtickets-tab-open"
+						id="sp-jobtickets-tab-open-button" data-ajax="false"
+						wicket:id="tab-title-open" />
+				</li>
+				<li>
+					<a href="#sp-jobtickets-tab-closed"
+						id="sp-jobtickets-tab-closed-button" data-ajax="false"
+						wicket:id="tab-title-closed" />
+				</li>
+			</ul>
+		</div>
+
+
+		<wicket:remove>
+			<!-- TAB: Open -->
+		</wicket:remove>
+
+		<div id="sp-jobtickets-tab-open" class="ui-content">
+
+			<div id="sp-jobtickets-tab-open-header">
+				<div data-role="collapsible" data-collapsed="true" class="ui-mini">
+
+					<h3 wicket:id="select-and-sort" />
+
+					<wicket:enclosure child="label-jobticket-group">
+						<div class="ui-field-contain">
+							<label for="sp-jobticket-group" class="sp-txt-wrap ui-mini"
+								wicket:id="label-jobticket-group" />
+							<select name="sp-jobticket-group" id="sp-jobticket-group"
+								data-native-menu="false" data-mini="true">
+								<option value="0" wicket:id="option-jobticket-group-all" />
+								<wicket:panel wicket:id="option-list-jobticket-groups">
+									<option value="the-key" wicket:id="option-jobticket-group"></option>
+								</wicket:panel>
+							</select>
+						</div>
+					</wicket:enclosure>
+
+					<div class="ui-field-contain">
+						<label for="sp-jobticket-userid">
+							<wicket:message key="prompt-userid" />
+						</label>
+
+						<input wicket:id="sp-jobticket-userid" tabindex="0" type="text"
+							id="sp-jobticket-userid" value="" placeholder="LOCALIZE"
+							maxlength="128" autofocus data-type="search" autocomplete="off"
+							autocorrect="off" autocapitalize="off" spellcheck="false" />
+
+						<ul id="sp-jobticket-userid-filter" data-role="listview"
+							data-filter="true" data-input="#sp-jobticket-userid"
+							data-filter-theme="a" data-inset="true" style="float: right;" />
+
+					</div>
+
+					<div class="ui-field-contain">
+						<label for="sp-jobticket-search-ticket">
+							<span class="sp-txt-wrap" wicket:id="prompt-ticket" />
+						</label>
+
+						<input wicket:id="sp-jobticket-search-ticket" type="text"
+							id="sp-jobticket-search-ticket" value="" placeholder="LOCALIZED"
+							maxlength="32" data-type="search" autocomplete="off"
+							autocorrect="off" autocapitalize="off" spellcheck="false"
+							data-clear-btn="true" />
+
+						<ul id="sp-jobticket-search-ticket-filter" data-role="listview"
+							data-filter="true" data-input="#sp-jobticket-search-ticket"
+							data-filter-theme="a" data-inset="true" style="float: right;" />
+
+					</div>
+
+					<div class="ui-field-contain">
+						<fieldset data-role="controlgroup" data-type="horizontal"
+							class="ui-mini">
+
+							<legend wicket:id="prompt-expiration" />
+
+							<label for="sp-jobticket-sort-dir-asc" wicket:id="sort-asc" />
+							<input type="radio" name="sp-jobticket-sort-dir"
+								id="sp-jobticket-sort-dir-asc" checked="checked" />
+
+							<label for="sp-jobticket-sort-dir-desc" wicket:id="sort-desc" />
+							<input type="radio" name="sp-jobticket-sort-dir"
+								id="sp-jobticket-sort-dir-desc" />
+
+						</fieldset>
+					</div>
+
+					<div class="ui-field-contain">
+						<label for="jobtickets-max-items">
+							<wicket:message key="prompt-number" />
+						</label>
+						<input id="jobtickets-max-items" wicket:id="jobtickets-max-items"
+							min="0" max="50" step="1" value="0" type="range" />
+					</div>
+
+				</div>
+
+				<div>
+					<div style="float: left; margin-left: 15px; margin-top: -5px;">
+						<img style="padding: 0px 3px 3px 0px;"
+							id="sp-btn-jobticket-countdown-pause"
+							src="/famfamfam-silk/control_pause.png" /> <img
+							style="padding: 0px 3px 3px 0px; display: none;"
+							id="sp-btn-jobticket-countdown-play"
+							src="/famfamfam-silk/control_play.png" />
+					</div>
+					<div style="margin-left: 30px; margin-top: 15px;">
+						<div id='sp-jobticket-countdown-bar'
+							style="width: auto; margin: 10px; height: 5px; background-color: white;">
+							<div id='sp-jobticket-countdown'
+								style="width: 0%; height: 100%; background-color: #ededed;" />
+						</div>
+					</div>
+
+					<div id="div-ticket-queue-info" style="float: right; margin: 10px;" />
+
+				</div>
+
+				<div data-role="controlgroup" data-type="horizontal">
+
+					<button id="btn-jobtickets-refresh" wicket:id="button-refresh"
+						class="ui-btn ui-btn-inline ui-btn-icon-notext ui-icon-refresh" />
+
+					<wicket:enclosure child="button-cancel-all">
+						<button id="btn-jobtickets-cancel-all" data-rel="popup"
+							wicket:id="button-cancel-all"
+							class="ui-btn ui-btn-inline ui-btn-icon-notext ui-icon-delete" />
+					</wicket:enclosure>
+
+					<wicket:enclosure child="button-print-all">
+						<button id="btn-jobtickets-print-all" data-rel="popup"
+							wicket:id="button-print-all"
+							class="ui-btn ui-btn-inline ui-btn-icon-notext ui-icon-action" />
+					</wicket:enclosure>
+
+					<wicket:enclosure child="button-close-all">
+						<button id="btn-jobtickets-close-all" data-rel="popup"
+							wicket:id="button-close-all"
+							class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-check">
+							<span id="btn-jobtickets-close-all-count" style="font-size: 85%;"
+								class="sp-txt-valid">&nbsp;</span>
+						</button>
+					</wicket:enclosure>
+
+					<button id="btn-jobtickets-close" data-rel="back"
+						data-direction="reverse" wicket:id="button-logout"
+						class="ui-btn ui-btn-inline ui-btn-icon-notext ui-icon-power" />
+
+				</div>
+
+			</div>
+
+			<div id="jobticket-list" />
+
+		</div>
+
+		<wicket:remove>
+			<!-- TAB: Closed -->
+		</wicket:remove>
+
+		<div id="sp-jobtickets-tab-closed" class="ui-content">
+
+			<input type="hidden" id="sp-doclog-hidden-user-id" />
+
+			<ul data-role="listview" data-inset="true">
+				<li class="ui-mini">
+					<div class="ui-field-contain">
+						<label for="sp-doclog-select-userid">
+							<wicket:message key="prompt-userid" />
+						</label>
+						<input wicket:id="sp-doclog-select-userid" tabindex="0"
+							type="text" id="sp-doclog-select-userid" value="" maxlength="128"
+							autofocus data-type="search" autocomplete="off" autocorrect="off"
+							autocapitalize="off" placeholder="LOCALIZE" spellcheck="false" />
+
+						<ul id="sp-doclog-select-userid-filter" data-role="listview"
+							data-filter="true" data-input="#sp-doclog-select-userid"
+							data-filter-theme="a" data-inset="true" style="float: right;" />
+					</div>
+				</li>
+			</ul>
+
+			<div id="sp-jobtickets-tab-closed-doclog" />
+		</div>
+
+	</div>
+</div>
+
+<div data-role="footer" data-position="fixed">
+	<fieldset data-role="controlgroup" data-type="horizontal"
+		data-mini="true">
+
+		<wicket:enclosure child="mini-sys-maintenance">
+			<button class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-alert">
+				<span wicket:id="mini-sys-maintenance" class="sp-txt-warn" />
+			</button>
+		</wicket:enclosure>
+
+		<wicket:panel wicket:id="community-status-footer-panel" />
+
+	</fieldset>
+</div>
+
+
+<div data-role="popup" id="sp-jobticket-popup" data-theme="a"
+	data-overlay-theme="a" data-arrow="true">
+	<div class="ui-content">
+		<h3 class="ui-title" id="sp-jobticket-popup-title">
+			<wicket:message key="title-print-popup" />
+		</h3>
+		<div id="sp-jobticket-popup-addin" />
+		<a href="#" data-rel="back"
+			class="ui-btn ui-mini ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right" />
+	</div>
+</div>
+
+<div data-role="popup" id="sp-jobticket-popup-cancel-all"
+	data-overlay-theme="a" data-theme="a" data-dismissible="false"
+	data-arrow="t">
+	    
+	<div class="ui-content">
+		<p class="ui-title">
+			<wicket:message key="prompt-cancel-all" />
+		</p>
+
+		<p class="sp-txt-warn">
+			<wicket:message key="warn-cancel-all" />
+		</p>
+
+		<a href="#" id="sp-jobticket-popup-cancel-all-btn-no"
+			class="ui-btn ui-btn-inline" data-rel="back">
+			<wicket:message key="button-no-rather-not" />
+		</a>
+		<!--  -->
+		<button id="sp-jobticket-popup-cancel-all-btn-yes"
+			class="ui-btn ui-mini ui-btn-inline">
+			<wicket:message key="button-cancel-all-yes" />
+		</button>
+	</div>
+
+	<div class="ui-content">
+		<wicket:message key="info-cancel-in-progress" />
+		&nbsp;...
+	</div>
+</div>
+
+<div data-role="popup" id="sp-jobticket-popup-print-all"
+	data-overlay-theme="a" data-theme="a" data-dismissible="false"
+	data-arrow="t">
+	    
+	<div class="ui-content">
+		<p class="ui-title">
+			<wicket:message key="prompt-print-all" />
+		</p>
+
+		<p class="sp-txt-valid">
+			<wicket:message key="info-print-all" />
+		</p>
+
+		<a href="#" id="sp-jobticket-popup-print-all-btn-no"
+			class="ui-btn ui-btn-inline" data-rel="back">
+			<wicket:message key="button-no-rather-not" />
+		</a>
+		<!--  -->
+		<button id="sp-jobticket-popup-print-all-btn-yes"
+			class="ui-btn ui-mini ui-btn-inline">
+			<wicket:message key="button-print-all-yes" />
+		</button>
+	</div>
+
+	<div class="ui-content">
+		<wicket:message key="info-print-in-progress" />
+		&nbsp;...
+	</div>
+</div>
+
+<div data-role="popup" id="sp-jobticket-popup-close-all"
+	data-overlay-theme="a" data-theme="a" data-dismissible="false"
+	data-arrow="t">
+	    
+	<div class="ui-content">
+		<h4 class="ui-title">
+			<wicket:message key="prompt-close-all" />
+		</h4>
+
+		<p class="sp-txt-valid">
+			<wicket:message key="info-close-all" />
+		</p>
+
+		<a href="#" id="sp-jobticket-popup-close-all-btn-no"
+			class="ui-btn ui-btn-inline" data-rel="back">
+			<wicket:message key="button-no-rather-not" />
+		</a>
+		<!--  -->
+		<button id="sp-jobticket-popup-close-all-btn-yes"
+			class="ui-btn ui-mini ui-btn-inline">
+			<wicket:message key="button-close-all-yes" />
+		</button>
+	</div>
+
+	<div class="ui-content">
+		<wicket:message key="info-close-in-progress" />
+		&nbsp;...
+	</div>
+</div>
+
+<wicket:remove>
+	<!-- 
+THIS POPUP MUST BE PRESENT IN EVERY PAGE AND DIALOG 
+-->
+</wicket:remove>
+<div data-role="popup" data-position-to="window"
+	class="sp-msg-popup ui-content" />
+</html>

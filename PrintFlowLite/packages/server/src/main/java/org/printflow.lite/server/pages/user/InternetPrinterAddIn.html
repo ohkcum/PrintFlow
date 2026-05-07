@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<ul data-role="listview" data-inset="true">
+	<li style="background: #F5F5F5;">
+		<div class="sp-txt-wrap">
+			<wicket:message key="header" />
+		</div>
+	</li>
+	<li>
+		<h3>CUPS</h3>
+		<div>
+			<span class="sp-url-wrap sp-txt-valid"
+				style="font-family: monospace;"
+				wicket:id="internet-printer-uri-cups" />
+			<wicket:panel wicket:id="internet-printer-uri-cups-copy" />
+		</div>
+		<div>
+			<a class="sp-plain-link ui-btn ui-corner-all ui-btn-inline ui-mini"
+				href="/client/PrintFlowLite.ppd" target="_blank">PrintFlowLite.ppd</a>
+		</div>
+	</li>
+	<li>
+		<h3>Windows</h3>
+		<div>
+			<span class="sp-url-wrap sp-txt-valid"
+				style="font-family: monospace;"
+				wicket:id="internet-printer-uri-windows" />
+			<wicket:panel wicket:id="internet-printer-uri-windows-copy" />
+		</div>
+		<div class="sp-txt-wrap" wicket:id="windows-driver-msg" />
+	</li>
+	<wicket:enclosure child="macos-address">
+		<li>
+			<h3>macOS</h3>
+			<div>
+				<table data-role="table" data-mode="reflow"
+					class="ui-responsive table-stroke">
+					<thead>
+						<tr>
+							<th data-priority="1" />
+							<th data-priority="2" />
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>
+								<div class="sp-table-row-icon-margin-fix"
+									wicket:id="macos-address-prompt" />
+							</td>
+							<td>
+								<span class="sp-txt-valid sp-url-wrap"
+									style="font-family: monospace;" wicket:id="macos-address" />
+								<wicket:panel wicket:id="macos-address-copy" />
+							</td>
+						</tr>
+						<tr>
+							<td wicket:id="macos-protocol-prompt" />
+							<td class="sp-txt-valid" style="font-family: monospace;">Internet
+								Printing Protocol - IPP</td>
+						</tr>
+						<tr>
+							<td>
+								<div class="sp-table-row-icon-margin-fix"
+									wicket:id="macos-queue-prompt" />
+							</td>
+							<td>
+								<span class="sp-txt-valid sp-url-wrap"
+									style="font-family: monospace;" wicket:id="macos-queue" />
+								<wicket:panel wicket:id="macos-queue-copy" />
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<wicket:message key="macos-use-prompt" />
+							</td>
+							<td class="sp-txt-valid" style="font-family: monospace;">Generic
+								PostScript Printer</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</li>
+	</wicket:enclosure>
+	<wicket:enclosure child="chrome-address">
+		<li>
+			<h3>Chrome OS</h3>
+			<div>
+				<table data-role="table" data-mode="reflow"
+					class="ui-responsive table-stroke">
+					<thead>
+						<tr>
+							<th data-priority="1" />
+							<th data-priority="2" />
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>
+								<div class="sp-table-row-icon-margin-fix"
+									wicket:id="chrome-address-prompt" />
+							</td>
+							<td>
+								<span class="sp-txt-valid sp-url-wrap"
+									style="font-family: monospace;" wicket:id="chrome-address" />
+								<wicket:panel wicket:id="chrome-address-copy" />
+							</td>
+						</tr>
+						<tr>
+							<td wicket:id="chrome-protocol-prompt" />
+							<td class="sp-txt-valid" style="font-family: monospace;">Internet
+								Printing Protocol (IPPS)</td>
+						</tr>
+						<tr>
+							<td>
+								<div class="sp-table-row-icon-margin-fix"
+									wicket:id="chrome-queue-prompt" />
+							</td>
+							<td>
+								<span class="sp-txt-valid sp-url-wrap"
+									style="font-family: monospace;" wicket:id="chrome-queue" />
+								<wicket:panel wicket:id="chrome-queue-copy" />
+							</td>
+						</tr>
+						<tr>
+							<td wicket:id="chrome-manufacturer-prompt" />
+							<td class="sp-txt-valid" style="font-family: monospace;">Generic</td>
+						</tr>
+						<tr>
+							<td wicket:id="chrome-model-prompt" />
+							<td class="sp-txt-valid" style="font-family: monospace;">Generic
+								PostScript Printer</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</li>
+	</wicket:enclosure>
+</ul>
+
+<wicket:enclosure child="fdroid-url">
+
+	<ul data-role="listview" data-inset="true">
+		<li>
+			<div>
+				<a href="https://f-droid.org/packages/org.printflow.lite.android.print/"
+					target="_blank">
+					<img src="./images/thirdparty/get-it-on-f-droid-shield.png" />
+				</a>
+
+				<table data-role="table" data-mode="reflow"
+					class="ui-responsive table-stroke">
+					<thead>
+						<tr>
+							<th data-priority="1" />
+							<th data-priority="2" />
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>
+								<div class="sp-table-row-icon-margin-fix">URL</div>
+							</td>
+							<td>
+								<span class="sp-txt-valid sp-url-wrap"
+									style="font-family: monospace;" wicket:id="fdroid-url" />
+								<wicket:panel wicket:id="fdroid-url-copy" />
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<div class="sp-table-row-icon-margin-fix"
+									wicket:id="fdroid-user-prompt" />
+							</td>
+							<td>
+								<span class="sp-txt-valid sp-url-wrap"
+									style="font-family: monospace;" wicket:id="fdroid-user" />
+								<wicket:panel wicket:id="fdroid-user-copy" />
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<div class="sp-table-row-icon-margin-fix">UUID</div>
+							</td>
+							<td>
+								<span class="sp-txt-valid sp-url-wrap"
+									style="font-family: monospace;" wicket:id="fdroid-uuid" />
+								<wicket:panel wicket:id="fdroid-uuid-copy" />
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</li>
+	</ul>
+</wicket:enclosure>
+
+</html>

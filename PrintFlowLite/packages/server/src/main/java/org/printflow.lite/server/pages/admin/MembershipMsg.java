@@ -1,0 +1,139 @@
+/*
+ * This file is part of the PrintFlowLite project <https://www.PrintFlowLite.org>.
+ * Copyright (c) 2020 Datraverse B.V.
+ * Author: Rijk Ravestein.
+ *
+ * SPDX-FileCopyrightText: © 2020 Datraverse B.V. <info@datraverse.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For more information, please contact Datraverse B.V. at this
+ * address: info@datraverse.com
+ */
+package org.printflow.lite.server.pages.admin;
+
+import java.text.MessageFormat;
+
+import org.apache.wicket.behavior.AttributeAppender;
+import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.markup.html.basic.Label;
+import org.printflow.lite.core.SpException;
+import org.printflow.lite.core.community.CommunityDictEnum;
+import org.printflow.lite.core.community.MemberCard;
+import org.printflow.lite.server.pages.MarkupHelper;
+
+/**
+ *
+ * @author Rijk Ravestein
+ *
+ */
+public final class MembershipMsg extends WebPage {
+
+    /**
+     * Version for serialization.
+     */
+    private static final long serialVersionUID = 1L;
+
+    /**
+     *
+     */
+    public MembershipMsg() {
+
+        add(new Label("title",
+                localized("title", CommunityDictEnum.MEMBERSHIP.getWord())));
+
+        final MemberCard lic = MemberCard.instance();
+
+        try {
+
+            final String txtStatus;
+
+            switch (lic.getStatus()) {
+
+            case WRONG_MODULE:
+                txtStatus = localized("membership-status-wrong-module",
+                        CommunityDictEnum.MEMBERSHIP.getWord(),
+                        CommunityDictEnum.PRINTFLOWLITE_SUPPORT.getWord(),
+                        CommunityDictEnum.MEMBERSHIP.getWord());
+                break;
+
+            case WRONG_COMMUNITY:
+                txtStatus = localized("membership-status-wrong-product",
+                        CommunityDictEnum.MEMBERSHIP.getWord(),
+                        lic.getProduct(),
+                        CommunityDictEnum.PRINTFLOWLITE_SUPPORT.getWord(),
+                        CommunityDictEnum.MEMBERSHIP.getWord());
+                break;
+
+            case WRONG_VERSION:
+                txtStatus = localized("membership-status-wrong-version",
+                        CommunityDictEnum.MEMBERSHIP.getWord());
+                break;
+
+            case EXCEEDED:
+                txtStatus = localized("membership-status-users-exceeded",
+                        CommunityDictEnum.MEMBERSHIP.getWord());
+                break;
+
+            case EXPIRED:
+                txtStatus = localized("membership-status-expired",
+                        CommunityDictEnum.MEMBERSHIP.getWord());
+                break;
+
+            case VISITOR_EXPIRED:
+                txtStatus = localized("membership-status-visit-expired");
+                break;
+
+            default:
+                txtStatus = "???";
+                break;
+            }
+
+            /*
+             *
+             */
+            Label labelWrk = new Label("membership-status", txtStatus);
+            labelWrk.add(new AttributeAppender("class",
+                    String.format(" %s", MarkupHelper.CSS_TXT_ERROR)));
+            add(labelWrk);
+
+            //
+            add(new Label("membership-msg",
+                    localized("membership-msg",
+                            CommunityDictEnum.MEMBERSHIP.getWord(),
+                            CommunityDictEnum.MEMBERSHIP.getWord(),
+                            CommunityDictEnum.MEMBER_CARD.getWord())));
+
+        } catch (Exception e) {
+            throw new SpException(e);
+        }
+    }
+
+    /**
+     * Localizes and format a string with placeholder arguments.
+     *
+     * @param key
+     *            The key from the XML resource file
+     * @param objects
+     *            The values to fill the placeholders
+     * @return The localized string.
+     */
+    protected final String localized(final String key,
+            final Object... objects) {
+        return MessageFormat.format(getLocalizer().getString(key, this),
+                objects);
+    }
+
+}

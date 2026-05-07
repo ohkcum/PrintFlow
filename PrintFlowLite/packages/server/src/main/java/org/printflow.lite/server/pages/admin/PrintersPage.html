@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<span style="display: none;" class="json-rsp" wicket:id="json-rsp"></span>
+
+<wicket:panel wicket:id="nav-bar-1" />
+<br />
+<div>
+	<ul data-role="listview" data-filter="false">
+		<li class="ui-li-has-icon" wicket:id="printers-view">
+			<img width="16" height="16" wicket:id="printerImage" />
+			<h3>
+				<wicket:enclosure child="deviceUriImg">
+					<img wicket:id="deviceUriImg" src="" style="margin-bottom: -2px;"
+						height="16" />&nbsp;
+				</wicket:enclosure>
+				<wicket:enclosure child="img-journal">
+					<img wicket:id="img-journal" src="" style="margin-bottom: -2px;"
+						height="16" />&nbsp;
+                </wicket:enclosure>
+				<wicket:enclosure child="img-archive">
+					<img wicket:id="img-archive" src="" style="margin-bottom: -2px;"
+						height="16" />&nbsp;
+                </wicket:enclosure>
+				<span wicket:id="displayName" />
+			</h3>
+
+			<p>
+				<span wicket:id="printer-pie" sparkType="pie" sparkSliceColors="[]"
+					class="" />&nbsp;<span wicket:id="printerName" />
+				<wicket:enclosure child="cups-printer-class-members"> (<span
+						class="sp-txt-wrap" wicket:id="cups-printer-class-members" />)
+				</wicket:enclosure>
+				<wicket:enclosure child="cups-printer-class-memberships">
+					<span class="sp-txt-wrap sp-txt-info"
+						wicket:id="cups-printer-class-memberships" />
+				</wicket:enclosure>
+				&bull;
+				<wicket:enclosure child="papercutFrontEndImg">
+                    &nbsp;<img wicket:id="papercutFrontEndImg" src=""
+						height="12" style="margin-bottom: -2px;" />
+				</wicket:enclosure>
+				<span class="sp-txt-wrap" wicket:id="deviceUri" />
+				<wicket:enclosure child="driver">
+            &bull; <span class="sp-txt-wrap sp-txt-info"
+						wicket:id="driver" />
+				</wicket:enclosure>
+				<wicket:enclosure child="manufacturer">
+            &bull; <span class="sp-txt-wrap sp-txt-info"
+						wicket:id="manufacturer" />
+				</wicket:enclosure>
+			</p>
+
+			<wicket:enclosure child="ppd-ext-file">
+				<p style="margin-left: 17px;" class="sp-txt-wrap"
+					wicket:id="ppd-ext-file" />
+			</wicket:enclosure>
+
+			<wicket:enclosure child="rawprint-ppd-file">
+				<p style="margin-left: 17px;" class="sp-txt-wrap"
+					wicket:id="rawprint-ppd-file" />
+			</wicket:enclosure>
+
+			<wicket:enclosure child="rawprint-transform-file">
+				<p style="margin-left: 17px;" class="sp-txt-wrap"
+					wicket:id="rawprint-transform-file" />
+			</wicket:enclosure>
+
+			<wicket:enclosure child="printer-snmp">
+				<p>
+					<span class="sp-txt-wrap sp-txt-info" wicket:id="printer-snmp" />
+				</p>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="ticketGroup">
+				<p class="sp-txt-wrap">
+					<span wicket:id="ticketGroupPrompt" /> : <span
+						wicket:id="ticketGroup" />
+				</p>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="printerGroups">
+				<p class="sp-txt-wrap">
+					<wicket:message key="printer-groups" />
+					: <span wicket:id="printerGroups" />
+				</p>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="printer-sparkline">
+				<p>
+					<span wicket:id="printer-sparkline" class="" sparkType='line'
+						sparkLineColor="" sparkFillColor="" sparkSpotColor="false"
+						sparkMinSpotColor="false" sparkMaxSpotColor="false"
+						sparkDefaultPixelsPerValue="5" />
+				</p>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="printer-needs-configuration">
+				<div class="sp-txt-error sp-txt-wrap">
+					<span wicket:id="printer-needs-configuration" />
+				</div>
+			</wicket:enclosure>
+			<wicket:enclosure child="printer-needs-configuration-internal">
+				<div class="sp-txt-warn sp-txt-wrap">
+					<span wicket:id="printer-needs-configuration-internal" />
+				</div>
+			</wicket:enclosure>
+
+			<p wicket:id="info"></p>
+
+			<div class="sp-txt-wrap">
+				<span wicket:id="period" />
+			</div>
+			<div class="sp-txt-wrap" wicket:id="totals" />
+			<wicket:enclosure child="userGroups">
+				<br />
+				<div class="sp-txt-wrap">
+					<span wicket:id="userGroupsPrompt" /> <span wicket:id="userGroups" />
+				</div>
+			</wicket:enclosure>
+			<wicket:enclosure child="assocCardReader">
+				<div class="sp-txt-wrap">
+					&larr; <span wicket:id="assocCardReader" />
+				</div>
+			</wicket:enclosure>
+			<wicket:enclosure child="assocTerminal">
+				<div class="sp-txt-wrap">
+					&rarr; <span wicket:id="assocTerminal" />
+				</div>
+			</wicket:enclosure>
+
+			<p class="ui-li-aside">
+				<strong wicket:id="signal"></strong> <img title=""
+					wicket:id="signal-icon-disconnected" src="" />
+			</p>
+
+			<div data-role="controlgroup" data-type="horizontal"
+				wicket:id="sect-buttons">
+
+				<wicket:enclosure child="button-edit">
+					<button data-PrintFlowLite="the-uid"
+						class="sp-edit-printer ui-btn ui-btn-inline ui-btn-icon-notext ui-icon-edit"
+						wicket:id="button-edit" />
+				</wicket:enclosure>
+
+				<wicket:enclosure child="button-log">
+					<button data-PrintFlowLite="the-id"
+						class="sp-printer-log ui-btn ui-btn-inline ui-btn-icon-notext ui-icon-info"
+						wicket:id="button-log" />
+				</wicket:enclosure>
+
+				<wicket:enclosure child="button-cups">
+					<a target="_blank" title="CUPS"
+						class="ui-btn ui-btn-inline ui-btn-icon-notext ui-icon-sp-cups"
+						wicket:id="button-cups" />
+				</wicket:enclosure>
+			</div>
+		</li>
+	</ul>
+</div>
+<p>&nbsp;</p>
+<wicket:panel wicket:id="nav-bar-2" />
+</html>

@@ -1,0 +1,85 @@
+version: '3'
+
+services:
+  printflowlite:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: printflowlite/server:latest
+    container_name: printflowlite
+    hostname: printflowlite
+    ports:
+      # CUPS - localhost only for security
+      - "127.0.0.1:6631:631"
+      # HTTP - disabled in container (redirected to HTTPS)
+      # - "127.0.0.1:8641:8631"
+      # HTTPS - external SSL (mapped to 8643 to avoid conflicts)
+      - "127.0.0.1:8643:8632"
+    environment:
+      TZ: Europe/Amsterdam
+      env_file:
+        - ./docker.env
+    volumes:
+      - printflowlite_custom:/opt/printflowlite/server/custom
+      - printflowlite_data:/opt/printflowlite/server/data
+      - printflowlite_ext:/opt/printflowlite/server/ext
+      - printflowlite_logs:/opt/printflowlite/server/logs
+      - printflowlite_cups:/etc/cups
+    networks:
+      printflowlite_network:
+        ipv4_address: 172.20.0.10
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: printflowlite-postgres
+    hostname: printflowlite-postgres
+    ports:
+      - "127.0.0.1:5443:5432"
+    environment:
+      POSTGRES_DB: printflowlite
+      POSTGRES_USER: printflowlite
+      POSTGRES_PASSWORD: change-me-in-docker-env
+    volumes:
+      - printflowlite_database:/var/lib/postgresql/data
+    networks:
+      printflowlite_network:
+        ipv4_address: 172.20.0.20
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U printflowlite -d printflowlite"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  printflowlite_custom:
+  printflowlite_data:
+  printflowlite_ext:
+  printflowlite_logs:
+  printflowlite_cups:
+  printflowlite_database:
+
+networks:
+  printflowlite_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

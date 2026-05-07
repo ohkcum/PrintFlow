@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<span style="display: none;" class="json-rsp" wicket:id="json-rsp"></span>
+
+<wicket:panel wicket:id="nav-bar-1" />
+<br />
+<div>
+	<ul data-role="listview" data-filter="false">
+		<li wicket:id="user-groups-view">
+			<h3>
+				<span wicket:id="groupName" />
+				<wicket:panel wicket:id="user-roles" />
+				<wicket:panel wicket:id="user-acl" />
+				<wicket:panel wicket:id="admin-acl" />
+				<wicket:panel wicket:id="auth-shared-accounts" />
+			</h3>
+
+			<p class="ui-li-count">
+				<strong wicket:id="signal"></strong>
+			</p>
+
+			<wicket:enclosure child="fullName">
+				<div class="sp-txt-wrap">
+					<span wicket:id="fullName" />
+				</div>
+			</wicket:enclosure>
+
+			<div data-role="controlgroup" data-type="horizontal" data-mini="true"
+				wicket:id="sect-buttons">
+
+				<wicket:enclosure child="button-edit">
+					<button data-PrintFlowLite="the-id"
+						class="sp-edit-user-group ui-btn ui-btn-inline ui-btn-icon-notext ui-icon-edit"
+						wicket:id="button-edit" />
+				</wicket:enclosure>
+
+				<wicket:enclosure child="button-users">
+					<button data-PrintFlowLite="the-id"
+						class="sp-user-group-users ui-btn ui-btn-inline ui-btn-icon-notext ui-icon-user"
+						wicket:id="button-users" />
+				</wicket:enclosure>
+
+				<wicket:enclosure child="button-account">
+					<button data-PrintFlowLite="the-id"
+						class="sp-user-group-account ui-btn ui-btn-inline ui-btn-icon-notext ui-icon-tag"
+						wicket:id="button-account" />
+				</wicket:enclosure>
+			</div>
+		</li>
+	</ul>
+</div>
+<p>&nbsp;</p>
+<wicket:panel wicket:id="nav-bar-2" />
+</html>

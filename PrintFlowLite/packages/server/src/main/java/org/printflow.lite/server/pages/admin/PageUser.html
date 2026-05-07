@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<wicket:remove>
+The class UUID is used in corresponding .java file for PIN input. 
+_evaluateKeypressNumber(e) is defined in jquery-PrintFlowLite.js
+</wicket:remove>
+<script>
+    $('.26aa37e8-6166-11f0-b513-ff453bc913a9').keypress(function(e) {
+        return _evaluateKeypressNumber(e);
+    });
+</script>
+
+<div data-role="header" data-theme="b">
+	<h1>
+		<wicket:message key="user" />
+	</h1>
+</div>
+
+<div class="ui-content" id="content-user">
+
+	<ul class="sp-internal-user" data-role="listview" data-inset="true">
+		<li>
+			<div wicket:id="internal-user" />
+		</li>
+	</ul>
+
+	<ul data-role="listview" data-inset="true">
+
+		<li class="sp-user-edit" data-role="list-divider">
+			<h3 id="user-userid-txt" />
+		</li>
+
+		<li>
+			<div class="sp-user-create ui-field-contain">
+				<label for="user-userid">
+					<wicket:message key="user-id" />
+				</label>
+				<input type="text" id="user-userid" value="" maxlength="50"
+					autocomplete="off" autocorrect="off" autocapitalize="off"
+					spellcheck="false" />
+			</div>
+			<div class="ui-field-contain">
+				<label for="user-fullname">
+					<wicket:message key="user-fullname" />
+				</label>
+				<input type="text" id="user-fullname" value="" maxlength="128"
+					autofocus autocomplete="off" autocorrect="off" autocapitalize="off"
+					spellcheck="false" />
+			</div>
+
+		</li>
+		<li>
+			<fieldset data-role="controlgroup" data-type="vertical">
+				<label for="user-isadmin">
+					<wicket:message key="user-admin" />
+				</label>
+				<input type="checkbox" id="user-isadmin" value="0" />
+				<label for="user-isperson">
+					<wicket:message key="user-person" />
+				</label>
+				<input type="checkbox" id="user-isperson" value="0" />
+				<label for="user-disabled">
+					<wicket:message key="user-disabled" />
+				</label>
+				<input type="checkbox" id="user-disabled" value="0" />
+			</fieldset>
+
+			<div data-role="collapsible" data-collapsed="false"
+				data-iconpos="right" data-collapsed-icon="carat-d"
+				data-expanded-icon="carat-u">
+				<h3>
+					<span><img wicket:id="img-header-roles" />&nbsp;&nbsp;<wicket:message
+							key="header-roles" /></span>
+				</h3>
+				<fieldset data-role="controlgroup" data-mini="true"
+					id="sp-user-edit-roles">
+					<wicket:panel wicket:id="ACLRoleEnumCheckboxes" />
+				</fieldset>
+			</div>
+
+		</li>
+
+		<li>
+			<label for="user-email" wicket:id="user-email" />
+			<input type="text" id="user-email" value="" maxlength="128"
+				autocomplete="off" autocorrect="off" autocapitalize="off"
+				spellcheck="false" />
+			<label for="user-email-other" wicket:id="user-email-other" />
+			<textarea id="user-email-other" autocomplete="off" autocorrect="off"
+				autocapitalize="off" spellcheck="false" />
+		</li>
+
+		<li>
+			<label for="user-card-number" wicket:id="user-card-number" />
+			<input type="text" id="user-card-number" maxlength="32" value=""
+				data-clear-btn="true" />
+			<label for="user-yubikey-public-id">
+				<wicket:message key="user-yubikey-public-id" />
+			</label>
+			<input type="text" id="user-yubikey-public-id" maxlength="12"
+				value="" data-clear-btn="true" />
+
+			<div id="user-uuid-collapsible" data-role="collapsible"
+				data-collapsed="true" data-mini="true">
+				<h3>
+					&nbsp;<span wicket:id="user-id-number" />
+				</h3>
+				<input type="text" id="user-id-number" maxlength="32" value=""
+					data-clear-btn="true" />
+				<button id="button-user-generate-id-number"
+					class="ui-btn ui-mini ui-btn-inline ui-btn-icon-left ui-icon-recycle"
+					wicket:id="button-generate-1" />
+			</div>
+
+			<div id="user-uuid-collapsible" data-role="collapsible"
+				data-collapsed="true" data-mini="true">
+				<h3>&nbsp;UUID</h3>
+				<input type="text" id="user-uuid" maxlength="36" value=""
+					data-clear-btn="true" autocomplete="off" autocorrect="off"
+					autocapitalize="off" spellcheck="false" />
+				<button id="button-user-generate-uuid"
+					class="ui-btn ui-mini ui-btn-inline ui-btn-icon-left ui-icon-recycle"
+					wicket:id="button-generate-2" />
+			</div>
+
+			<div id="user-pgp-collapsible" data-role="collapsible"
+				data-collapsed="true" data-mini="true">
+				<h3>&nbsp;OpenPGP</h3>
+				<label for="user-pgp-pubkey-id">
+					<span class="sp-txt-wrap"> <wicket:message
+							key="user-pgp-pubkey-id" /> &nbsp;<small>&bull;</small>&nbsp;<small><wicket:message
+								key="user-pgp-pubkey-id-format" /></small>
+					</span>
+				</label>
+				<input type="text" id="user-pgp-pubkey-id" maxlength="16" value=""
+					data-clear-btn="true" />
+
+				<wicket:enclosure child="button-pgp-pubkey-search">
+					<div>
+						<a href="" target="_blank" wicket:id="button-pgp-pubkey-search"
+							class="ui-btn ui-mini ui-btn-inline ui-btn-icon-left ui-icon-search" />
+
+						<button wicket:id="button-pgp-pubkey-preview"
+							id="sp-button-pgp-pubkey-preview"
+							class="ui-btn ui-mini ui-btn-inline ui-btn-icon-left ui-icon-eye" />
+					</div>
+					<input type="hidden" id="sp-pgp-pubkey-preview-url-template"
+						wicket:id="pgp-pubkey-preview-url-template" />
+				</wicket:enclosure>
+			</div>
+
+		</li>
+
+		<li class="sp-user-create">
+			<label for="user-user-pin">
+				<wicket:message key="user-pin" />
+			</label>
+			<wicket:panel wicket:id="user-user-pin-panel" />
+			<label for="user-user-pin-confirm">
+				<wicket:message key="user-password-confirm" />
+			</label>
+			<wicket:panel wicket:id="user-user-pin-confirm-panel" />
+		</li>
+
+		<li class="sp-user-create">
+			<label for="user-user-pw">
+				<wicket:message key="user-password" />
+			</label>
+			<wicket:panel wicket:id="user-user-pw-panel" />
+
+			<label for="user-user-pw-confirm">
+				<wicket:message key="user-password-confirm" />
+			</label>
+			<wicket:panel wicket:id="user-user-pw-confirm-panel" />
+		</li>
+
+		<li data-role="list-divider">
+			<wicket:message key="label-financial" />
+		</li>
+		<li>
+			<label for="user-account-balance">
+				<wicket:message key="label-balance" />
+			</label>
+			<input type="text" id="user-account-balance" value="" maxlength="10"
+				pattern="[0-9]*" />
+
+			<fieldset class="ui-mini" data-role="controlgroup"
+				data-type="horizontal">
+
+				<legend>
+					<wicket:message key="label-credit-limit" />
+				</legend>
+
+				<label for="user-account-credit-limit-none"
+					wicket:id="label-credit-limit-none" />
+				<input type="radio" name="user-account-credit-limit-type"
+					id="user-account-credit-limit-none" wicket:id="credit-limit-none" />
+
+				<label for="user-account-credit-limit-default"
+					wicket:id="label-credit-limit-default" />
+				<input type="radio" name="user-account-credit-limit-type"
+					id="user-account-credit-limit-default"
+					wicket:id="credit-limit-default" />
+
+				<label for="user-account-credit-limit-individual"
+					wicket:id="label-credit-limit-individual" />
+				<input type="radio" name="user-account-credit-limit-type"
+					id="user-account-credit-limit-individual"
+					wicket:id="credit-limit-individual" />
+
+			</fieldset>
+			<input type="text" id="user-account-credit-limit-amount" value=""
+				maxlength="10" pattern="[0-9]*" />
+		</li>
+
+		<li>
+			<div>
+				<button id="button-save-user"
+					class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-check"
+					wicket:id="button-ok" />
+				<a href="#"
+					class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-back"
+					data-rel="back" data-direction="reverse"
+					wicket:id="button-cancel-1" />
+			</div>
+		</li>
+	</ul>
+
+	<ul class="sp-user-edit" data-role="listview"
+		data-inset="true">
+		<li data-role="list-divider" wicket:id="button-pin" />
+		<li>
+			<div>
+				<button id="button-user-pin-dialog"
+					wicket:id="button-user-pin-reset"
+					class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-edit">
+				</button>
+				<button id="button-user-pin-erase" wicket:id="button-user-pin-erase"
+					class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-delete">
+				</button>
+			</div>
+		</li>
+	</ul>
+
+	<ul class="sp-internal-user-edit" data-role="listview"
+		data-inset="true">
+		<li data-role="list-divider" wicket:id="button-password" />
+		<li>
+			<div>
+				<button id="button-user-pw-dialog" wicket:id="button-user-pw-reset"
+					class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-edit">
+				</button>
+				<button id="button-user-pw-erase" wicket:id="button-user-pw-erase"
+					class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-delete">
+				</button>
+			</div>
+		</li>
+	</ul>
+
+	<ul class="sp-user-edit" data-role="listview" data-inset="true">
+
+		<li data-role="list-divider" data-theme="b">
+			<wicket:message key="header-delete" />
+		</li>
+
+		<li>
+			<div class="sp-txt-wrap" wicket:id="user-delete-warning" />
+			<div>
+				<button id="button-delete-user"
+					class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-delete"
+					wicket:id="button-delete" />
+				<a href="#" data-rel="back" data-direction="reverse"
+					class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-back"
+					wicket:id="button-cancel-2" />
+			</div>
+		</li>
+	</ul>
+
+</div>
+
+<wicket:remove>
+	<!-- 
+THIS POPUP MUST BE PRESENT IN EVERY PAGE AND DIALOG 
+-->
+</wicket:remove>
+<div data-role="popup" data-dismissible="true" data-position-to="window"
+	class="sp-msg-popup ui-content" />
+
+</html>

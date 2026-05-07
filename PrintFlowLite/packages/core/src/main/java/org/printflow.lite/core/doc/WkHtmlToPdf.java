@@ -1,0 +1,152 @@
+/*
+ * This file is part of the PrintFlowLite project <https://printflowlite.local>.
+ * Copyright (c) 2011-2020 Datraverse B.V.
+ * Author: Rijk Ravestein.
+ *
+ * SPDX-FileCopyrightText: 2011-2020 Datraverse B.V. <info@datraverse.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For more information, please contact Datraverse B.V. at this
+ * address: info@datraverse.com
+ */
+package org.printflow.lite.core.doc;
+
+import java.io.File;
+import java.io.OutputStream;
+import java.net.URL;
+import java.util.UUID;
+
+import javax.print.attribute.standard.MediaSizeName;
+
+import org.apache.commons.io.FileUtils;
+import org.printflow.lite.core.config.ConfigManager;
+import org.printflow.lite.core.config.IConfigProp.Key;
+import org.printflow.lite.core.system.SystemInfo;
+import org.printflow.lite.core.system.SystemInfo.Command;
+import org.printflow.lite.core.util.MediaUtils;
+
+/**
+ * Create a PDF file from HTML using {@link Command#WKHTMLTOPDF}.
+ *
+ * @author Rijk Ravestein
+ *
+ */
+public final class WkHtmlToPdf extends AbstractDocFileConverter
+        implements IDocStreamConverter, IStreamConverter {
+
+    /** */
+    private static final String HTML_PAGE_SIZE_A4 = "A4";
+    /** */
+    private static final String HTML_PAGE_SIZE_LETTER = "Letter";
+
+    /**
+     * @return {@code true} if this convertor is available and enabled.
+     */
+    public static boolean isAvailable() {
+        return SystemInfo.isWkHtmlToPdfInstalled() && ConfigManager.instance()
+                .isConfigValue(Key.SYS_CMD_WKHTMLTOPDF_ENABLE);
+    }
+
+    /** */
+    public WkHtmlToPdf() {
+        super(ExecMode.MULTI_THREADED);
+    }
+
+    @Override
+    public boolean notifyStdOutMsg() {
+        return this.hasStdout();
+    }
+
+    @Override
+    protected ExecType getExecType() {
+        return ExecType.ADVANCED;
+    }
+
+    private static String getMediaSizePageName() {
+        final MediaSizeName mediaSizeName = MediaUtils.getDefaultMediaSize();
+        final String pageSize;
+        if (mediaSizeName == MediaSizeName.NA_LETTER) {
+            pageSize = HTML_PAGE_SIZE_LETTER;
+        } else {
+            pageSize = HTML_PAGE_SIZE_A4;
+        }
+        return pageSize;
+    }
+
+    private static String getOsCommand(final String in, final File filePdf) {
+        // margins 10 mm: -B 10 -L 10 -R 10 -T 10
+        return Command.WKHTMLTOPDF.cmdLineExt("--quiet", "--disable-javascript",
+                "--disable-local-file-access", "--disable-plugins",
+                "-B 10 -L 10 -R 10 -T 10",
+                "--page-size ".concat(getMediaSizePageName()), in,
+                filePdf.getAbsolutePath());
+    }
+
+    @Override
+    protected String getOsCommand(final DocContentTypeEnum contentType,
+            final File fileIn, final File filePdf) {
+        return getOsCommand(fileIn.getAbsolutePath(), filePdf);
+    }
+
+    @Override
+    protected File getOutputFile(final File fileIn) {
+        return getFileSibling(fileIn, DocContentTypeEnum.PDF);
+    }
+
+    @Override
+    public long convert(final DocContentTypeEnum contentType,
+            final DocInputStream istr, final File filePdf) throws Exception {
+
+        final File fileHtmlTemp =
+                getFileSibling(filePdf, DocContentTypeEnum.HTML);
+
+        try {
+            FileUtils.copyToFile(istr, fileHtmlTemp);
+            this.convert(contentType, fileHtmlTemp);
+        } finally {
+            fileHtmlTemp.delete();
+        }
+        return istr.getBytesRead();
+    }
+
+    @Override
+    public long convert(final DocContentTypeEnum contentType,
+            final DocInputStream istr, final OutputStream ostr)
+            throws Exception {
+
+        final File filePdfTemp = File.createTempFile(
+                "temp-".concat(UUID.randomUUID().toString()), ".pdf");
+        try {
+            this.convert(contentType, istr, filePdfTemp);
+            FileUtils.copyFile(filePdfTemp, ostr);
+        } finally {
+            filePdfTemp.delete();
+        }
+        return istr.getBytesRead();
+    }
+
+    /**
+     * @param url
+     * @param filePdf
+     * @throws DocContentToPdfException
+     */
+    public void convert(final URL url, final File filePdf)
+            throws DocContentToPdfException {
+        final String cmd = getOsCommand(url.toString(), filePdf);
+        this.convertWithOsCommand(DocContentTypeEnum.HTML, null, filePdf, cmd);
+    }
+
+}

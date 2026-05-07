@@ -1,0 +1,102 @@
+version: '3'
+
+services:
+  printflowlite:
+    build:
+      context: ../..
+      dockerfile: packages/docker/Dockerfile.runtime
+    image: printflowlite/runtime:latest
+    container_name: printflowlite-runtime
+    hostname: printflowlite
+    ports:
+      # HTTP
+      - "127.0.0.1:8080:8080"
+      # HTTPS (if configured)
+      # - "127.0.0.1:8443:8443"
+      # CUPS
+      - "127.0.0.1:631:631"
+    environment:
+      TZ: Europe/Amsterdam
+      # Database configuration
+      DATABASE_URL: jdbc:postgresql://postgres:5432/printflowlite
+      DATABASE_USER: printflowlite
+      DATABASE_PASSWORD: change-me-in-docker-env
+      # PrintFlowLite container detection
+      PFL_CONTAINER: DOCKER
+      PRINTFLOWLITE_NS: PFL_
+      # Server ports (PrintFlowLite uses 8631 for HTTP, 8632 for HTTPS)
+      PFL_SRV_01: server.port:0
+      PFL_SRV_02: server.ssl.port:0
+      PFL_SRV_03: cups.server.port:631
+      # Database
+      PFL_SRV_10: database.type:PostgreSQL
+      PFL_SRV_11: database.driver:org.postgresql.Driver
+      PFL_SRV_12: database.url:jdbc:postgresql://postgres:5432/printflowlite
+      PFL_SRV_13: database.user:printflowlite
+      PFL_SRV_14: database.password:change-me-in-docker-env
+      # Connection pool
+      PFL_SRV_20: database.connection.pool.max:20
+      PFL_SRV_21: database.connection.pool.min:2
+    volumes:
+      - printflowlite_data:/opt/printflowlite/data
+      - printflowlite_logs:/opt/printflowlite/logs
+      - printflowlite_custom:/opt/printflowlite/custom
+      - printflowlite_ext:/opt/printflowlite/ext
+    networks:
+      printflowlite_network:
+        ipv4_address: 172.21.0.10
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: printflowlite-postgres-runtime
+    hostname: postgres
+    ports:
+      # Expose PostgreSQL on different port to avoid conflicts
+      - "127.0.0.1:5444:5432"
+    environment:
+      POSTGRES_DB: printflowlite
+      POSTGRES_USER: printflowlite
+      POSTGRES_PASSWORD: change-me-in-docker-env
+    volumes:
+      - printflowlite_database:/var/lib/postgresql/data
+    networks:
+      printflowlite_network:
+        ipv4_address: 172.21.0.20
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U printflowlite -d printflowlite"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  printflowlite_data:
+  printflowlite_logs:
+  printflowlite_custom:
+  printflowlite_ext:
+  printflowlite_database:
+
+networks:
+  printflowlite_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16

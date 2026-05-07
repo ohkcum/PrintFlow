@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<wicket:panel>
+
+	<ul data-role="listview" data-inset="true" id="dashboard-system-status">
+
+		<li data-role="list-divider">
+			<wicket:message key="title" />
+		</li>
+
+		<li>
+			<wicket:remove>
+				<!--
+    +======================================================================+
+    | http://api.jquerymobile.com/table-reflow/
+    |  ... to use pre-configured  breakpoint, add the ui-responsive class 
+    |  to the table to convert from the stacked presentation to a tabular 
+    |  presentation at 560px (35em)     
+    +======================================================================+
+    -->
+			</wicket:remove>
+			<table data-role="table" data-mode="reflow"
+				class="ui-responsive table-stroke">
+				<thead>
+					<tr>
+						<th data-priority="1" />
+						<th data-priority="2" />
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<th wicket:id="membership-org-prompt" />
+						<td class="sp-txt-info" wicket:id="membership-org" />
+					</tr>
+					<tr>
+						<th wicket:id="membership-status-prompt" />
+						<td wicket:id="membership-status" />
+					</tr>
+					<tr>
+						<th>
+							<wicket:message key="membership-participants-prompt" />
+						</th>
+						<td class="sp-txt-info" wicket:id="membership-participants" />
+					</tr>
+
+					<wicket:enclosure child="membership-valid-till">
+						<tr>
+							<th>
+								<wicket:message key="membership-valid-till" />
+							</th>
+							<td wicket:id="membership-valid-till" />
+						</tr>
+					</wicket:enclosure>
+
+					<wicket:enclosure child="membership-valid-days-remaining">
+						<tr>
+							<th>
+								<wicket:message key="membership-valid-days-remaining" />
+							</th>
+							<td wicket:id="membership-valid-days-remaining" />
+						</tr>
+					</wicket:enclosure>
+
+					<tr>
+						<th wicket:id="sys-mode-prompt" style="vertical-align: middle;" />
+						<td>
+							<wicket:enclosure child="sys-mode-btn">
+								<button class="ui-btn ui-mini ui-btn-inline ui-btn-icon-text"
+									id="sp-btn-sys-mode" style="margin-left: 0px;">
+									<span wicket:id="sys-mode-btn" />
+								</button>
+							</wicket:enclosure>
+							<wicket:enclosure child="sys-mode">
+								<span wicket:id="sys-mode" />
+							</wicket:enclosure>
+						</td>
+					</tr>
+
+					<tr>
+						<th>
+							<wicket:message key="sys-status" />
+						</th>
+						<td>
+							<span wicket:id="sys-status" />
+							<div>
+								<wicket:enclosure child="btn-setup-currency">
+									<button class="ui-btn ui-mini ui-btn-inline ui-btn-icon-text"
+										wicket:id="btn-setup-currency" id="sp-btn-setup-currency-code"
+										style="margin-left: 0px;" />
+								</wicket:enclosure>
+								<wicket:enclosure child="btn-setup-smtp">
+									<button class="ui-btn ui-mini ui-btn-inline ui-btn-icon-text"
+										wicket:id="btn-setup-smtp" id="sp-btn-setup-smtp"
+										style="margin-left: 0px;" />
+								</wicket:enclosure>
+							</div>
+						</td>
+					</tr>
+
+					<wicket:enclosure child="container-prompt">
+						<tr>
+							<th class="sp-txt-wrap" wicket:id="container-prompt" />
+							<td class="sp-txt-wrap sp-txt-valid" wicket:id="container-name" />
+						</tr>
+					</wicket:enclosure>
+
+					<tr>
+						<th>
+							<wicket:message key="sys-uptime" />
+						</th>
+						<td class="sp-txt-info" wicket:id="sys-uptime" />
+					</tr>
+
+					<tr>
+						<th wicket:id="users-prompt" />
+						<td class="sp-txt-wrap sp-txt-info">
+							<wicket:panel wicket:id="userhome-stats-panel" />
+						</td>
+						<wicket:enclosure child="tooltip-userhome-stats">
+							<td>
+								<div style="margin-top: -15px;">
+									<wicket:panel wicket:id="tooltip-userhome-stats" />
+								</div>
+							</td>
+						</wicket:enclosure>
+					</tr>
+
+					<tr>
+						<th>
+							<wicket:message key="client-sessions" />
+						</th>
+						<td class="sp-txt-info" wicket:id="client-sessions" />
+					</tr>
+
+					<tr>
+						<th>
+							<wicket:message key="recent-errors" />
+						</th>
+						<td wicket:id="error-count" />
+					</tr>
+
+					<tr>
+						<th>
+							<wicket:message key="recent-warnings" />
+						</th>
+						<td wicket:id="warning-count" />
+					</tr>
+
+					<wicket:enclosure child="ssl-expiry">
+						<tr>
+							<th>
+								<wicket:message key="ssl-expiry-prompt" />
+							</th>
+							<td wicket:id="ssl-expiry" class="sp-txt-wrap" />
+						</tr>
+					</wicket:enclosure>
+
+					<wicket:enclosure child="pgp-uid">
+						<tr>
+							<th>OpenPGP</th>
+							<td class="sp-txt-wrap sp-txt-info">
+								<small wicket:id="pgp-uid" />
+							</td>
+							<td>
+								<div style="margin-top: -15px;">
+									<wicket:panel wicket:id="tooltip-pgp" />
+								</div>
+							</td>
+						</tr>
+					</wicket:enclosure>
+
+					<tr>
+						<th class="sp-txt-wrap" wicket:id="job-tickets-prompt" />
+						<td class="sp-txt-wrap sp-txt-info">
+							<wicket:panel wicket:id="job-tickets-queue-panel" />
+						</td>
+					</tr>
+
+					<wicket:enclosure child="jvm-memory">
+						<tr>
+							<th>
+								<wicket:message key="jvm-memory-prompt" />
+							</th>
+							<td>
+								<span wicket:id="jvm-memory" class="sp-txt-wrap sp-txt-info" />
+							</td>
+							<td>
+								<div style="margin-top: -15px;">
+									<wicket:panel wicket:id="tooltip-jvm-memory" />
+								</div>
+							</td>
+						</tr>
+					</wicket:enclosure>
+
+					<wicket:enclosure child="web-sessions">
+						<tr>
+							<th>
+								<wicket:message key="web-sessions" />
+							</th>
+							<td class="sp-txt-info" wicket:id="web-sessions" />
+						</tr>
+					</wicket:enclosure>
+
+					<wicket:enclosure child="open-files">
+						<tr>
+							<th wicket:id="open-files-prompt" />
+							<td>
+								<span wicket:id="open-files" class="sp-txt-wrap sp-txt-info" />
+							</td>
+						</tr>
+					</wicket:enclosure>
+
+					<wicket:enclosure child="disk-space">
+						<tr>
+							<th wicket:id="disk-space-prompt" />
+							<td>
+								<span wicket:id="disk-space" class="sp-txt-wrap sp-txt-info" />
+							</td>
+						</tr>
+					</wicket:enclosure>
+
+					<wicket:enclosure child="threads-info">
+						<tr>
+							<th>
+								<wicket:message key="threads-info-prompt" />
+							</th>
+							<td class="sp-txt-wrap">
+								<span wicket:id="threads-info" class="sp-txt-info" />
+								<wicket:enclosure child="threads-info-deadlocks">
+									<span wicket:id="threads-info-deadlocks" class="sp-txt-error" />
+									<span class="sp-txt-info">&bull; active (deadlocked)</span>
+								</wicket:enclosure>
+							</td>
+						</tr>
+					</wicket:enclosure>
+					<wicket:enclosure child="connections-info">
+						<tr>
+							<th>
+								<wicket:message key="connections-info-prompt" />
+							</th>
+							<td wicket:id="connections-info" class="sp-txt-wrap sp-txt-info" />
+						</tr>
+					</wicket:enclosure>
+					<wicket:enclosure child="proxy-print-queue-size">
+						<tr>
+							<th class="sp-txt-wrap">
+								<wicket:message key="proxy-print-queue" />
+							</th>
+							<td class="sp-txt-wrap sp-txt-info"
+								wicket:id="proxy-print-queue-size" />
+						</tr>
+					</wicket:enclosure>
+				</tbody>
+			</table>
+		</li>
+
+
+		<li data-role="list-divider">
+			<wicket:message key="header-services" />
+		</li>
+		<li wicket:id="sect-services">
+			<table data-role="table" data-mode="reflow"
+				class="ui-responsive table-stroke">
+				<thead>
+					<tr>
+						<th data-priority="1" />
+						<th data-priority="2" />
+					</tr>
+				</thead>
+				<tbody>
+
+					<tr>
+						<th style="vertical-align: middle;" wicket:id="prompt-proxy-print" />
+						<td>
+							<span class="sp-disabled"> <input type="checkbox"
+									wicket:id="flipswitch-proxyprint-online" data-mini="true"
+									data-role="flipswitch" data-on-text="On" data-off-text="Off"
+									data-disabled="true" /></span>
+							<wicket:enclosure child="cups-connection">
+								<span style="margin-left: 20px; vertical-align: middle;"
+									wicket:id="cups-connection" />
+							</wicket:enclosure>
+						</td>
+					</tr>
+
+					<wicket:enclosure child="mailprint-status">
+						<tr>
+							<th style="vertical-align: middle;" wicket:id="prompt-mail-print" />
+							<td>
+								<input type="checkbox" class="flipswitch-mailprint-online"
+									wicket:id="flipswitch-mailprint-online" data-mini="true"
+									data-role="flipswitch" data-on-text="On" data-off-text="Off" />
+								<span style="margin-left: 20px; vertical-align: middle;"
+									wicket:id="mailprint-status" />
+							</td>
+						</tr>
+					</wicket:enclosure>
+
+					<tr>
+						<th style="vertical-align: middle;" wicket:id="prompt-web-print" />
+						<td>
+							<input type="checkbox" id="flipswitch-webprint-online"
+								wicket:id="flipswitch-webprint-online" data-mini="true"
+								data-role="flipswitch" data-on-text="On" data-off-text="Off" />
+						</td>
+					</tr>
+
+					<tr>
+						<th style="vertical-align: middle;"
+							wicket:id="prompt-internet-print" />
+						<td>
+							<input type="checkbox" id="flipswitch-internetprint-online"
+								wicket:id="flipswitch-internetprint-online" data-mini="true"
+								data-role="flipswitch" data-on-text="On" data-off-text="Off" />
+						</td>
+					</tr>
+
+					<tr>
+						<th style="vertical-align: middle;"
+							wicket:id="prompt-restful-print" />
+						<td>
+							<input type="checkbox" id="flipswitch-restful-online"
+								wicket:id="flipswitch-restful-online" data-mini="true"
+								data-role="flipswitch" data-on-text="On" data-off-text="Off" />
+						</td>
+					</tr>
+
+					<wicket:enclosure child="payment-plugin-generic">
+						<tr>
+							<th style="vertical-align: middle;"
+								wicket:id="payment-plugin-generic" />
+							<td>
+								<input type="checkbox"
+									id="flipswitch-payment-plugin-generic-online"
+									wicket:id="flipswitch-payment-plugin-generic-online"
+									data-mini="true" data-role="flipswitch" data-on-text="On"
+									data-off-text="Off" />
+							</td>
+						</tr>
+					</wicket:enclosure>
+				</tbody>
+			</table>
+		</li>
+
+		<li data-role="list-divider">
+			<wicket:message key="news" />
+		</li>
+		<wicket:panel wicket:id="PrintFlowLite-news" />
+
+		<wicket:panel wicket:id="stats-pages-total" />
+
+		<wicket:enclosure child="stats-printin-total">
+			<wicket:panel wicket:id="stats-printin-total" />
+		</wicket:enclosure>
+
+		<wicket:enclosure child="environmental-impact">
+			<wicket:panel wicket:id="environmental-impact" />
+		</wicket:enclosure>
+
+		<wicket:panel wicket:id="stats-financial-totals" />
+
+		<wicket:enclosure child="stats-financial-details">
+			<wicket:panel wicket:id="stats-financial-details" />
+		</wicket:enclosure>
+
+		<wicket:enclosure child="filtered-requests-panel">
+			<wicket:panel wicket:id="filtered-requests-panel" />
+		</wicket:enclosure>
+
+
+	</ul>
+</wicket:panel>
+</html>

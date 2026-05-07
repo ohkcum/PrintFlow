@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com> -->
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<fontFamilies>
+
+    <fontFamily name="DejaVu Sans">
+        <normal>org/PrintFlowLite/core/fonts/truetype/dejavu/DejaVuSans.ttf</normal>
+        <bold>org/PrintFlowLite/core/fonts/truetype/dejavu/DejaVuSans-Bold.ttf</bold>
+        <italic>org/PrintFlowLite/core/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf</italic>
+        <boldItalic>org/PrintFlowLite/core/fonts/truetype/dejavu/DejaVuSans-BoldOblique.ttf</boldItalic>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <pdfEmbedded>true</pdfEmbedded>
+    </fontFamily>
+
+    <fontFamily name="DejaVu Sans ExtraLight">
+        <normal>org/PrintFlowLite/core/fonts/truetype/dejavu/DejaVuSans-ExtraLight.ttf</normal>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <pdfEmbedded>true</pdfEmbedded>
+    </fontFamily>
+
+    <fontFamily name="DejaVu Sans Mono">
+        <normal>org/PrintFlowLite/core/fonts/truetype/dejavu/DejaVuSansMono.ttf</normal>
+        <bold>org/PrintFlowLite/core/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf</bold>
+        <italic>org/PrintFlowLite/core/fonts/truetype/dejavu/DejaVuSansMono-Oblique.ttf</italic>
+        <boldItalic>org/PrintFlowLite/core/fonts/truetype/dejavu/DejaVuSansMono-BoldOblique.ttf</boldItalic>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <pdfEmbedded>true</pdfEmbedded>
+    </fontFamily>
+
+    <fontFamily name="Droid Sans Fallback">
+        <normal>org/PrintFlowLite/core/fonts/truetype/droid/DroidSansFallbackFull.ttf</normal>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <pdfEmbedded>true</pdfEmbedded>
+    </fontFamily>
+
+    <fontFamily name="Unifont">
+        <normal>org/PrintFlowLite/core/fonts/truetype/misc/unifont.ttf</normal>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <pdfEmbedded>true</pdfEmbedded>
+    </fontFamily>
+
+</fontFamilies>

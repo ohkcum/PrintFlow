@@ -1,0 +1,321 @@
+/*
+ * This file is part of the PrintFlowLite project <https://printflowlite.local>.
+ * Copyright (c) 2020 Datraverse B.V.
+ * Author: Rijk Ravestein.
+ *
+ * SPDX-FileCopyrightText: © 2020 Datraverse B.V. <info@datraverse.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For more information, please contact Datraverse B.V. at this
+ * address: info@datraverse.com
+ */
+package org.printflow.lite.core.jpa.tools;
+
+import java.nio.file.Path;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.persistence.EntityManagerFactory;
+
+import org.hibernate.cfg.AvailableSettings;
+import org.hibernate.jpa.HibernatePersistenceProvider;
+
+/**
+ * Encapsulates database configuration.
+ *
+ * @author Rijk Ravestein
+ *
+ */
+public final class DbConfig {
+
+    /**
+     * JDBC information.
+     */
+    public static class JdbcInfo {
+
+        private String driver;
+        private String url;
+
+        public String getDriver() {
+            return driver;
+        }
+
+        public void setDriver(String driver) {
+            this.driver = driver;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
+        }
+
+    }
+
+    /**
+     * Hibernate information.
+     */
+    public static class HibernateInfo {
+
+        private String dialect;
+
+        public String getDialect() {
+            return dialect;
+        }
+
+        public void setDialect(String dialect) {
+            this.dialect = dialect;
+        }
+
+    }
+
+    /**
+     * Constants only.
+     */
+    private DbConfig() {
+    }
+
+    /**
+     * "The configuration for entity managers both inside an application server
+     * and in a standalone application reside in a persistence archive. A
+     * persistence archive is a JAR file which must define a persistence.xml
+     * file that resides in the META-INF folder."
+     * <p>
+     * Use persistence.xml configuration. The map is a set of overrides that
+     * will take precedence over any properties defined in your persistence.xml
+     * file.
+     * </p>
+     * See <persistence-unit name="PrintFlowLite" ...> in
+     * resources/META-INF/persistence.xml
+     */
+    private static final String PERSISTENCE_UNIT_NAME = "PrintFlowLite";
+
+    /** */
+    private static final String DERBY_JDBC_SCHEMA = "jdbc:derby:";
+    /** */
+    private static final Class<?> DERBY_JDBC_DRIVER_CLASS =
+            org.apache.derby.jdbc.EmbeddedDriver.class;
+    /** */
+    private static final Class<?> DERBY_HIBERNATE_DIALECT_CLASS =
+            org.hibernate.dialect.DerbyTenSevenDialect.class;
+
+    /** */
+    private static final Class<?> POSTGRESQL_JDBC_DRIVER_CLASS =
+            org.postgresql.Driver.class;
+    /** */
+    private static final Class<?> POSTGRESQL_HIBERNATE_DIALECT_CLASS =
+            org.hibernate.dialect.PostgreSQL82Dialect.class;
+    /**
+     * The name of a JDBC driver to use to connect to the database. See
+     * {@link AvailableSettings#JPA_JDBC_DRIVER}.
+     */
+    public static final String JPA_JDBC_DRIVER =
+            AvailableSettings.JPA_JDBC_DRIVER;
+
+    /**
+     * The JDBC connection user name. See
+     * {@link AvailableSettings#JPA_JDBC_USER}.
+     */
+    private static final String JPA_JDBC_USER = AvailableSettings.JPA_JDBC_USER;
+
+    /**
+     * The JDBC connection password. See
+     * {@link AvailableSettings#JPA_JDBC_PASSWORD}.
+     */
+    private static final String JPA_JDBC_PASSWORD =
+            AvailableSettings.JPA_JDBC_PASSWORD;
+
+    /**
+     * The JDBC connection url to use to connect to the database. See
+     * {@link AvailableSettings#JPA_JDBC_URL}.
+     */
+    public static final String JPA_JDBC_URL = AvailableSettings.JPA_JDBC_URL;
+
+    /**
+     * Names the Hibernate {@literal SQL} {@link org.hibernate.dialect.Dialect}
+     * class. See {@link AvailableSettings#DIALECT}.
+     */
+    public static final String HIBERNATE_DIALECT = AvailableSettings.DIALECT;
+
+    /**
+     * Names the {@literal JDBC} driver class class. See
+     * {@link AvailableSettings#DRIVER}.
+     */
+    public static final String HIBERNATE_DRIVER = AvailableSettings.DRIVER;
+
+    /**
+     * Names the
+     * {@link org.hibernate.engine.jdbc.connections.spi.ConnectionProvider} to
+     * use for obtaining JDBC connections. See
+     * {@link AvailableSettings#CONNECTION_PROVIDER}.
+     */
+    public static final String HIBERNATE_CONNECTION_PROVIDER =
+            AvailableSettings.CONNECTION_PROVIDER;
+
+    /** */
+    public static final String HIBERNATE_MAX_FETCH_DEPTH =
+            AvailableSettings.MAX_FETCH_DEPTH;
+
+    /** */
+    public static final String HIBERNATE_MAX_FETCH_DEPTH_VALUE = "3";
+
+    /**
+     * Configures the Hibernate Connection Pool.
+     *
+     * @param valueMap
+     *            The {@link DbConnectionPoolEnum} key value map of hibernate
+     *            C3p0 values.
+     * @param config
+     *            The configuration map to put values on.
+     */
+    public static void configHibernateC3p0(
+            final Map<DbConnectionPoolEnum, String> valueMap,
+            final Map<String, Object> config) {
+
+        for (final Entry<DbConnectionPoolEnum, String> entry : valueMap
+                .entrySet()) {
+            config.put(entry.getKey().getC3p0Key(), entry.getValue());
+        }
+    }
+
+    /**
+     * Sets the Hibernate properties for PostgrSQL.
+     *
+     * @param config
+     *            The configuration map.
+     */
+    public static void
+            configHibernatePostgreSQL(final Map<String, Object> config) {
+        configHibernatePostgreSQL(config, null, null, null, null);
+    }
+
+    /**
+     * Sets the Hibernate properties for PostgrSQL.
+     *
+     * @param config
+     *            The configuration map.
+     * @param jdbcUser
+     *            User.
+     * @param jdbcPassword
+     *            Password.
+     * @param jdbcUrl
+     *            URL.
+     * @param jdbcDriver
+     *            Driver.
+     */
+    public static void configHibernatePostgreSQL(
+            final Map<String, Object> config, final String jdbcUser,
+            final String jdbcPassword, final String jdbcUrl,
+            final String jdbcDriver) {
+
+        final String jdbcDriverWrk;
+
+        if (jdbcDriver == null) {
+            jdbcDriverWrk = POSTGRESQL_JDBC_DRIVER_CLASS.getName();
+        } else {
+            jdbcDriverWrk = jdbcDriver;
+        }
+
+        configHibernateExternal(config, jdbcUser, jdbcPassword, jdbcUrl,
+                jdbcDriverWrk, POSTGRESQL_HIBERNATE_DIALECT_CLASS.getName());
+    }
+
+    /**
+     * Sets the Hibernate properties for the internal Derby database.
+     *
+     * @param config
+     *            The configuration map.
+     * @param pathToDerby
+     *            Path to Derby database files.
+     */
+    public static void configHibernateDerby(final Map<String, Object> config,
+            final Path pathToDerby) {
+        config.put(JPA_JDBC_URL, DERBY_JDBC_SCHEMA + pathToDerby);
+        config.put(JPA_JDBC_DRIVER, DERBY_JDBC_DRIVER_CLASS.getName());
+        config.put(HIBERNATE_DIALECT, DERBY_HIBERNATE_DIALECT_CLASS.getName());
+    }
+
+    /**
+     * Sets the Hibernate properties for an external database.
+     *
+     * @param config
+     *            The configuration map.
+     * @param jdbcUser
+     *            User.
+     * @param jdbcPassword
+     *            Password.
+     * @param jdbcUrl
+     *            URL.
+     * @param jdbcDriverClassName
+     *            JDBC driver class name.
+     * @param dialectClassName
+     *            Hibernate dialect class name.
+     */
+    public static void configHibernateExternal(final Map<String, Object> config,
+            final String jdbcUser, final String jdbcPassword,
+            final String jdbcUrl, final String jdbcDriverClassName,
+            final String dialectClassName) {
+
+        if (jdbcUser != null) {
+            config.put(JPA_JDBC_USER, jdbcUser);
+            config.put(JPA_JDBC_PASSWORD, jdbcPassword);
+            config.put(JPA_JDBC_URL, jdbcUrl);
+        }
+
+        config.put(JPA_JDBC_DRIVER, jdbcDriverClassName);
+        config.put(HIBERNATE_DIALECT, dialectClassName);
+    }
+
+    /**
+     * Sets Hibernate properties common for all databases.
+     *
+     * @param config
+     *            The configuration map.
+     */
+    public static void configHibernateCommon(final Map<String, Object> config) {
+        config.put(HIBERNATE_MAX_FETCH_DEPTH, HIBERNATE_MAX_FETCH_DEPTH_VALUE);
+    }
+
+    /**
+     * Creates the {@link EntityManagerFactory}.
+     *
+     * @param config
+     *            The configuration map.
+     * @return The {@link EntityManagerFactory}.
+     */
+    public static EntityManagerFactory
+            createEntityManagerFactory(final Map<String, Object> config) {
+        /*
+         * Since Mantis #348
+         */
+        final HibernatePersistenceProvider provider =
+                new HibernatePersistenceProvider();
+
+        /*
+         * "An entity manager factory is typically create at application
+         * initialization time and closed at application end. It's creation is
+         * an expensive process. For those who are familiar with Hibernate, an
+         * entity manager factory is very much like a session factory. Actually,
+         * an entity manager factory is a wrapper on top of a session factory.
+         * Calls to the entityManagerFactory are thread safe."
+         */
+        return provider.createEntityManagerFactory(PERSISTENCE_UNIT_NAME,
+                config);
+    }
+
+}

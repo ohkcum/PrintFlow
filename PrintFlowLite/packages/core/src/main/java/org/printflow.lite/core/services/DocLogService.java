@@ -1,0 +1,357 @@
+/*
+ * This file is part of the PrintFlowLite project <https://printflowlite.local>.
+ * Copyright (c) 2020 Datraverse B.V.
+ * Author: Rijk Ravestein.
+ *
+ * SPDX-FileCopyrightText: © 2020 Datraverse B.V. <info@datraverse.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For more information, please contact Datraverse B.V. at this
+ * address: info@datraverse.com
+ */
+package org.printflow.lite.core.services;
+
+import java.io.IOException;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+
+import org.printflow.lite.core.cometd.AdminPublisher;
+import org.printflow.lite.core.dao.enums.DocLogProtocolEnum;
+import org.printflow.lite.core.dao.enums.ExternalSupplierEnum;
+import org.printflow.lite.core.dao.enums.ExternalSupplierStatusEnum;
+import org.printflow.lite.core.ipp.operation.IppOperationId;
+import org.printflow.lite.core.jpa.AccountTrx;
+import org.printflow.lite.core.jpa.ConfigProperty;
+import org.printflow.lite.core.jpa.DocIn;
+import org.printflow.lite.core.jpa.DocLog;
+import org.printflow.lite.core.jpa.DocOut;
+import org.printflow.lite.core.jpa.IppQueue;
+import org.printflow.lite.core.jpa.PrintIn;
+import org.printflow.lite.core.jpa.PrintOut;
+import org.printflow.lite.core.jpa.Printer;
+import org.printflow.lite.core.jpa.PrinterAttr;
+import org.printflow.lite.core.jpa.User;
+import org.printflow.lite.core.jpa.UserAttr;
+import org.printflow.lite.core.pdf.PdfCreateInfo;
+import org.printflow.lite.core.pdf.PdfInfoDto;
+import org.printflow.lite.core.print.proxy.ProxyPrintJobStatusMonitor;
+import org.printflow.lite.core.services.helpers.AccountTrxInfoSet;
+import org.printflow.lite.core.services.helpers.DocContentPrintInInfo;
+import org.printflow.lite.core.services.helpers.ExternalSupplierInfo;
+
+/**
+ *
+ * @author Rijk Ravestein
+ *
+ */
+public interface DocLogService {
+
+    /**
+     * Generates a document signature for a {@link DocLog} instance. The HMAC
+     * signature is based on this message:
+     * <p>
+     * {@code date time || userid || document name || document uuid}
+     * </p>
+     *
+     * @param docLog
+     *            The {@link DocLog} instance.
+     * @return the HMAC signature.
+     */
+    String generateSignature(DocLog docLog);
+
+    /**
+     * Applies the creation date to the {@link DocLog} instance.
+     *
+     * @param docLog
+     *            The {@link DocLog} instance.
+     * @param date
+     *            The creation date.
+     */
+    void applyCreationDate(DocLog docLog, Date date);
+
+    /**
+     * Logs the {@link DocOut} object WITH accounting info as created after
+     * document <i>output</i> (like proxy print, download, send).
+     * <p>
+     * <b>IMPORTANT</b>: This method has it <u>own transaction scopes</u>. Any
+     * open transaction is used: the end-result is a closed transaction.
+     * <ul>
+     * <li>The {@link DocLog} container is persisted in the database.</li>
+     * <li>Document statistics are updated in the database for
+     * {@link ConfigProperty} (global system), {@link User}, {@link UserAttr},
+     * {@link Printer} and {@link PrinterAttr}.</li>
+     * <li>{@link AccountTrx} objects are created when costs are GT zero.</li>
+     * <li>If the {@link DocOut} contains a {@link PrintOut} the
+     * {@link ProxyPrintJobStatusMonitor} is notified of the event.</li>
+     * </ul>
+     * </p>
+     *
+     * @param lockedUser
+     *            The {@link User} instance, which could be locked by the
+     *            caller. If not, the User wil be locked ad-hoc.
+     * @param docOut
+     *            The {@link DocOut} instance.
+     * @param accountTrxInfoSet
+     *            Information about the account transactions to be created.
+     */
+    void logDocOut(User lockedUser, DocOut docOut,
+            AccountTrxInfoSet accountTrxInfoSet);
+
+    /**
+     * Logs the {@link DocOut} container with the {@link PrintOut} object, WITH
+     * accounting info.
+     * <p>
+     * <b>IMPORTANT</b>: This method has it <u>own transaction scopes</u>. Any
+     * open transaction is used: the end-result is a closed transaction.
+     * <ul>
+     * <li>The {@link DocLog} container is persisted in the database.</li>
+     * <li>Document statistics are updated in the database for
+     * {@link ConfigProperty} (global system), {@link User}, {@link UserAttr},
+     * {@link Printer} and {@link PrinterAttr}.</li>
+     * <li>{@link AccountTrx} objects are created when costs are GT zero.</li>
+     * </ul>
+     * </p>
+     *
+     * @param lockedUser
+     *            The {@link User} instance, which could be locked by the
+     *            caller. If not, the User wil be locked ad-hoc.
+     * @param printOut
+     *            The {@link PrintOut} instance with the {@link DocOut} object.
+     * @param accountTrxInfoSet
+     *            Information about the account transactions to be created.
+     */
+    void settlePrintOut(User lockedUser, PrintOut printOut,
+            AccountTrxInfoSet accountTrxInfoSet);
+
+    /**
+     * Logs the {@link DocOut} object WITHOUT accounting info as created after
+     * document <i>output</i> (like proxy print, download, send).
+     * <p>
+     * <b>IMPORTANT</b>: This method has it <u>own transaction scope</u>. Any
+     * open transaction is used: the end-result is a closed transaction.
+     * <ul>
+     * <li>The {@link DocLog} container is persisted in the database.</li>
+     * <li>Document statistics are updated in the database for
+     * {@link ConfigProperty} (global system), {@link User}, {@link UserAttr},
+     * {@link Printer} and {@link PrinterAttr}.</li>
+     * </ul>
+     * </p>
+     *
+     * @param lockedUser
+     *            The {@link User} instance, which could be locked by the
+     *            caller. If not, the User wil be locked ad-hoc.
+     * @param docOut
+     *            The {@link DocOut} instance.
+     */
+    void logDocOut(User lockedUser, DocOut docOut);
+
+    /**
+     * Reverses PrintOut pagometers (statistics). This method holds its own
+     * database transactions.
+     *
+     * @param printOut
+     *            The {@link PrintOut} instance.
+     * @param locale
+     *            The {@link Locale} used for UI messages.
+     */
+    void reversePrintOutPagometers(PrintOut printOut, Locale locale);
+
+    /**
+     * Logs a {@link PrintIn} job in the database using
+     * {@link DocContentPrintInInfo}.
+     * <p>
+     * <b>IMPORTANT</b>: This method manages its <u>own transaction scopes</u>.
+     *
+     * <ul>
+     * <li>A {@link DocLog} container is persisted in the database and document
+     * statistics are updated in the database for {@link User} and
+     * {@link UserAttr}.</li>
+     *
+     * <li>Document statistics for {@link IppQueue} and {@link IppQueueAttrAttr}
+     * are updated in the database in a separate transaction.</li>
+     *
+     * <li>Global document statistics, i.e. {@link ConfigProperty} objects, are
+     * updated in the database in a separate transaction.</li>
+     *
+     * <li>Notifications are send to {@link AdminPublisher} and {@link User}.
+     * </li>
+     * </ul>
+     * </p>
+     *
+     * @param userDb
+     *            The {@link User}.
+     * @param queue
+     *            The {@link IppQueue}.
+     * @param protocol
+     *            The protocol with which the printIn was acquired.
+     * @param printInInfo
+     *            The {@link DocContentPrintInInfo}.
+     */
+    void logPrintIn(User userDb, IppQueue queue, DocLogProtocolEnum protocol,
+            DocContentPrintInInfo printInInfo);
+
+    /**
+     * Attaches a {@link PrintIn} job to an existing {@link DocLog} in the
+     * database using {@link DocContentPrintInInfo}.
+     *
+     * This method has same end result as
+     * {@link #logPrintIn(User, IppQueue, DocLogProtocolEnum, DocContentPrintInInfo)}.
+     *
+     * <p>
+     * <b>IMPORTANT</b>: This method manages its <u>own transaction scopes</u>.
+     * </p>
+     *
+     * @param docLog
+     *            {@link DocLog} that already exists in the database.
+     * @param userDb
+     *            The {@link User}.
+     * @param queue
+     *            The {@link IppQueue}.
+     * @param protocol
+     *            The protocol with which the printIn was acquired.
+     * @param printInInfo
+     *            The {@link DocContentPrintInInfo}.
+     */
+    void attachPrintIn(DocLog docLog, User userDb, IppQueue queue,
+            DocLogProtocolEnum protocol, DocContentPrintInInfo printInInfo);
+
+    /**
+     * Logs {@link IppOperationId#CREATE_JOB} data in the database.
+     * <p>
+     * <b>IMPORTANT</b>: This method manages its <u>own transaction scope</u>.
+     *
+     * @param userDb
+     *            The {@link User}.
+     * @param supplierInfo
+     *            {@link ExternalSupplierInfo};
+     * @param jobName
+     *            job-name.
+     * @return The created {@link DocLog}.
+     */
+    DocLog logIppCreateJob(User userDb, ExternalSupplierInfo supplierInfo,
+            String jobName);
+
+    /**
+     * Gets the {@link PdfInfoDto} of PDF that was offered by
+     * {@link DocLogProtocolEnum#HTTP}.
+     *
+     * @param userKey
+     *            Database key of {@link User}.
+     * @param uuid
+     *            UUID of the {@link DocLog}.
+     * @return PDF info or {@code null} if not present.
+     */
+    PdfInfoDto getHttpPrintInPdfInfo(Long userKey, UUID uuid);
+
+    /**
+     * Gets the {@link PdfInfoDto} of PDF that was offered by
+     * {@link DocLogProtocolEnum#HTTP}.
+     *
+     * @param delivery
+     * @param externalDbData
+     *            As present in {@link DocLog#getExternalData()}.
+     * @return PDF info or {@code null} if not present.
+     */
+    PdfInfoDto getHttpPrintInPdfInfo(DocLogProtocolEnum delivery,
+            String externalDbData);
+
+    /**
+     * Gets the input {@link DocLog} from an External Supplier with a specific
+     * {@link ExternalSupplierStatusEnum} and ID.
+     *
+     * @param supplier
+     *            The supplier.
+     * @param supplierAccount
+     *            The supplier account.
+     * @param suppliedId
+     *            The supplied id.
+     * @param status
+     *            The status.
+     * @return {@code null} when not found.
+     */
+    DocLog getSuppliedDocLog(ExternalSupplierEnum supplier,
+            String supplierAccount, String suppliedId,
+            ExternalSupplierStatusEnum status);
+
+    /**
+     * Collects data for the DocOut object using the merged PDF out file and the
+     * {@link DocLog} UUID keys of {@link DocIn} documents (with number of
+     * pages) that were used for the merge.
+     * <p>
+     * Note: {@link DocOut#setDeliveryProtocol(String)} and
+     * {@link DocOut#setDestination(String)} should be performed on the
+     * {@link DocLog} by the client using the PDF file.
+     * </p>
+     *
+     * @param userDocLog
+     *            The {@link User} who owns the {@link DocLog}.
+     * @param docLogCollect
+     *            Collects data for the DocOut object using the generated PDF
+     *            and the uuid page counts.
+     * @param createInfo
+     *            The {@link PdfCreateInfo}.
+     * @param uuidPageCount
+     *            A {@link Map} with {@link DocLog} UUID keys of {@link DocIn}
+     *            documents, with number of pages as value. Note:
+     *            {@link LinkedHashMap} is insertion ordered.
+     * @throws IOException
+     *             When error reading the pdfFile (file size).
+     */
+    void collectData4DocOut(User userDocLog, DocLog docLogCollect,
+            PdfCreateInfo createInfo,
+            LinkedHashMap<String, Integer> uuidPageCount) throws IOException;
+
+    /**
+     * Collects data for the DocOut object of a Copy Job Ticket.
+     *
+     * @param user
+     *            The {@link User} to collect the data for.
+     * @param docLogCollect
+     *            Collects data for the DocOut object.
+     * @param numberOfPages
+     *            The number of pages of the original document.
+     */
+    void collectData4DocOutCopyJob(User user, DocLog docLogCollect,
+            int numberOfPages);
+
+    /**
+     *
+     * @param resetBy
+     * @param resetDashboard
+     * @param resetQueues
+     * @param resetPrinters
+     * @param resetUsers
+     */
+    void resetPagometers(String resetBy, boolean resetDashboard,
+            boolean resetQueues, boolean resetPrinters, boolean resetUsers);
+
+    /**
+     * Updates DocLog external status.
+     * <p>
+     * Note: when no transaction is active, the update is committed.
+     * </p>
+     *
+     * @param docLog
+     *            The D{@link DocLog}.
+     * @param extStatus
+     *            The {@link ExternalSupplierStatusEnum}.
+     */
+    void updateExternalStatus(DocLog docLog,
+            ExternalSupplierStatusEnum extStatus);
+}

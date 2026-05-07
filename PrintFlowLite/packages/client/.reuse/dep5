@@ -1,0 +1,8 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: PrintFlowLite Client Application
+Upstream-Contact: Datraverse B.V. <info@datraverse.com>
+Source: https://github.com/YOUR_GITHUB/PrintFlowLite
+
+Files: src/main/resources/org/printflow/lite/client/images/*.*
+Copyright: (c) 2020 Datraverse BV <info@datraverse.com>
+License: CC-BY-SA-4.0

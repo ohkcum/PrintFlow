@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+
+Translator: Rijk Ravestein <rijkr@PrintFlowLite.org>
+-->
+</wicket:remove>
+
+
+<div data-role="header" data-theme="b">
+	<h1 id="dashboard-title" />
+</div>
+
+<div class="ui-content">
+
+	<ul data-role="listview" id="dashboard-list" data-inset="true"
+		class="ui-listview ui-listview-inset ui-corner-all ui-shadow" />
+
+	<div>
+		<wicket:enclosure child="button-user-pw-dialog">
+			<a wicket:id="button-user-pw-dialog" tabindex="0"
+				class="sp-internal-user ui-mini ui-btn ui-btn-inline ui-btn-icon-left ui-icon-edit"
+				href="#" id="button-user-pw-dialog" />
+		</wicket:enclosure>
+
+		<wicket:enclosure child="button-user-pin-dialog">
+			<a wicket:id="button-user-pin-dialog" tabindex="0"
+				class="ui-btn ui-mini ui-btn-inline ui-btn-icon-left ui-icon-edit"
+				href="#" id="button-user-pin-dialog" />
+		</wicket:enclosure>
+
+		<wicket:enclosure child="button-user-internet-printer-dialog">
+			<a wicket:id="button-user-internet-printer-dialog" tabindex="0"
+				class="ui-btn ui-mini ui-btn-inline ui-btn-icon-left ui-icon-cloud"
+				href="#" id="button-user-internet-printer-dialog" />
+		</wicket:enclosure>
+
+		<wicket:enclosure child="btn-telegram">
+			<button id="button-user-telegram-dialog"
+				class="ui-btn ui-mini ui-btn-inline ui-btn-icon-left ui-icon-comment"
+				wicket:id="btn-telegram" />
+		</wicket:enclosure>
+
+		<wicket:enclosure child="button-totp-dialog">
+			<a wicket:id="button-totp-dialog" tabindex="0"
+				class="ui-btn ui-mini ui-btn-inline ui-btn-icon-left ui-icon-lock"
+				href="#" id="button-user-totp-dialog" />
+		</wicket:enclosure>
+
+		<a href="#page-main" tabindex="0"
+			class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-back">
+			<wicket:message key="button-back" />
+		</a>
+	</div>
+
+</div>
+
+<wicket:remove>
+	<!-- 
+	THIS POPUP MUST BE PRESENT IN EVERY PAGE AND DIALOG 
+	-->
+</wicket:remove>
+<div data-role="popup" data-position-to="window"
+	class="sp-msg-popup ui-content" />
+</html>

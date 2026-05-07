@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<wicket:panel>
+	<div data-role="popup" id="POPUP-ID" data-theme="a" wicket:id="popup"
+		data-overlay-theme="a" data-arrow="l,t,r,b" class="ui-content">
+		<h4 class="ui-title" wicket:id="title" />
+		<div class="sp-txt-wrap" wicket:id="msg" />
+		<br />
+		<a href="#" data-rel="back"
+			class="ui-btn ui-mini ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right" />
+		<button
+			class="sp-ui-btn-ok ui-btn ui-mini ui-btn-inline ui-btn-icon-left ui-icon-check"
+			wicket:id="btn-ok" />
+		<button wicket:id="btn-back"
+			class="sp-ui-btn-cancel ui-btn ui-mini ui-btn-inline ui-btn-icon-left ui-icon-back" />
+	</div>
+</wicket:panel>
+
+</html>

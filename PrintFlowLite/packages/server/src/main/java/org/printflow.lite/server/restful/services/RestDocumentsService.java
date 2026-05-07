@@ -1,0 +1,594 @@
+/*
+ * This file is part of the PrintFlowLite project <https://www.PrintFlowLite.org>.
+ * Copyright (c) 2020 Datraverse B.V.
+ * Author: Rijk Ravestein.
+ *
+ * SPDX-FileCopyrightText: © 2020 Datraverse B.V. <info@datraverse.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For more information, please contact Datraverse B.V. at this
+ * address: info@datraverse.com
+ */
+package org.printflow.lite.server.restful.services;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Locale;
+
+import javax.annotation.security.RolesAllowed;
+import javax.persistence.EntityManager;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.StreamingOutput;
+
+import org.apache.commons.lang3.EnumUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.printflow.lite.core.UnavailableException;
+import org.printflow.lite.core.cometd.AdminPublisher;
+import org.printflow.lite.core.cometd.PubLevelEnum;
+import org.printflow.lite.core.cometd.PubTopicEnum;
+import org.printflow.lite.core.community.CommunityDictEnum;
+import org.printflow.lite.core.dao.DocLogDao;
+import org.printflow.lite.core.dao.IppQueueDao;
+import org.printflow.lite.core.dao.enums.DocLogProtocolEnum;
+import org.printflow.lite.core.dao.enums.ReservedIppQueueEnum;
+import org.printflow.lite.core.dao.helpers.DocLogPagerReq;
+import org.printflow.lite.core.dao.impl.DaoContextImpl;
+import org.printflow.lite.core.doc.DocContent;
+import org.printflow.lite.core.doc.DocContentTypeEnum;
+import org.printflow.lite.core.doc.MimeTypeEnum;
+import org.printflow.lite.core.doc.store.DocStoreBranchEnum;
+import org.printflow.lite.core.doc.store.DocStoreException;
+import org.printflow.lite.core.doc.store.DocStoreTypeEnum;
+import org.printflow.lite.core.ipp.IppSyntaxException;
+import org.printflow.lite.core.jpa.DocLog;
+import org.printflow.lite.core.jpa.IppQueue;
+import org.printflow.lite.core.jpa.User;
+import org.printflow.lite.core.print.server.DocContentPrintException;
+import org.printflow.lite.core.print.server.DocContentPrintReq;
+import org.printflow.lite.core.services.DocStoreService;
+import org.printflow.lite.core.services.InboxService;
+import org.printflow.lite.core.services.QueueService;
+import org.printflow.lite.core.services.ServiceContext;
+import org.printflow.lite.core.services.helpers.RawPrintInData;
+import org.printflow.lite.core.util.HttpAuthenticationUtil;
+import org.printflow.lite.core.util.JsonHelper;
+import org.printflow.lite.server.pages.DocLogItem;
+import org.printflow.lite.server.restful.RestAuthException;
+import org.printflow.lite.server.restful.RestAuthFilter;
+import org.printflow.lite.server.restful.dto.RestDocumentDto;
+import org.printflow.lite.server.webapp.WebAppHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * REST documents API.
+ * <p>
+ * Implementation of Jersey extended WADL support is <i>under construction</i>.
+ * <p>
+ *
+ * @author Rijk Ravestein
+ *
+ */
+@Path("/" + RestDocumentsService.PATH_MAIN)
+public final class RestDocumentsService extends AbstractRestService {
+
+    /** */
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(RestDocumentsService.class);
+
+    /** */
+    private static final DocStoreService DOCSTORE_SERVICE =
+            ServiceContext.getServiceFactory().getDocStoreService();
+
+    /** */
+    private static final InboxService INBOX_SERVICE =
+            ServiceContext.getServiceFactory().getInboxService();
+
+    /** */
+    private static final DocLogDao DOCLOG_DAO =
+            ServiceContext.getDaoContext().getDocLogDao();
+
+    /** */
+    private static final QueueService QUEUE_SERVICE =
+            ServiceContext.getServiceFactory().getQueueService();
+
+    /** */
+    private static final IppQueueDao QUEUE_DAO =
+            ServiceContext.getDaoContext().getIppQueueDao();
+
+    /** */
+    private static final int INPUT_STREAM_BUFFER_SIZE = 1024;
+
+    /** */
+    public static final String PATH_MAIN = "documents";
+
+    /** */
+    private static final String PATH_PARAM_ID = "id";
+
+    /** */
+    private static final String PATH_PARAM_EXT_ID = "ext_id";
+
+    /** */
+    private static final String PATH_SUB_PDF = "pdf";
+
+    /** */
+    private static final String PATH_SUB_PRINT = "print";
+
+    /** */
+    private static final String FILTER_SFX_GTE = "_gte";
+    /** */
+    private static final String FILTER_SFX_LTE = "_lte";
+
+    /** */
+    private static final String SORT_PFX_ASC = "+";
+    /** */
+    private static final String SORT_PFX_DESC = "-";
+
+    /** */
+    private static final String QUERY_PARAM_PAGE = "page";
+    /** */
+    private static final String QUERY_PARAM_LIMIT = "limit";
+    /** */
+    private static final String QUERY_PARAM_SORT = "sort";
+
+    /** */
+    private static final String FORM_PARAM_FILE = "file";
+    /** */
+    private static final String FORM_PARAM_QUEUE = "queue";
+    /** */
+    private static final String FORM_PARAM_IPP_OPTIONS = "ipp_options";
+
+    /** */
+    @SuppressWarnings("unused")
+    private static final String FORM_PARAM_DESCRIPTION = "description";
+
+    /** */
+    @Context
+    private HttpServletRequest servletRequest;
+
+    // response.* annotations are from Jersey's wadl-resourcedoc-doclet
+
+    /**
+     * Gets document details.
+     *
+     * @response.representation.200.qname document
+     * @response.representation.200.mediaType application/json
+     * @response.representation.200.doc The document object.
+     *
+     *                                  @response.representation.200.example
+     *                                  {"id" : 125, "ext_id" :
+     *                                  "a4fc5e08-9f5e-11e9-81cf-406186940c49",
+     *                                  "type" : "print", "title" : "Sample
+     *                                  Document", "created" :
+     *                                  "2019-07-04T14:15:03+0200", "store" :
+     *                                  "true"}
+     *
+     * @param id
+     *            Document key.
+     * @return {@link RestDocumentDto}.
+     */
+    @RolesAllowed(RestAuthFilter.ROLE_ADMIN)
+    @GET
+    @Path("/{" + PATH_PARAM_ID + "}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDocumentById(//
+            @PathParam(PATH_PARAM_ID) final Long id) {
+
+        return this.getDocumentRsp(DOCLOG_DAO.findById(id));
+    }
+
+    /**
+     * Gets document details.
+     *
+     * @param externalId
+     *            Unique external id of Document.
+     * @return {@link RestDocumentDto}.
+     */
+    @RolesAllowed(RestAuthFilter.ROLE_ADMIN)
+    @GET
+    @Path("/" + RestDocumentDto.FIELD_EXT_ID + "={" + PATH_PARAM_EXT_ID + "}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDocumentByExtId(//
+            @PathParam(PATH_PARAM_EXT_ID) final String externalId) {
+
+        return this.getDocumentRsp(DOCLOG_DAO.findByExtId(externalId));
+    }
+
+    /**
+     * @param doc
+     *            {@link DocLog}, can be {@code null}.
+     * @return REST response.
+     */
+    private Response getDocumentRsp(final DocLog doc) {
+
+        try {
+            final ResponseBuilder rsp;
+            if (doc == null) {
+                rsp = Response.noContent();
+            } else {
+
+                DocStoreBranchEnum branch = null;
+                if (doc.getDocOut() != null
+                        && doc.getDocOut().getPrintOut() != null) {
+                    branch = DocStoreBranchEnum.OUT_PRINT;
+                }
+
+                final boolean isStored = branch != null && (DOCSTORE_SERVICE
+                        .isDocPresent(DocStoreTypeEnum.ARCHIVE, branch, doc)
+                        || DOCSTORE_SERVICE.isDocPresent(
+                                DocStoreTypeEnum.JOURNAL, branch, doc));
+
+                rsp = Response.ok(RestDocumentDto.createJSON(doc, isStored));
+            }
+            return rsp.build();
+        } catch (Exception e) {
+            LOGGER.error("{}: {}", e.getClass().getName(), e.getMessage());
+            throw new WebApplicationException(e.getMessage());
+        }
+    }
+
+    /**
+     * Gets PDF from archive.
+     *
+     * @param id
+     *            Document key.
+     * @return PDF file.
+     */
+    @RolesAllowed(RestAuthFilter.ROLE_ADMIN)
+    @GET
+    @Path("/{" + PATH_PARAM_ID + "}/" + PATH_SUB_PDF)
+    @Produces(MimeTypeEnum.MIME_APPLICATION_PDF)
+    public Response getDocumentPdfById(//
+            @PathParam(PATH_PARAM_ID) final Long id) {
+
+        return this.getDocumentPdfRsp(DOCLOG_DAO.findById(id));
+    }
+
+    /**
+     * Gets PDF from archive.
+     *
+     * @param externalId
+     *            Unique external id of Document.
+     * @return PDF file.
+     */
+    @RolesAllowed(RestAuthFilter.ROLE_ADMIN)
+    @GET
+    @Path("/" + RestDocumentDto.FIELD_EXT_ID + "={" + PATH_PARAM_EXT_ID + "}/"
+            + PATH_SUB_PDF)
+    @Produces(MimeTypeEnum.MIME_APPLICATION_PDF)
+    public Response getDocumentPdfByExtId(//
+            @PathParam(PATH_PARAM_EXT_ID) final String externalId) {
+
+        return this.getDocumentPdfRsp(DOCLOG_DAO.findByExtId(externalId));
+    }
+
+    /**
+     * @param doc
+     *            {@link DocLog}, can be {@code null}.
+     * @return REST response.
+     */
+    private Response getDocumentPdfRsp(final DocLog doc) {
+
+        try {
+            final ResponseBuilder rsp;
+
+            if (doc == null) {
+                rsp = Response.noContent();
+            } else {
+                File file = null;
+                try {
+                    file = DOCSTORE_SERVICE
+                            .retrievePdf(DocStoreTypeEnum.ARCHIVE, doc);
+                } catch (DocStoreException e) {
+                    file = DOCSTORE_SERVICE
+                            .retrievePdf(DocStoreTypeEnum.JOURNAL, doc);
+                }
+                rsp = downloadPdf(file);
+            }
+            return rsp.build();
+
+        } catch (Exception e) {
+            LOGGER.error("{}: {}", e.getClass().getName(), e.getMessage());
+            throw new WebApplicationException(e.getMessage());
+        }
+    }
+
+    /**
+     * Prints a document.
+     *
+     * @param authString
+     *            Basic authentication string.
+     * @param istr
+     *            File input stream.
+     * @param fileDetail
+     *            Meta data.
+     * @param queueName
+     *            If {@code null}, {@link ReservedIppQueueEnum#WEBSERVICE} is
+     *            used.
+     * @param jsonIppOptions
+     *            JSON string with IPP options.
+     * @return {@link Response} with string message.
+     * @throws Exception
+     *             If error.
+     */
+    @POST
+    @Path("/" + PATH_SUB_PRINT)
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response printDocument(//
+            @HeaderParam(HttpAuthenticationUtil.HEADER_AUTHORIZATION) //
+            final String authString, //
+            @FormDataParam(FORM_PARAM_FILE) final InputStream istr,
+            @FormDataParam(FORM_PARAM_FILE) //
+            final FormDataContentDisposition fileDetail,
+            @FormDataParam(FORM_PARAM_QUEUE) final String queueName,
+            @FormDataParam(FORM_PARAM_IPP_OPTIONS) //
+            final String jsonIppOptions) {
+
+        final String dispFileName =
+                StringUtils.defaultString(fileDetail.getFileName());
+
+        final String msgPfx = String.format("%s of document [%s]",
+                CommunityDictEnum.RESTFUL_PRINT.getWord(),
+                fileDetail.getFileName());
+
+        String userid = "";
+
+        try {
+            final User user = this.isUserAuthenticated(authString, msgPfx);
+            userid = user.getUserId();
+
+            //
+            final Long substQueueDbId;
+            if (queueName != null) {
+                final IppQueue queue = QUEUE_DAO.findByUrlPath(queueName);
+                if (queue == null) {
+                    return printDocumentWarn(Response.Status.NOT_MODIFIED,
+                            String.format(
+                                    "%s for user [%s] : " + "%s [%s] not found",
+                                    msgPfx, userid, FORM_PARAM_QUEUE,
+                                    queueName));
+                }
+                if (QUEUE_SERVICE.isReservedQueue(queueName)) {
+                    return printDocumentWarn(Response.Status.NOT_MODIFIED,
+                            String.format(
+                                    "%s for user [%s] : "
+                                            + "%s [%s] is a reserved queue.",
+                                    msgPfx, userid, FORM_PARAM_QUEUE,
+                                    queueName));
+                }
+                substQueueDbId = queue.getId();
+            } else {
+                substQueueDbId = null;
+            }
+            //
+            final RawPrintInData printInData;
+            if (jsonIppOptions != null) {
+                printInData = new RawPrintInData();
+                try {
+                    printInData.setIppAttr(
+                            JsonHelper.createStringMap(jsonIppOptions));
+                    INBOX_SERVICE.validateIppOptions(printInData);
+
+                } catch (IOException e) {
+                    return printDocumentWarn(Response.Status.NOT_MODIFIED,
+                            String.format(
+                                    "%s for user [%s] "
+                                            + "JSON error IPP options: %s",
+                                    msgPfx, userid, jsonIppOptions));
+                } catch (IppSyntaxException e) {
+                    return printDocumentWarn(Response.Status.NOT_MODIFIED,
+                            String.format("%s for user [%s] : %s", msgPfx,
+                                    userid, e.getMessage()));
+                }
+            } else {
+                printInData = null;
+            }
+
+            if (fileDetail.getFileName() == null) {
+                return printDocumentWarn(Response.Status.NOT_MODIFIED,
+                        String.format(
+                                "%s for user [%s] FAILED: no document name.",
+                                msgPfx, userid));
+            }
+
+            final DocContentTypeEnum contentType =
+                    DocContent.getContentTypeFromFile(dispFileName);
+            if (contentType == null) {
+                return printDocumentWarn(Response.Status.NOT_MODIFIED,
+                        String.format(
+                                "%s for user [%s] failed: "
+                                        + "unknown content type.",
+                                msgPfx, userid));
+            }
+
+            final DocContentPrintReq docContentPrintReq =
+                    new DocContentPrintReq();
+
+            docContentPrintReq.setContentType(contentType);
+            docContentPrintReq.setFileName(dispFileName);
+            docContentPrintReq.setPrintInData(printInData);
+            docContentPrintReq.setOriginatorEmail(null);
+            docContentPrintReq
+                    .setOriginatorIp(WebAppHelper.getClientIP(servletRequest));
+            docContentPrintReq.setPreferredOutputFont(null);
+            docContentPrintReq.setProtocol(DocLogProtocolEnum.HTTP);
+            docContentPrintReq.setTitle(dispFileName);
+
+            QUEUE_SERVICE.printDocContent(ReservedIppQueueEnum.WEBSERVICE,
+                    substQueueDbId, user.getUserId(), docContentPrintReq, istr);
+
+        } catch (RestAuthException e) {
+            return printDocumentWarn(Response.Status.UNAUTHORIZED,
+                    e.getMessage());
+        } catch (DocContentPrintException e) {
+            return printDocumentWarn(Response.Status.INTERNAL_SERVER_ERROR,
+                    String.format("%s for user [%s] failed: %s", msgPfx, userid,
+                            e.getMessage()));
+        } catch (UnavailableException e) {
+            return printDocumentWarn(Response.Status.SERVICE_UNAVAILABLE,
+                    String.format("%s for user [%s] failed: %s", msgPfx, userid,
+                            e.getMessage()));
+        }
+
+        final String msg = String.format("%s for user [%s]", msgPfx, userid);
+        AdminPublisher.instance().publish(PubTopicEnum.WEB_SERVICE,
+                PubLevelEnum.INFO, msg);
+        LOGGER.debug(msg);
+        return Response.ok().build();
+    }
+
+    /**
+     * Creates warning response for print request.
+     *
+     * @param status
+     *            Response status
+     * @param msg
+     *            Message.
+     * @return {@link Response}.
+     */
+    private Response printDocumentWarn(final Response.Status status,
+            final String msg) {
+        AdminPublisher.instance().publish(PubTopicEnum.WEB_SERVICE,
+                PubLevelEnum.WARN, msg);
+        LOGGER.warn(msg);
+        return Response.status(status).build();
+    }
+
+    /**
+     * @param documentType
+     *            Type of document.
+     * @param createdQte
+     *            Creation date-time QTE.
+     * @param createdLte
+     *            Creation date-time LTE.
+     * @param page
+     *            Zero-based offset in result set.
+     * @param limit
+     *            Max number of objects in result set.
+     * @param sort
+     *            Sorting clause.
+     * @return Result set: list of {@link RestDocumentDto} objects.
+     */
+    @RolesAllowed(RestAuthFilter.ROLE_ADMIN)
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDocuments(//
+            @DefaultValue("") @QueryParam(RestDocumentDto.FIELD_TYPE) //
+            final String documentType,
+            @DefaultValue("") @QueryParam(RestDocumentDto.FIELD_CREATED
+                    + FILTER_SFX_GTE) //
+            final String createdQte,
+            @DefaultValue("") @QueryParam(RestDocumentDto.FIELD_CREATED
+                    + FILTER_SFX_LTE) //
+            final String createdLte, //
+            @DefaultValue("1") @QueryParam(QUERY_PARAM_PAGE) //
+            final Integer page, //
+            @DefaultValue("5") @QueryParam(QUERY_PARAM_LIMIT) //
+            final Integer limit, //
+            @DefaultValue(SORT_PFX_ASC + RestDocumentDto.FIELD_CREATED) //
+            @QueryParam(QUERY_PARAM_SORT) final String sort) {
+
+        try {
+            // Note: the "+" prefix gets lost when using curl.
+            final boolean sortAscending = !sort.startsWith(SORT_PFX_DESC);
+
+            final DocLogDao.Type daoType;
+
+            if (StringUtils.isBlank(documentType)) {
+                daoType = DocLogDao.Type.ALL;
+            } else {
+                daoType = EnumUtils.getEnum(DocLogDao.Type.class,
+                        documentType.toUpperCase());
+            }
+            //
+            final DocLogPagerReq req = new DocLogPagerReq();
+            req.setPage(page);
+            req.setMaxResults(limit);
+
+            final DocLogPagerReq.Sort reqSort = new DocLogPagerReq.Sort();
+            reqSort.setField(DocLogPagerReq.Sort.FLD_DATE);
+            reqSort.setAscending(sortAscending);
+            req.setSort(reqSort);
+
+            final DocLogPagerReq.Select reqSelect = new DocLogPagerReq.Select();
+            reqSelect.setDocType(daoType);
+            req.setSelect(reqSelect);
+
+            final DocLogItem.AbstractQuery query =
+                    DocLogItem.createQuery(daoType);
+
+            final EntityManager em = DaoContextImpl.peekEntityManager();
+            final Long userId = null;
+            final List<DocLogItem> items =
+                    query.getListChunk(em, userId, req, Locale.US);
+
+            return Response.ok(RestDocumentDto.itemsToJSON(items)).build();
+
+        } catch (Exception e) {
+            LOGGER.error("{}: {}", e.getClass().getName(), e.getMessage());
+            throw new WebApplicationException(e.getMessage());
+        }
+    }
+
+    /**
+     *
+     * @param filePdf
+     *            PDF file.
+     * @return {@link ResponseBuilder}.
+     */
+    private ResponseBuilder downloadPdf(final File filePdf) {
+
+        final StreamingOutput output = new StreamingOutput() {
+
+            @Override
+            public void write(final java.io.OutputStream output)
+                    throws IOException, WebApplicationException {
+
+                try (InputStream istr = new FileInputStream(filePdf)) {
+                    final byte[] buffer = new byte[INPUT_STREAM_BUFFER_SIZE];
+                    int nBytes;
+                    while ((nBytes = istr.read(buffer)) >= 0) {
+                        output.write(buffer, 0, nBytes);
+                    }
+                    output.flush();
+                }
+            }
+        };
+
+        return Response.ok(output).header("content-disposition",
+                "attachment; filename = file.pdf");
+    }
+}

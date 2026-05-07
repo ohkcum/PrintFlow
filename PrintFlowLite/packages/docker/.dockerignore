@@ -1,0 +1,14 @@
+# PrintFlowLite Docker
+.git
+.gitignore
+*.log
+*.bak
+*.tmp
+.DS_Store
+Thumbs.db
+# Keep only Docker files
+!docker-compose.yml
+!Dockerfile
+!supervisord.conf
+!docker.env
+!README.md

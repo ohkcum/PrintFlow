@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<ul data-role="listview" data-inset="true">
+
+	<li data-role="list-divider">
+		<span wicket:id="title" />
+	</li>
+
+	<li>
+		<div data-role="collapsible" data-collapsed="true">
+
+			<h3 wicket:id="select-and-sort" />
+
+			<ul data-role="listview" data-inset="true">
+
+				<li>
+
+					<div class="ui-field-contain">
+						<label for="sp-user-select-group" wicket:id="prompt-group" />
+						<select name="sp-user-select-group" id="sp-user-select-group"
+							data-native-menu="true" data-mini="true">
+							<wicket:panel wicket:id="option-list-groups">
+								<option value="the-key" wicket:id="option-group"></option>
+							</wicket:panel>
+						</select>
+					</div>
+
+					<div class="ui-field-contain">
+						<label for="sp-user-id-containing-text"
+							wicket:id="prompt-id-containing-text" />
+						<input type="text" id="sp-user-id-containing-text" value=""
+							maxlength="128" data-clear-btn="true" autocomplete="off"
+							autocorrect="off" autocapitalize="off" spellcheck="false" />
+					</div>
+
+					<div class="ui-field-contain">
+						<label for="sp-user-email-containing-text"
+							wicket:id="prompt-email-containing-text" />
+						<input type="text" id="sp-user-email-containing-text" value=""
+							maxlength="128" data-clear-btn="true" autocomplete="off"
+							autocorrect="off" autocapitalize="off" spellcheck="false" />
+					</div>
+
+					<div class="ui-field-contain">
+						<fieldset data-role="controlgroup" data-type="horizontal"
+							class="ui-mini sp-jqm-fieldset-radio">
+
+							<legend wicket:id="prompt-user-type" />
+
+							<label for="sp-user-select-type-all">-</label>
+							<input type="radio" name="sp-user-select-type"
+								id="sp-user-select-type-all" value="" checked="checked" />
+
+							<label for="sp-user-select-type-person"
+								wicket:id="user-type-person" />
+							<input type="radio" name="sp-user-select-type"
+								id="sp-user-select-type-person" value="1" />
+
+							<label for="sp-user-select-type-abstract"
+								wicket:id="user-type-abstract" />
+							<input type="radio" name="sp-user-select-type"
+								id="sp-user-select-type-abstract" value="0" />
+
+						</fieldset>
+					</div>
+
+					<div class="ui-field-contain">
+						<fieldset data-role="controlgroup" data-type="horizontal"
+							class="ui-mini sp-jqm-fieldset-radio">
+
+							<legend wicket:id="prompt-user-role" />
+
+							<label for="sp-user-select-role-all">-</label>
+							<input type="radio" name="sp-user-select-role"
+								id="sp-user-select-role-all" value="" checked="checked" />
+
+							<label for="sp-user-select-role-admin"
+								wicket:id="user-role-admin" />
+							<input type="radio" name="sp-user-select-role"
+								id="sp-user-select-role-admin" value="1" />
+
+							<label for="sp-user-select-role-user" wicket:id="user-role-user" />
+							<input type="radio" name="sp-user-select-role"
+								id="sp-user-select-role-user" value="0" />
+
+						</fieldset>
+					</div>
+
+					<div class="ui-field-contain">
+						<fieldset data-role="controlgroup" data-type="horizontal"
+							class="ui-mini sp-jqm-fieldset-radio">
+
+							<legend wicket:id="prompt-user-status" />
+
+							<label for="sp-user-select-status-all">-</label>
+							<input type="radio" name="sp-user-select-status"
+								id="sp-user-select-status-all" checked="checked" value="" />
+
+							<label for="sp-user-select-status-enabled"
+								wicket:id="user-status-enabled" />
+							<input type="radio" name="sp-user-select-status"
+								id="sp-user-select-status-enabled" value="1" />
+
+							<label for="sp-user-select-status-disabled"
+								wicket:id="user-status-disabled" />
+							<input type="radio" name="sp-user-select-status"
+								id="sp-user-select-status-disabled" value="0" />
+
+						</fieldset>
+					</div>
+
+					<div class="ui-field-contain">
+						<fieldset data-role="controlgroup" data-type="horizontal"
+							class="ui-mini sp-jqm-fieldset-radio">
+
+							<legend wicket:id="prompt-user-deleted" />
+
+							<label for="sp-user-select-deleted-all">-</label>
+							<input type="radio" name="sp-user-select-deleted"
+								id="sp-user-select-deleted-all" value="" />
+
+							<label for="sp-user-select-deleted-y" wicket:id="user-deleted-y" />
+							<input type="radio" name="sp-user-select-deleted"
+								id="sp-user-select-deleted-y" value="1" />
+
+							<label for="sp-user-select-deleted-n" wicket:id="user-deleted-n" />
+							<input type="radio" name="sp-user-select-deleted"
+								id="sp-user-select-deleted-n" value="0" checked="checked" />
+
+						</fieldset>
+					</div>
+
+					<wicket:enclosure child="prompt-user-registration">
+						<div class="ui-field-contain">
+							<fieldset data-role="controlgroup" data-type="horizontal"
+								class="ui-mini sp-jqm-fieldset-radio">
+
+								<legend wicket:id="prompt-user-registration" />
+
+								<label for="sp-user-select-registration-disabled">-</label>
+								<input type="radio" name="sp-user-select-registration"
+									id="sp-user-select-registration-disabled" value="" checked="checked" />
+
+								<label for="sp-user-select-registration-enabled"
+									wicket:id="user-registration-requests" />
+								<input type="radio" name="sp-user-select-registration"
+									id="sp-user-select-registration-enabled" value="1" />
+
+							</fieldset>
+						</div>
+					</wicket:enclosure>
+				</li>
+
+				<li>
+					<div class="ui-field-contain">
+						<fieldset data-role="controlgroup" data-type="horizontal"
+							class="ui-mini sp-jqm-fieldset-radio">
+
+							<legend wicket:id="prompt-sort-by" />
+
+							<label for="sp-user-sort-by-id" wicket:id="sort-by-id" />
+							<input type="radio" name="sp-user-sort-by"
+								id="sp-user-sort-by-id" checked="checked" value="id" />
+
+							<label for="sp-user-sort-by-email" wicket:id="sort-by-email" />
+							<input type="radio" name="sp-user-sort-by"
+								id="sp-user-sort-by-email" value="email" />
+
+							<label for="sp-user-sort-by-activity"
+								wicket:id="sort-by-activity" />
+							<input type="radio" name="sp-user-sort-by"
+								id="sp-user-sort-by-activity" value="activity" />
+
+							<label for="sp-user-sort-dir-asc" wicket:id="sort-asc" />
+							<input type="radio" name="sp-user-sort-dir"
+								id="sp-user-sort-dir-asc" checked="checked" />
+
+							<label for="sp-user-sort-dir-desc" wicket:id="sort-desc" />
+							<input type="radio" name="sp-user-sort-dir"
+								id="sp-user-sort-dir-desc" />
+
+						</fieldset>
+					</div>
+				</li>
+
+				<li>
+					<div data-role="controlgroup" data-type="horizontal">
+						<button id="button-users-apply"
+							class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-check"
+							wicket:id="button-apply" />
+						<button id="button-users-default"
+							class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-recycle"
+							wicket:id="button-default" />
+						<wicket:panel wicket:id="report-button-panel" />
+						<button
+							class="ui-btn ui-btn-inline ui-btn-icon-notext ui-icon-minus sp-collapse">&nbsp;</button>
+					</div>
+				</li>
+			</ul>
+		</div>
+	</li>
+
+	<wicket:enclosure child="button-new">
+		<li>
+			<div>
+				<button id="button-create-user" wicket:id="button-new"
+					class="ui-btn ui-btn-inline ui-mini ui-btn-icon-left ui-icon-edit" />
+			</div>
+		</li>
+	</wicket:enclosure>
+
+	<wicket:enclosure child="warn-not-ready-to-use">
+		<li>
+			<div>
+				<span class="sp-txt-warn sp-txt-wrap"
+					wicket:id="warn-not-ready-to-use" />
+			</div>
+		</li>
+	</wicket:enclosure>
+
+	<li id="sp-user-list-page"></li>
+
+</ul>
+</html>

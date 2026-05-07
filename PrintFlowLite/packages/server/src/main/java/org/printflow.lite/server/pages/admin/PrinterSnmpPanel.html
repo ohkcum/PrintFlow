@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+    <!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<wicket:panel>
+
+	<span class="" wicket:id="marker-bar"
+		style="padding: 0px 3px 0px 3px; background-color: white; border-right: 1px silver solid;"
+		sparkType="bar" sparkBarWidth="5" sparkChartRangeMin="0"
+		sparkChartRangeMax="100" sparkColorMap="[]" />
+
+	<span wicket:id="date" />
+
+	<wicket:enclosure child="btn-refresh">
+		<a wicket:id="btn-refresh" class="sp-printer-snmp-refresh"
+			data-PrintFlowLite="printer-id" title="refresh">&nbsp;<img
+				src="/glyphicons/glyphicons_081_refresh.png"
+				class="sp-snmp-refresh-mini" />&nbsp;
+		</a>
+	</wicket:enclosure>
+
+	<wicket:enclosure child="vendor"> &bull; <span
+			wicket:id="vendor" />
+	</wicket:enclosure>
+	<wicket:enclosure child="model"> &bull; <span
+			wicket:id="model" />
+	</wicket:enclosure>
+	<wicket:enclosure child="serial"> &bull; <span
+			wicket:id="serial" />
+	</wicket:enclosure>
+
+	<wicket:enclosure child="markers">
+	&bull; <span wicket:id="supplies" />
+		<span wicket:id="markers" />
+	</wicket:enclosure>
+
+	<wicket:enclosure child="states">
+		&bull; <span class="sp-txt-warn" wicket:id="states" />
+	</wicket:enclosure>
+
+</wicket:panel>
+
+</html>

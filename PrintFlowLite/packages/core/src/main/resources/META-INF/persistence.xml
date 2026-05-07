@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-FileCopyrightText: (c) 2020 Datraverse BV <info@datraverse.com> -->
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<persistence version="2.1"
+    xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
+
+    <persistence-unit name="PrintFlowLite"
+        transaction-type="RESOURCE_LOCAL">
+
+        <properties>
+
+            <!-- Properties are set in Java code
+            <property name="javax.persistence.jdbc.driver"
+                value="org.apache.derby.jdbc.EmbeddedDriver" />
+            <property name="javax.persistence.jdbc.user"
+                value="" />
+            <property name="javax.persistence.jdbc.password"
+                value="" />
+            <property name="javax.persistence.jdbc.url"
+                value="jdbc:derby:${server.home}/data/internal/Derby" />
+
+            <property name="hibernate.dialect" value="org.hibernate.dialect.DerbyTenSevenDialect"/>
+            <property name="hibernate.max_fetch_depth"
+                value="3" />
+            -->
+
+            <!-- stdout logging: DEVELOPMENT MODE ONLY
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+            <property name="hibernate.use_sql_comments" value="true"/>
+            -->
+
+        </properties>
+    </persistence-unit>
+</persistence>

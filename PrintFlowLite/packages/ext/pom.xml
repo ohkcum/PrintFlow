@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com> -->
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.printflow.lite</groupId>
+    <artifactId>printflowlite-ext</artifactId>
+    <version>1.7.0</version>
+    <name>PrintFlowLite Extension Interface</name>
+    <properties>
+        <LICENSE_NAME>GNU Affero General Public License (AGPL)</LICENSE_NAME>
+        <LICENSE_URL>https://www.gnu.org/licenses/agpl-3.0.txt</LICENSE_URL>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+    <licenses>
+        <license>
+            <name>${LICENSE_NAME}</name>
+            <url>${LICENSE_URL}</url>
+        </license>
+    </licenses>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.1</version>
+                <configuration>
+                    <!-- Prevent: "Error: Could not find or load main class 
+                        org.apache.maven.surefire.booter.ForkedBooter" -->
+                    <useSystemClassLoader>false</useSystemClassLoader>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <!-- <optimize>true</optimize> <debug>true</debug> -->
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <description>PrintFlowLite is a Free Software Solution that uses Open Standards and Commodity Hardware for Secure Pull-Printing, Pay-Per-Print, Delegated Print, Job Ticketing, Auditing and PDF Creation.</description>
+    <url>https://printflowlite.local</url>
+    <organization>
+        <name>Datraverse B.V.</name>
+        <url>https://www.datraverse.com</url>
+    </organization>
+    <issueManagement>
+        <url>https://github.com/YOUR_GITHUB/PrintFlowLite/issues</url>
+    </issueManagement>
+</project>

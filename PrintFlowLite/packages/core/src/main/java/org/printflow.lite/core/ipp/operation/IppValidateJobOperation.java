@@ -1,0 +1,242 @@
+/*
+ * This file is part of the PrintFlowLite project <https://printflowlite.local>.
+ * Copyright (c) 2020 Datraverse B.V.
+ * Author: Rijk Ravestein.
+ *
+ * SPDX-FileCopyrightText: © 2020 Datraverse B.V. <info@datraverse.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For more information, please contact Datraverse B.V. at this
+ * address: info@datraverse.com
+ */
+
+package org.printflow.lite.core.ipp.operation;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import org.printflow.lite.core.cometd.AdminPublisher;
+import org.printflow.lite.core.cometd.PubLevelEnum;
+import org.printflow.lite.core.cometd.PubTopicEnum;
+import org.printflow.lite.core.concurrent.ReadWriteLockEnum;
+import org.printflow.lite.core.dao.helpers.IppQueueHelper;
+import org.printflow.lite.core.ipp.IppProcessingException;
+import org.printflow.lite.core.jpa.IppQueue;
+import org.printflow.lite.core.util.Messages;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ *
+ * @author Rijk Ravestein
+ *
+ */
+public final class IppValidateJobOperation extends AbstractIppOperation {
+
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(IppValidateJobOperation.class);
+
+    private final IppValidateJobReq request;
+    private final IppValidateJobRsp response;
+
+    private final IppQueue queue;
+
+    /** */
+    private final String authenticatedUser;
+
+    /**
+     * If {@code true}, the trustedIppClientUserId overrules the requesting
+     * user.
+     */
+    private final boolean isAuthUserIppRequester;
+
+    /** */
+    private final String remoteAddr;
+
+    /**
+     *
+     * @param ippQueue
+     *            The print queue.
+     * @param authUser
+     *            The authenticated user id associated with the IPP client. If
+     *            {@code null} there is NO authenticated user.
+     * @param isAuthUserIppReq
+     *            If {@code true}, the authUser overrules the IPP requesting
+     *            user.
+     * @param ctx
+     *            The operation context.
+     */
+    public IppValidateJobOperation(final IppQueue ippQueue,
+            final String authUser, final boolean isAuthUserIppReq,
+            final IppOperationContext ctx) {
+
+        this.remoteAddr = ctx.getRemoteAddr();
+        this.queue = ippQueue;
+
+        this.authenticatedUser = authUser;
+        this.isAuthUserIppRequester = isAuthUserIppReq;
+
+        this.request = new IppValidateJobReq();
+        this.response = new IppValidateJobRsp();
+    }
+
+    public IppQueue getQueue() {
+        return queue;
+    }
+
+    public String getRemoteAddr() {
+        return this.remoteAddr;
+    }
+
+    @Override
+    protected void process(final InputStream istr, final OutputStream ostr)
+            throws IppProcessingException {
+        /*
+         * IMPORTANT: we want to give a response in ALL cases. When an exception
+         * occurs, the response will act in such a way that the client will not
+         * try again (because we assume that the exception will re-occur when
+         * re-tried, leading to an end-less chain of trials).
+         */
+
+        boolean isDbReadLock = false;
+
+        /*
+         * Step 0.
+         */
+        try {
+            ReadWriteLockEnum.DATABASE_READONLY.tryReadLock();
+            isDbReadLock = true;
+        } catch (Exception e) {
+            throw new IppProcessingException(
+                    IppProcessingException.StateEnum.UNAVAILABLE,
+                    this.createMsg(e));
+        }
+
+        try {
+            /*
+             * Step 1.
+             */
+            try {
+                request.processAttributes(this, istr);
+            } catch (IOException e) {
+                LOGGER.error(e.getMessage(), e);
+                request.setDeferredException(new IppProcessingException(
+                        IppProcessingException.StateEnum.INTERNAL_ERROR,
+                        this.createMsg(e)));
+            }
+            /*
+             * Step 2.
+             *
+             * Since the request.process(istr) is empty, we can skip this step.
+             */
+
+            /*
+             * Step 3.
+             */
+            try {
+                response.process(this, request, ostr);
+            } catch (IOException e) {
+                LOGGER.error(e.getMessage(), e);
+                request.setDeferredException(new IppProcessingException(
+                        IppProcessingException.StateEnum.INTERNAL_ERROR,
+                        this.createMsg(e)));
+            }
+
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            request.setDeferredException(new IppProcessingException(
+                    IppProcessingException.StateEnum.INTERNAL_ERROR,
+                    this.createMsg(e)));
+        } finally {
+            if (isDbReadLock) {
+                ReadWriteLockEnum.DATABASE_READONLY.setReadLock(false);
+            }
+        }
+
+        /*
+         * Step 4: deferred exception? or not allowed to print?
+         */
+        if (request.hasDeferredException()) {
+
+            String userid = request.getRequestingUserName();
+
+            if (request.getUserDb() != null) {
+                userid = request.getUserDb().getUserId();
+            }
+
+            PubLevelEnum pubLevel;
+            String pubMessage;
+
+            pubLevel = PubLevelEnum.ERROR;
+            pubMessage = request.getDeferredException().getMessage();
+
+            AdminPublisher.instance().publish(PubTopicEnum.USER, pubLevel,
+                    localize("pub-user-print-in-denied", userid,
+                            IppQueueHelper.uiPath(queue), this.remoteAddr,
+                            pubMessage));
+
+            throw request.getDeferredException();
+        }
+    }
+
+    /**
+     * Return a localized message string. IMPORTANT: The locale from the
+     * application is used.
+     *
+     * @param key
+     *            The key of the message.
+     * @param args
+     *            The placeholder arguments for the message template.
+     *
+     * @return The message text.
+     */
+    private String localize(final String key, final String... args) {
+        return Messages.getMessage(getClass(), key, args);
+    }
+
+    /**
+     * Is the remoteAddr (client) and requesting user allowed to print?
+     *
+     * @return {@code true} if remoteAddr (client) and requesting user are
+     *         allowed to print to this queue.
+     */
+    public boolean isAuthorized() {
+        return (this.queue.getTrusted() || getAuthenticatedUser() != null)
+                && request.isTrustedUser();
+    }
+
+    /**
+     * Gets the trusted user id. This is either the Person currently
+     * authenticated in User WebApp at same IP-address as the job was issued
+     * from, or an authenticated user from Internet Print.
+     *
+     * @return {@code null} if no user is authenticated.
+     */
+    public String getAuthenticatedUser() {
+        return authenticatedUser;
+    }
+
+    /**
+     * @return If {@code true}, the
+     *         {@link IppValidateJobOperation#getAuthenticatedUser()} overrules
+     *         the requesting user.
+     */
+    public boolean isAuthUserIppRequester() {
+        return isAuthUserIppRequester;
+    }
+
+}

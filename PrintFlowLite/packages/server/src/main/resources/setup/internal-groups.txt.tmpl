@@ -1,0 +1,65 @@
+#
+# This file is part of the PrintFlowLite project <https://www.PrintFlowLite.org>.
+# Copyright (c) 2011-2020 Datraverse B.V.
+# Author: Rijk Ravestein.
+#
+# SPDX-FileCopyrightText: 2011-2020 Datraverse B.V. <info@datraverse.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+# For more information, please contact Datraverse B.V. at this
+# address: info@datraverse.com
+#
+# -----------------------------------------------------------------------------
+#                       THIS IS A TEMPLATE FILE 
+#
+# Copy this file to "internal-groups.txt" and add groups as explained below.
+# -----------------------------------------------------------------------------
+#
+# This file defines custom groups with existing users as members. The groups 
+# are available in the application in addition to the groups provided by the  
+# selected external user source. This is useful in the following situations:
+#
+#   * You have configured the system to import users from a source that does 
+#     not support groups.
+#
+#   * You do not have permission to create new groups in the user source.
+#
+#   * You'd like to create small groups just for use within PrintFlowLite and it's
+#     not appropriate to great a new group in the user source.
+#
+# Groups defined in this file can be added to the application just like any 
+# user source group.
+#
+# Groups defined in this file should have a name distinctive to any groups
+# defined in your external user source. If the group names clash, this file 
+# takes precedence.
+#
+# The format of the lines in this file is as follows:
+#
+#   GroupA: username1
+#   GroupA: username2
+#   GroupB: username1
+#
+# ... meaning <group> has a member <username>.
+#
+# In this case, username1 is a  member of both GroupA and GroupB, while 
+# username2 is a member only of GroupA. Users may be a member of multiple 
+# groups by repeating the username in subsequent lines with different groups.
+#
+# The <group> and <username> may be separated by one of these characters: 
+# : (semicolon), = (equals), or TAB.
+# 
+# END-OF-COMMENT: Add group definitions below this line.

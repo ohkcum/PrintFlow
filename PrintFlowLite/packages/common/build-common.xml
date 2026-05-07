@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This file is part of the PrintFlowLite project <https://printflowlite.local>.
+Copyright (c) 2011-2024 Datraverse B.V.
+Author: Rijk Ravestein.
+
+SPDX-FileCopyrightText: 2011-2024 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+For more information, please contact Datraverse B.V. at this
+address: info@datraverse.com
+-->
+<project name="printflowlite-common" basedir=".">
+
+	<description>Common settings for all printflowlite modules</description>
+
+	<echo message="Using settings from printflowlite-common." />
+
+	<!-- .................................................................. -->
+	<!-- IMPORTANT: This is the one place to set common VersionInfo         -->
+	<!-- properties for all PrintFlowLite Java modules.                          -->
+	<!-- Note that all properties are prefixed with _common.                -->
+	<!-- .................................................................. -->
+	<property name="_common.product" value="printflowlite" />
+	<property name="version.script" value="${ant.file}/../VERSION.sh" />
+
+	<!-- Set default version values (fallback if script execution fails) -->
+	<property name="_common.version.major" value="1" />
+	<property name="_common.version.minor" value="7" />
+	<property name="_common.version.revision" value="0" />
+	<property name="_common.version.status" value="-rc" />
+	<property name="_common.db.schema.version.major" value="1" />
+	<property name="_common.db.schema.version.minor" value="10" />
+	<property name="_common.dir.layout.version.major" value="1" />
+	<property name="_common.dir.layout.version.minor" value="0" />
+
+	<!-- Try to execute VERSION.sh script to override defaults (will fail silently in Docker) -->
+	<exec executable="bash" outputproperty="_common.version.major" failonerror="false">
+		<arg value="${version.script}" />
+		<arg value="major" />
+	</exec>
+	<exec executable="bash" outputproperty="_common.version.minor" failonerror="false">
+		<arg value="${version.script}" />
+		<arg value="minor" />
+	</exec>
+	<exec executable="bash" outputproperty="_common.version.revision" failonerror="false">
+		<arg value="${version.script}" />
+		<arg value="revision" />
+	</exec>
+	<exec executable="bash" outputproperty="_common.version.status" failonerror="false">
+		<arg value="${version.script}" />
+		<arg value="status" />
+	</exec>
+	<exec executable="date" outputproperty="_common.version.build">
+		<arg line="+%Y%m%d" />
+	</exec>
+	<exec executable="bash" outputproperty="_common.db.schema.version.major" failonerror="false">
+		<arg value="${version.script}" />
+		<arg value="db-schema-major" />
+	</exec>
+	<exec executable="bash" outputproperty="_common.db.schema.version.minor" failonerror="false">
+		<arg value="${version.script}" />
+		<arg value="db-schema-minor" />
+	</exec>
+	<exec executable="bash" outputproperty="_common.dir.layout.version.major" failonerror="false">
+		<arg value="${version.script}" />
+		<arg value="dir-layout-major" />
+	</exec>
+	<exec executable="bash" outputproperty="_common.dir.layout.version.minor" failonerror="false">
+		<arg value="${version.script}" />
+		<arg value="dir-layout-minor" />
+	</exec>
+	<exec executable="date" outputproperty="_common.build.epoch.seconds">
+		<arg line="+%s" />
+	</exec>
+
+</project>

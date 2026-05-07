@@ -1,0 +1,98 @@
+/*
+ * This file is part of the PrintFlowLite project <https://printflowlite.local>.
+ * Copyright (c) 2020 Datraverse B.V.
+ * Author: Rijk Ravestein.
+ *
+ * SPDX-FileCopyrightText: © 2020 Datraverse B.V. <info@datraverse.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For more information, please contact Datraverse B.V. at this
+ * address: info@datraverse.com
+ */
+package org.printflow.lite.core.job;
+
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.quartz.UnableToInterruptJobException;
+import org.printflow.lite.core.cometd.AdminPublisher;
+import org.printflow.lite.core.cometd.PubLevelEnum;
+import org.printflow.lite.core.cometd.PubTopicEnum;
+import org.printflow.lite.core.concurrent.ReadWriteLockEnum;
+import org.printflow.lite.core.config.ConfigManager;
+import org.printflow.lite.core.jpa.tools.DbTools;
+import org.printflow.lite.core.util.AppLogHelper;
+import org.slf4j.LoggerFactory;
+
+/**
+ *
+ * @author Rijk Ravestein
+ *
+ */
+public final class DbDerbyOptimize extends AbstractJob {
+
+    @Override
+    protected void onInterrupt() throws UnableToInterruptJobException {
+        // noop
+    }
+
+    @Override
+    protected void onInit(final JobExecutionContext ctx) {
+        ReadWriteLockEnum.DATABASE_READONLY.setWriteLock(true);
+    }
+
+    @Override
+    protected void onExit(final JobExecutionContext ctx) {
+        ReadWriteLockEnum.DATABASE_READONLY.setWriteLock(false);
+    }
+
+    @Override
+    protected void onExecute(final JobExecutionContext ctx)
+            throws JobExecutionException {
+
+        if (!ConfigManager.isDbInternal()) {
+            return;
+        }
+
+        final AdminPublisher publisher = AdminPublisher.instance();
+
+        /*
+         *
+         */
+        publisher.publish(PubTopicEnum.DB, PubLevelEnum.INFO,
+                localizeSysMsg("DbDerbyOptimize.start"));
+
+        String msg = null;
+        PubLevelEnum level = PubLevelEnum.INFO;
+
+        try {
+
+            DbTools.optimizeDbInternal();
+            msg = AppLogHelper.logInfo(getClass(), "DbDerbyOptimize.success");
+
+        } catch (Exception e) {
+
+            LoggerFactory.getLogger(this.getClass()).error(e.getMessage(), e);
+
+            level = PubLevelEnum.ERROR;
+            msg = AppLogHelper.logError(getClass(), "DbDerbyOptimize.error",
+                    e.getMessage());
+        }
+
+        publisher.publish(PubTopicEnum.DB, level, msg);
+
+    }
+
+}

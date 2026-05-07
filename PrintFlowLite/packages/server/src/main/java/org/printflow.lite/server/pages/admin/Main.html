@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<div class="ui-content">
+
+	<div class="content-secondary">
+		<!-- -->
+		<div id="jqm-homeheader">
+			<a wicket:id="jqm-logo-link" class="sp-plain-link" href="" title=""
+				target="_blank">
+				<h1 id="jqm-logo">
+					<img src="images/PrintFlowLite-logo.png" alt="PrintFlowLite" />
+				</h1>
+				<p>
+					<wicket:message key="txt-logo-subtext" />
+				</p>
+			</a>
+		</div>
+		<p class="intro">
+			<strong><wicket:message key="txt-welcome-salutation" />.</strong>
+			&nbsp;
+			<wicket:message key="txt-welcome" />
+		</p>
+
+		<wicket:remove>
+			<!-- NOTE 
+            Using 'href' attribute does NOT work since when, in JavaScript, we 
+            use $(this).attr('href') we get e.g. '../Dashboard' back, so we use
+            the 'name' attribute, which gives us the plain 'Dashboard' back.  
+            -->
+		</wicket:remove>
+
+		<ul data-role="listview" data-inset="true" id="sp-a-menu">
+
+			<wicket:enclosure child="cat-dashboard">
+				<li data-icon="info">
+					<a href="#" class="PrintFlowLite-detail" name="Dashboard"
+						wicket:id="cat-dashboard" />
+				</li>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="cat-users">
+				<li data-icon="user">
+					<a href="#" class="PrintFlowLite-detail-prev" name="UsersBase"
+						wicket:id="cat-users" />
+				</li>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="cat-groups">
+				<li data-icon="user">
+					<a href="#" class="PrintFlowLite-detail-prev" name="UserGroupsBase"
+						wicket:id="cat-groups" />
+				</li>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="cat-accounts">
+				<li data-icon="tag">
+					<a href="#" class="PrintFlowLite-detail-prev" name="AccountsBase"
+						wicket:id="cat-accounts" />
+				</li>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="cat-queues">
+				<li data-icon="gear">
+					<a href="#" class="PrintFlowLite-detail-prev" name="QueuesBase"
+						wicket:id="cat-queues" />
+				</li>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="cat-printers">
+				<li data-icon="gear">
+					<a href="#" class="PrintFlowLite-detail-prev" name="PrintersBase"
+						wicket:id="cat-printers" />
+				</li>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="cat-devices">
+				<li data-icon="gear">
+					<a href="#" class="PrintFlowLite-detail-prev" name="DevicesBase"
+						wicket:id="cat-devices" />
+				</li>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="cat-reports">
+				<li data-icon="gear">
+					<a href="#" class="PrintFlowLite-detail-prev" name="Reports"
+						wicket:id="cat-reports" />
+				</li>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="cat-options">
+				<li data-icon="gear">
+					<a href="#" class="PrintFlowLite-detail" name="Options"
+						wicket:id="cat-options" />
+				</li>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="cat-doclog">
+				<li data-icon="info">
+					<a href="#" class="PrintFlowLite-detail-prev" name="DocLogBase"
+						wicket:id="cat-doclog" />
+				</li>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="cat-applog">
+				<li data-icon="alert">
+					<a href="#" class="PrintFlowLite-detail-prev" name="AppLogBase"
+						wicket:id="cat-applog" />
+				</li>
+			</wicket:enclosure>
+
+			<wicket:enclosure child="cat-about">
+				<li data-icon="info">
+					<a href="#" class="PrintFlowLite-detail" name="About"
+						wicket:id="cat-about" />
+				</li>
+			</wicket:enclosure>
+
+			<li data-icon="power">
+				<a href="#" id="button-logout">
+					<span style="color: brown;"><wicket:message
+							key="button-logout" /></span>
+				</a>
+			</li>
+
+		</ul>
+	</div>
+	<div class="content-primary" id="sp-a-content" />
+</div>
+
+<a id="sp-a-footer" />
+
+<div data-role="footer" class="footer-docs sp-ui-footer"
+	data-position="fixed">
+
+	<div data-role="controlgroup" data-type="horizontal">
+		<a href="#sp-a-top"
+			class="sp-anchor ui-btn ui-btn-icon-notext ui-icon-home">
+			<wicket:message key="button-top" />
+		</a>
+		<a href="#sp-a-menu"
+			class="sp-anchor ui-btn ui-btn-icon-notext ui-icon-carat-u">
+			<wicket:message key="button-menu" />
+		</a>
+		<a href="#sp-a-content" id="sp-a-content-button"
+			class="sp-anchor ui-btn ui-btn-icon-notext ui-icon-arrow-u-r">
+			&nbsp;</a>
+		<a href="#sp-a-footer" id="sp-a-footer-button"
+			class="sp-anchor ui-btn ui-btn-icon-notext ui-icon-carat-d">
+			&nbsp;</a>
+		<a href="#sp-popup-main-action" data-rel="popup"
+			class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-icon-sp-more ui-btn-icon-notext">&nbsp;</a>
+
+		<div data-role="popup" id="sp-popup-main-action">
+			<ul data-role="listview" data-inset="true" style="min-width: 210px;">
+
+				<wicket:enclosure child="cat-vouchers">
+					<li data-icon="gear">
+						<a href="#" class="PrintFlowLite-detail-prev" name="AccountVoucherBase"
+							wicket:id="cat-vouchers" />
+					</li>
+				</wicket:enclosure>
+
+				<wicket:enclosure child="cat-config-editor">
+					<li data-icon="gear">
+						<a href="#" class="PrintFlowLite-detail-prev" name="ConfigPropBase"
+							wicket:id="cat-config-editor" />
+					</li>
+				</wicket:enclosure>
+
+				<li data-icon="info">
+					<a wicket:id="PrintFlowLite-manual-link" href="" target="_blank"/>
+				</li>
+				<li data-icon="info">
+					<a wicket:id="PrintFlowLite-org-link" href="" target="_blank" />
+				</li>
+			</ul>
+		</div>
+		<wicket:panel wicket:id="community-status-footer-panel" />
+	</div>
+</div>
+
+<div data-role="popup" data-position-to="window"
+	id="sp-sys-mode-change-popup" class="ui-content" />
+
+
+<wicket:remove>
+	<!-- 
+THIS POPUP MUST BE PRESENT IN EVERY PAGE AND DIALOG 
+-->
+</wicket:remove>
+<div data-role="popup" data-position-to="window"
+	class="sp-msg-popup ui-content" />
+
+</html>

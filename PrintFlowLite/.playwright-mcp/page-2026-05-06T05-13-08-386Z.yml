@@ -1,0 +1,27 @@
+- dialog [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - heading "Title" [level=3] [ref=e6]
+      - generic [ref=e7]: Sign in to administer this server.
+    - list [ref=e8]:
+      - listitem [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]: User Name
+          - textbox "User Name" [ref=e13]
+          - generic [ref=e14]: Password
+          - table [ref=e17]:
+            - rowgroup [ref=e18]:
+              - row [ref=e19]:
+                - cell [ref=e20]:
+                  - textbox "Password" [ref=e22]
+                - cell [ref=e23]:
+                  - button "Visibility" [ref=e24] [cursor=pointer]
+          - button "Login" [ref=e26] [cursor=pointer]
+    - paragraph
+    - generic [ref=e27]:
+      - link "About" [ref=e28] [cursor=pointer]:
+        - /url: "#"
+        - generic [ref=e29]: About
+      - link "Language" [ref=e31] [cursor=pointer]:
+        - /url: "#"
+    - paragraph

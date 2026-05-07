@@ -1,0 +1,5 @@
+SPDX-FileCopyrightText: 2011-2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: CC0-1.0
+Manifest-Version: 1.0
+Class-Path: 
+

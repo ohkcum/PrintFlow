@@ -1,0 +1,78 @@
+# =============================================================================
+# PrintFlowLite Docker Build & Test
+# =============================================================================
+# This file runs the full Maven build and test suite inside Docker.
+#
+# Usage:
+#   Build only:    docker compose -f docker-compose.build.yml build
+#   Build + Test:  docker compose -f docker-compose.build.yml up --abort-on-container-exit
+#   Test only:     docker compose -f docker-compose.build.yml up -d postgres && docker compose -f docker-compose.build.yml run --rm build mvn test
+#   Clean up:      docker compose -f docker-compose.build.yml down -v
+# =============================================================================
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: pfl-postgres-test
+    hostname: pfl-postgres-test
+    environment:
+      POSTGRES_DB: printflowlite
+      POSTGRES_USER: printflowlite
+      POSTGRES_PASSWORD: printflowlite
+    ports:
+      - "127.0.0.1:5443:5432"
+    volumes:
+      - pfl-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U printflowlite -d printflowlite"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - pfl-build-network
+    restart: unless-stopped
+
+  build:
+    build:
+      context: ../..
+      dockerfile: packages/docker/Dockerfile.build
+      args:
+        MAVEN_OPTS: -Xmx1024m
+    container_name: pfl-build-test
+    hostname: pfl-build-test
+    environment:
+      TZ: Europe/Amsterdam
+      DATABASE_URL: jdbc:postgresql://pfl-postgres-test:5432/printflowlite
+      DATABASE_USER: printflowlite
+      DATABASE_PASSWORD: printflowlite
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - pfl-build-network
+    restart: "no"
+    # Run both build and test by default
+    command: >
+      sh -c "
+        echo '========================================'
+        echo 'PrintFlowLite Docker Build & Test'
+        echo '========================================' &&
+        echo '' &&
+        echo '>>> Building all packages (skipping tests)...' &&
+        mvn clean install -DskipTests --batch-mode &&
+        echo '' &&
+        echo '>>> Building server WAR...' &&
+        mvn package -pl packages/server -DskipTests --batch-mode &&
+        echo '' &&
+        echo '========================================'
+        echo 'Build complete. Running tests...'
+        echo '========================================' &&
+        mvn test --batch-mode
+      "
+
+volumes:
+  pfl-postgres-data:
+
+networks:
+  pfl-build-network:
+    driver: bridge

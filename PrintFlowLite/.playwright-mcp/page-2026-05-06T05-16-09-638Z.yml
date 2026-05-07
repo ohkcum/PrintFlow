@@ -1,0 +1,76 @@
+- generic [ref=e36]:
+  - generic [ref=e38]:
+    - 'link "PrintFlowLite [Warning: Property for ''txt-logo-subtext'' not found]" [ref=e40] [cursor=pointer]':
+      - /url: https://printflowlite.local
+      - heading "PrintFlowLite" [level=1] [ref=e41]:
+        - img "PrintFlowLite" [ref=e42]
+      - paragraph [ref=e43]: "[Warning: Property for 'txt-logo-subtext' not found]"
+    - paragraph [ref=e44]:
+      - strong [ref=e45]: "[Warning: Property for 'txt-welcome-salutation' not found]."
+      - text: "[Warning: Property for 'txt-welcome' not found]"
+    - list [ref=e46]:
+      - listitem [ref=e48]:
+        - link "A Dashboard" [ref=e49] [cursor=pointer]:
+          - /url: "#"
+      - listitem [ref=e51]:
+        - link "A Users" [ref=e52] [cursor=pointer]:
+          - /url: "#"
+      - listitem [ref=e54]:
+        - link "A User Groups" [ref=e55] [cursor=pointer]:
+          - /url: "#"
+      - listitem [ref=e57]:
+        - link "A Accounts" [ref=e58] [cursor=pointer]:
+          - /url: "#"
+      - listitem [ref=e60]:
+        - link "A Queues" [ref=e61] [cursor=pointer]:
+          - /url: "#"
+      - listitem [ref=e63]:
+        - link "A Printers" [ref=e64] [cursor=pointer]:
+          - /url: "#"
+      - listitem [ref=e66]:
+        - link "A Devices" [ref=e67] [cursor=pointer]:
+          - /url: "#"
+      - listitem [ref=e69]:
+        - link "A Reports" [ref=e70] [cursor=pointer]:
+          - /url: "#"
+      - listitem [ref=e72]:
+        - link "A Options" [ref=e73] [cursor=pointer]:
+          - /url: "#"
+      - listitem [ref=e75]:
+        - link "A Documents" [ref=e76] [cursor=pointer]:
+          - /url: "#"
+      - listitem [ref=e78]:
+        - link "A Log" [ref=e79] [cursor=pointer]:
+          - /url: "#"
+      - listitem [ref=e81]:
+        - link "A About" [ref=e82] [cursor=pointer]:
+          - /url: "#"
+      - listitem [ref=e83]:
+        - 'link "[Warning: Property for ''button-logout'' not found]" [ref=e84] [cursor=pointer]':
+          - /url: "#"
+          - generic [ref=e85]: "[Warning: Property for 'button-logout' not found]"
+  - contentinfo [ref=e86]:
+    - generic [ref=e88]:
+      - 'link "[Warning: Property for ''button-top'' not found]" [ref=e89] [cursor=pointer]':
+        - /url: "#sp-a-top"
+      - 'link "[Warning: Property for ''button-menu'' not found]" [ref=e90] [cursor=pointer]':
+        - /url: "#sp-a-menu"
+      - link [ref=e91] [cursor=pointer]:
+        - /url: "#sp-a-content"
+      - link [ref=e92] [cursor=pointer]:
+        - /url: "#sp-a-footer"
+      - link [ref=e93] [cursor=pointer]:
+        - /url: "#sp-popup-main-action"
+      - generic [ref=e95]:
+        - button "PrintFlowLite Docker" [ref=e97] [cursor=pointer]
+        - button "admin" [ref=e99] [cursor=pointer]
+  - generic [ref=e102]:
+    - link "Close" [ref=e103] [cursor=pointer]:
+      - /url: "#"
+    - heading "undefined" [level=3] [ref=e104]
+    - paragraph [ref=e105]: You are still using the default admin password. Please change it now for security reasons.
+    - heading "· · · click to expand contents" [level=3] [ref=e107]:
+      - link "· · · click to expand contents" [ref=e108] [cursor=pointer]:
+        - /url: "#"
+        - text: · · ·
+        - generic [ref=e109]: click to expand contents

@@ -1,0 +1,46 @@
+# PrintFlowLite Monorepo
+
+This directory is the root of the PrintFlowLite git repository.
+Each package under `packages/` is a git submodule or independent module.
+
+## Quick Start
+
+```bash
+# Build all packages
+mvn clean install -DskipTests
+
+# Build specific package
+cd packages/server
+mvn clean package -DskipTests
+```
+
+## Package Directory Structure
+
+```
+PrintFlowLite/
+├── pom.xml              # Root Maven POM
+├── packages/
+│   ├── common/          # Shared library (org.printflow.lite.common)
+│   ├── core/            # Core business logic (org.printflow.lite.core)
+│   ├── ext/             # Extension interface (org.printflow.lite.ext)
+│   ├── server/          # Web Server (WAR)
+│   ├── client/          # Desktop Client
+│   ├── cups-notifier/   # CUPS Notifier (C++)
+│   └── ppd/             # PostScript Printer Driver
+├── MONOREPO.md          # Monorepo documentation
+└── README.md            # Main project readme
+```
+
+## Version
+
+Current version: 1.7.0
+DB Schema Version: 1.10
+
+## Tech Stack
+
+- Java EE (JDK 8+)
+- Apache Wicket
+- Jetty (embedded)
+- JPA / Hibernate
+- Apache Derby (embedded) or PostgreSQL
+- Maven

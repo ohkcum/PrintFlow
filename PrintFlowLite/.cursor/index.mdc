@@ -1,0 +1,33 @@
+---
+description: PrintFlowLite project — Kleosr autonomous workflow
+alwaysApply: true
+---
+
+# PrintFlowLite — Cursor Kleosr Workflow
+
+## Read These Files First
+
+At the start of every conversation and after every action, read and update these files:
+
+1. **`cursorkleosr/project_config.md`** — Project's long-term constitution: tech stack, architecture, coding patterns, conventions, and limitations. Set this up once; update only when something fundamental changes.
+
+2. **`cursorkleosr/workflow_state.md`** — The AI's dynamic brain. Tracks current phase (ANALYZE / BLUEPRINT / CONSTRUCT / VALIDATE), the plan, embedded rules, and a running log. Read it at the start of every action. Update it after every step.
+
+## How to Operate
+
+When the user gives a task:
+
+1. **ANALYZE** — Investigate the codebase. Read relevant files. Understand context and affected areas.
+2. **BLUEPRINT** — Write a detailed step-by-step plan in `workflow_state.md`. Set `Status: NEEDS_PLAN_APPROVAL` and wait for user confirmation.
+3. **CONSTRUCT** — After user approves, implement code following the plan exactly. Update `workflow_state.md` after each step.
+4. **VALIDATE** — Run `mvn clean compile -DskipTests` and `mvn test` to verify. Fix any errors.
+
+After each action, update the ## Log section in `workflow_state.md` with what was done, the result, and next steps.
+
+## Key Constraints
+
+- Follow `project_config.md` conventions: JPA entity patterns, REST service structure, package naming, exception handling, license headers.
+- Build commands: `mvn clean install` (full), `mvn clean package -DskipTests` (server only).
+- No TODOs, no placeholders, no incomplete code in the CONSTRUCT phase.
+- Match existing code style — new code must look like it was written by the same author.
+- Preserve AGPL license headers on existing files.

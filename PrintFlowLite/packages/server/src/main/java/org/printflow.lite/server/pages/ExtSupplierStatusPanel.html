@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+    <!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<wicket:panel>
+	<p class="sp-txt-wrap">
+		<wicket:enclosure child="extSupplierImg">
+			<img wicket:id="extSupplierImg" src="" height="12" />
+		</wicket:enclosure>
+		<span style="font-size: small;" wicket:id="extSupplier" />
+		<wicket:enclosure child="extStatus"> &bull; 
+            <wicket:enclosure child="thirdPartyImg">
+				<img wicket:id="thirdPartyImg" src="" height="12" />
+			</wicket:enclosure>
+			<span style="font-size: small;" wicket:id="extStatus" />
+			<wicket:enclosure child="extStatusText"> &bull;
+                <span style="font-size: small;"
+					wicket:id="extStatusText" />
+			</wicket:enclosure>
+		</wicket:enclosure>
+	</p>
+</wicket:panel>
+</html>

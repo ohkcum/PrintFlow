@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<div data-role="header" data-theme="b">
+	<h1>
+		<wicket:message key="title" />
+	</h1>
+</div>
+
+<div class="ui-content" id="content-configprop">
+
+	<ul data-role="listview">
+		<li>
+			<h3 id="config-prop-name"></h3>
+			<input wicket:id="input-text" type="text" id="config-prop-value"
+				value="" maxlength="512" autofocus />
+			<wicket:panel wicket:id="password-panel" />
+			<textarea wicket:id="input-textarea" name="textarea"
+				id="config-prop-value-multiline" />
+			<br />
+			<div>
+				<button id="button-save-configprop"
+					class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-check"
+					wicket:id="btn-ok" />
+				<a href="#" data-rel="back" data-direction="reverse"
+					class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-back"
+					id="button-cancel-configprop" wicket:id="btn-cancel" />
+			</div>
+		</li>
+	</ul>
+
+</div>
+
+<wicket:remove>
+	<!-- 
+THIS POPUP MUST BE PRESENT IN EVERY PAGE AND DIALOG 
+-->
+</wicket:remove>
+<div data-role="popup" data-position-to="window"
+	class="sp-msg-popup ui-content" />
+
+</html>

@@ -1,0 +1,609 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2024 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2024 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<ul data-role="listview" data-inset="true">
+
+	<li data-role="list-divider">
+		<wicket:message key="title" />
+	</li>
+
+	<li>
+		<div data-role="collapsible" data-collapsed="true">
+
+			<h3>
+				<wicket:message key="cat-version-info" />
+			</h3>
+			<div class="sp-txt-wrap">
+				<wicket:message key="cat-version-info-descript" />
+			</div>
+
+			<ul data-role="listview" data-inset="true">
+				<li>
+					<h3>
+						<wicket:message key="version-build" />
+					</h3>
+					<div class="sp-txt-info sp-txt-wrap" wicket:id="version-build" />
+				</li>
+				<li>
+					<h3>
+						<wicket:message key="version-date" />
+					</h3>
+					<div class="sp-txt-info sp-txt-wrap" wicket:id="version-date" />
+				</li>
+				<li>
+					<h3>
+						<wicket:message key="version-db" />
+					</h3>
+					<div class="sp-txt-info sp-txt-wrap" wicket:id="version-db" />
+				</li>
+				<li>
+					<h3>
+						<wicket:message key="version-db-schema" />
+					</h3>
+					<div class="sp-txt-info" wicket:id="version-db-schema" />
+				</li>
+				<li>
+					<h3>
+						<wicket:message wicket:id="version-dir-layout-header" />
+					</h3>
+					<div class="sp-txt-info" wicket:id="version-dir-layout" />
+				</li>
+			</ul>
+		</div>
+	</li>
+	<li>
+		<div data-role="collapsible" data-collapsed="true">
+
+			<h3>
+				<wicket:message key="cat-license-info" />
+			</h3>
+
+			<ul data-role="listview" data-inset="true">
+
+				<li>
+					<div class="sp-txt-wrap sp-txt-info">
+						<span wicket:id="app-license-name" /> is
+						<a class="sp-plain-link" href="https://opensource.org/"
+							target="_blank">OSI Certified Open Source Software</a>
+						, licensed under the
+						<a class="sp-plain-link"
+							href="https://www.gnu.org/licenses/agpl.html" target="_blank">GNU
+							Affero General Public License (AGPL)</a>
+						as published by the
+						<a class="sp-plain-link" href="https://www.fsf.org"
+							target="_blank">Free Software Foundation</a>
+						, either version&nbsp;3 of the License, or (at your option) any
+						later version.
+					</div>
+				</li>
+
+				<li>
+					<div class="sp-txt-wrap sp-txt-info" style="font-size: small;">
+						<span wicket:id="app-license-name-2" /> complies to the
+						<a wicket:id="gdpr-url" class="sp-plain-link" href=""
+							target="_blank">General Data Protection Regulation</a>
+						of the
+						<a class="sp-plain-link" wicket:id="eu-url" href=""
+							target="_blank">European Union</a>
+						.
+					</div>
+				</li>
+
+				<li>
+					<h3>Copyright</h3>
+					<div class="sp-txt-wrap sp-txt-info">
+						&copy; 2011-<span wicket:id="current-year"></span> by
+						<a class="sp-plain-link" href="" target="_blank"
+							wicket:id="app-copyright-owner-url" />
+					</div>
+				</li>
+			</ul>
+
+			<div class="sp-txt-wrap">
+				<a class="sp-plain-link ui-btn ui-corner-all ui-btn-inline ui-mini"
+					href="[]" target="_blank" wicket:id="PrintFlowLite-url" />
+				<a class="sp-plain-link ui-btn ui-corner-all ui-btn-inline ui-mini"
+					href="[]" target="_blank" wicket:id="PrintFlowLite-licenses-url" />
+				<a class="sp-plain-link ui-btn ui-corner-all ui-btn-inline ui-mini"
+					href="" target="_blank" wicket:id="PrintFlowLite-source-code-url" />
+			</div>
+		</div>
+	</li>
+
+	<li>
+		<div data-role="collapsible" data-collapsed="true">
+
+			<h3 id="cat-membership" wicket:id="cat-membership" />
+
+			<ul data-role="listview" data-inset="true">
+
+				<wicket:panel wicket:id="membership-details" />
+
+				<li>
+					<h3>
+						<wicket:message key="membership-participants" />
+					</h3>
+					<div wicket:id="membership-participants" />
+				</li>
+
+				<li>
+					<h3>
+						<wicket:message key="membership-users" />
+					</h3>
+					<div wicket:id="membership-users" />
+				</li>
+
+			</ul>
+
+			<wicket:enclosure child="button-import-membercard">
+				<a href="#page-membercard-upload"
+					wicket:id="button-import-membercard"
+					class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-arrow-u" />
+			</wicket:enclosure>
+
+		</div>
+
+	</li>
+
+	<li>
+		<div data-role="collapsible" data-collapsed="true">
+			<h3>
+				<wicket:message key="cat-support-info" />
+			</h3>
+			<ul data-role="listview" data-inset="true">
+				<li>
+					<h3>Community</h3>
+					<ul data-role="listview" data-inset="true">
+						<li>
+							<div>
+								<a class="sp-plain-link" href="" data-rel="external"
+									target="_blank" wicket:id="PrintFlowLite-community-url" />
+							</div>
+						</li>
+						<li>
+							<div>
+								<a class="sp-plain-link" href="" data-rel="external"
+									target="_blank" wicket:id="PrintFlowLite-wiki-url" />
+							</div>
+						</li>
+					</ul>
+					<h3>Members</h3>
+					<ul data-role="listview" data-inset="true">
+						<li>
+							<div>
+								<a class="sp-plain-link" href="" data-rel="external"
+									target="_blank" wicket:id="PrintFlowLite-helpdesk-url" />
+							</div>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<wicket:panel wicket:id="printerdriver-download-panel" />
+				</li>
+			</ul>
+
+		</div>
+	</li>
+
+	<li>
+		<div data-role="collapsible" data-collapsed="true">
+
+			<h3>Java</h3>
+
+			<table data-role="table" data-mode="reflow"
+				class="ui-responsive table-stroke">
+				<thead>
+					<tr>
+						<th data-priority="1" />
+						<th data-priority="2" />
+					</tr>
+				</thead>
+				<tbody style="font-family: monospace;">
+					<tr>
+						<th>Server</th>
+						<td>
+							Jetty <span wicket:id="java.server" />
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<wicket:message key="java.vm.name" />
+						</th>
+						<td wicket:id="java.vm.name" />
+					</tr>
+					<tr>
+						<th>
+							<wicket:message key="java.version" />
+						</th>
+						<td wicket:id="java.version" />
+					</tr>
+					<tr>
+						<th>Processors</th>
+						<td wicket:id="jre-available-processors" />
+					</tr>
+					<tr>
+						<th>Max memory</th>
+						<td wicket:id="jre-max-memory" />
+					</tr>
+					<tr>
+						<th>java.io.tmpdir</th>
+						<td class="sp-url-wrap" wicket:id="jre-java.io.tmpdir" />
+					</tr>
+					<tr>
+						<th wicket:id="sp-server-home-key" />
+						<td class="sp-url-wrap" wicket:id="sp-server-home" />
+					</tr>
+					<tr>
+						<th wicket:id="app.dir.tmp-key" />
+						<td class="sp-url-wrap" wicket:id="app.dir.tmp" />
+					</tr>
+					<tr>
+						<th wicket:id="app.dir.safepages-key" />
+						<td class="sp-url-wrap" wicket:id="app.dir.safepages" />
+					</tr>
+					<tr>
+						<th wicket:id="app.dir.letterheads-key" />
+						<td class="sp-url-wrap" wicket:id="app.dir.letterheads" />
+					</tr>
+					<tr>
+						<th wicket:id="app.dir.doc.store.archive-key" />
+						<td class="sp-url-wrap" wicket:id="app.dir.doc.store.archive" />
+					</tr>
+					<tr>
+						<th wicket:id="app.dir.doc.store.journal-key" />
+						<td class="sp-url-wrap" wicket:id="app.dir.doc.store.journal" />
+					</tr>
+					<tr>
+						<th wicket:id="webapp.custom.i18n-key" />
+						<td wicket:id="webapp.custom.i18n" />
+					</tr>
+					<wicket:enclosure child="btn-i18n-cache-clear">
+						<tr>
+							<th style="vertical-align: middle;">i18n cache</th>
+							<td>
+								<button style="margin-left: 0;"
+									class="ui-btn ui-mini ui-btn-inline ui-btn-icon-none"
+									wicket:id="btn-i18n-cache-clear" id="sp-btn-i18n-cache-clear" />
+							</td>
+						</tr>
+					</wicket:enclosure>
+				</tbody>
+			</table>
+			<br />
+
+		</div>
+	</li>
+
+	<li>
+		<div data-role="collapsible" data-collapsed="true">
+
+			<h3>JavaScript</h3>
+
+			<ul data-role="listview" data-inset="true">
+				<li>
+					<div class="sp-txt-wrap">
+						JavaScript code run in this browser is
+						<a class="sp-plain-link"
+							href="https://www.gnu.org/software/librejs/" target="_blank">
+							GNU LibreJS</a>
+						compliant.
+						<br />
+						<a style="margin-top: 15px;"
+							class="sp-plain-link ui-btn ui-corner-all ui-btn-inline ui-mini sp-btn-show-librejs"
+							href="#">JavaScript&nbsp;information</a>
+					</div>
+				</li>
+			</ul>
+		</div>
+	</li>
+
+	<wicket:enclosure child="environment">
+		<li>
+			<div data-role="collapsible" data-collapsed="true">
+				<h3 wicket:id="environment" />
+				<table data-role="table" data-mode="reflow"
+					class="ui-responsive table-stroke">
+					<thead>
+						<tr>
+							<th data-priority="1" />
+							<th data-priority="2" />
+						</tr>
+					</thead>
+					<tbody style="font-family: monospace;" class="sp-txt-wrap">
+						<wicket:enclosure child="container-key">
+							<tr>
+								<th wicket:id="container-key" />
+								<td wicket:id="container" />
+							</tr>
+						</wicket:enclosure>
+						<tr wicket:id="env-entry">
+							<th wicket:id="env-key" />
+							<td wicket:id="env-value" />
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</li>
+	</wicket:enclosure>
+
+	<li>
+		<div data-role="collapsible" data-collapsed="true">
+
+			<h3>
+				<wicket:message key="cat-host-system" />
+			</h3>
+
+			<div class="sp-txt-wrap">
+				<wicket:message key="cat-host-system-descript" />
+			</div>
+
+			<table data-role="table" data-mode="reflow"
+				class="ui-responsive table-stroke">
+				<thead>
+					<tr>
+						<th data-priority="1" />
+						<th data-priority="2" />
+					</tr>
+				</thead>
+				<tbody style="font-family: monospace;" class="sp-txt-wrap">
+					<tr>
+						<th>Host</th>
+						<td />
+					</tr>
+					<tr>
+						<th wicket:id="host-name-prompt" />
+						<td wicket:id="host-name" />
+					</tr>
+					<tr>
+						<th wicket:id="host-ip-prompt" />
+						<td wicket:id="host-ip" />
+					</tr>
+					<tr>
+						<th>&nbsp;</th>
+						<td />
+					</tr>
+					<tr>
+						<th>Operating system</th>
+						<td />
+					</tr>
+					<tr>
+						<th>
+							<wicket:message key="jre-os-name" />
+						</th>
+						<td wicket:id="jre-os-name" />
+					</tr>
+					<tr>
+						<th>
+							<wicket:message key="jre-os-version" />
+						</th>
+						<td wicket:id="jre-os-version" />
+					</tr>
+					<tr>
+						<th>
+							<wicket:message key="jre-os-arch" />
+						</th>
+						<td wicket:id="jre-os-arch" />
+					</tr>
+					<tr>
+						<th>&nbsp;</th>
+						<td />
+					</tr>
+					<tr>
+						<th>ulimit</th>
+						<td />
+					</tr>
+					<tr>
+						<th>open files</th>
+						<td wicket:id="system-ulimits-nofile" />
+					</tr>
+					<tr>
+						<th>&nbsp;</th>
+						<td />
+					</tr>
+					<tr>
+						<th>sysctl</th>
+						<td />
+					</tr>
+					<tr wicket:id="sysctl-entry">
+						<th wicket:id="sysctl-key"></th>
+						<td wicket:id="sysctl-value" />
+					</tr>
+
+				</tbody>
+			</table>
+		</div>
+	</li>
+
+	<li>
+		<div data-role="collapsible" data-collapsed="true">
+
+			<h3>
+				<wicket:message key="cat-host-packages" />
+			</h3>
+			<div class="sp-txt-wrap">
+				<wicket:message key="cat-host-packages-descript" />
+			</div>
+
+			<ul data-role="listview" data-inset="true">
+				<li>
+					<h3>
+						CUPS (
+						<wicket:message key="package-required" />
+						)
+					</h3>
+					<div class="sp-txt-info sp-txt-wrap" wicket:id="version-cups" />
+				</li>
+				<li>
+					<h3>
+						Ghostscript (
+						<wicket:message key="package-required" />
+						)
+					</h3>
+					<div class="sp-txt-info sp-txt-wrap"
+						wicket:id="version-ghostscript" />
+				</li>
+			</ul>
+
+			<ul data-role="listview" data-inset="true">
+				<li>
+					<h3>
+						ImageMagick (
+						<wicket:message key="package-required" />
+						)
+					</h3>
+					<div class="sp-txt-info sp-txt-wrap"
+						wicket:id="version-imagemagick" />
+				</li>
+			</ul>
+
+			<ul data-role="listview" data-inset="true">
+				<li>
+					<h3>
+						<span wicket:id="cmd-pdftocairo" /> (
+						<wicket:message key="package-required" />
+						)
+					</h3>
+					<div class="sp-txt-info sp-txt-wrap" wicket:id="version-pdftocairo" />
+				</li>
+				<li>
+					<h3>
+						<span wicket:id="cmd-pdffonts" /> (
+						<wicket:message key="package-required" />
+						)
+					</h3>
+					<div class="sp-txt-info sp-txt-wrap" wicket:id="version-pdffonts" />
+				</li>
+			</ul>
+
+			<ul data-role="listview" data-inset="true">
+				<li>
+					<h3>
+						fontconfig (
+						<wicket:message key="package-required" />
+						)
+					</h3>
+					<div class="sp-txt-info sp-txt-wrap" wicket:id="version-fc-match" />
+					<table data-role="table" data-mode="reflow"
+						class="ui-responsive table-stroke ui-mini">
+						<thead>
+							<tr>
+								<th data-priority="1" />
+								<th data-priority="2" />
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<th>PDF Standard Font</th>
+								<th wicket:id="table-fonts-header-rendering" />
+							</tr>
+							<tr wicket:id="font-entry">
+								<td wicket:id="font-key" />
+								<td wicket:id="font-value" />
+							</tr>
+						</tbody>
+					</table>
+				</li>
+			</ul>
+
+			<ul data-role="listview" data-inset="true">
+				<li>
+					<h3>
+						<span wicket:id="cmd-avahi-browse" /> (
+						<wicket:message key="package-optional" />
+						)
+					</h3>
+					<div class="sp-txt-info sp-txt-wrap"
+						wicket:id="version-avahi-browse" />
+				</li>
+			</ul>
+
+			<ul data-role="listview" data-inset="true">
+				<li>
+					<h3>
+						<span wicket:id="cmd-qpdf" /> (
+						<wicket:message key="package-optional" />
+						)
+					</h3>
+					<div class="sp-txt-info sp-txt-wrap" wicket:id="version-qpdf" />
+				</li>
+			</ul>
+
+			<ul data-role="listview" data-inset="true">
+				<li>
+					<h3>
+						<span wicket:id="cmd-wkhtmltopdf" /> (
+						<wicket:message key="package-optional" />
+						)
+					</h3>
+					<div class="sp-txt-info sp-txt-wrap"
+						wicket:id="version-wkhtmltopdf" />
+				</li>
+			</ul>
+
+			<ul data-role="listview" data-inset="true">
+				<li>
+					<h3>
+						<span wicket:id="cmd-xpstopdf" /> (
+						<wicket:message key="package-optional" />
+						)
+					</h3>
+					<div class="sp-txt-info sp-txt-wrap" wicket:id="version-xpstopdf" />
+				</li>
+			</ul>
+
+			<ul data-role="listview" data-inset="true">
+				<li>
+					<h3>
+						<span wicket:id="cmd-rsvgconvert" /> (
+						<wicket:message key="package-optional" />
+						)
+					</h3>
+					<div class="sp-txt-info sp-txt-wrap"
+						wicket:id="version-rsvgconvert" />
+				</li>
+			</ul>
+
+			<ul data-role="listview" data-inset="true">
+				<li>
+					<h3>
+						<span wicket:id="cmd-heif-convert" /> (
+						<wicket:message key="package-optional" />
+						)
+					</h3>
+					<div class="sp-txt-info sp-txt-wrap"
+						wicket:id="version-heif-convert" />
+				</li>
+			</ul>
+
+			<ul data-role="listview" data-inset="true">
+				<li>
+					<h3>
+						LibreOffice (
+						<wicket:message key="package-optional" />
+						)
+					</h3>
+					<div class="sp-txt-info sp-txt-wrap"
+						wicket:id="version-libreoffice" />
+				</li>
+			</ul>
+
+		</div>
+	</li>
+
+</ul>
+
+</html>

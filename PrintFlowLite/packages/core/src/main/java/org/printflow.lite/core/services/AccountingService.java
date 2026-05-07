@@ -1,0 +1,786 @@
+/*
+ * This file is part of the PrintFlowLite project <https://printflowlite.local>.
+ * Copyright (c) 2020 Datraverse B.V.
+ * Author: Rijk Ravestein.
+ *
+ * SPDX-FileCopyrightText: © 2020 Datraverse B.V. <info@datraverse.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For more information, please contact Datraverse B.V. at this
+ * address: info@datraverse.com
+ */
+package org.printflow.lite.core.services;
+
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.util.Collection;
+import java.util.Currency;
+import java.util.List;
+import java.util.Locale;
+
+import org.printflow.lite.core.concurrent.ReadWriteLockEnum;
+import org.printflow.lite.core.config.IConfigProp;
+import org.printflow.lite.core.dao.PrinterDao;
+import org.printflow.lite.core.dao.enums.AccountTrxTypeEnum;
+import org.printflow.lite.core.dao.helpers.DaoBatchCommitter;
+import org.printflow.lite.core.dto.AccountDisplayInfoDto;
+import org.printflow.lite.core.dto.AccountVoucherRedeemDto;
+import org.printflow.lite.core.dto.FinancialDisplayInfoDto;
+import org.printflow.lite.core.dto.PosDepositDto;
+import org.printflow.lite.core.dto.PosDepositReceiptDto;
+import org.printflow.lite.core.dto.PosSalesDto;
+import org.printflow.lite.core.dto.PosSalesItemDto;
+import org.printflow.lite.core.dto.PosSalesLocationDto;
+import org.printflow.lite.core.dto.PosSalesPriceDto;
+import org.printflow.lite.core.dto.PosSalesShopDto;
+import org.printflow.lite.core.dto.SharedAccountDisplayInfoDto;
+import org.printflow.lite.core.dto.UserAccountingDto;
+import org.printflow.lite.core.dto.UserCreditTransferDto;
+import org.printflow.lite.core.dto.UserPaymentGatewayDto;
+import org.printflow.lite.core.jpa.Account;
+import org.printflow.lite.core.jpa.Account.AccountTypeEnum;
+import org.printflow.lite.core.jpa.AccountTrx;
+import org.printflow.lite.core.jpa.DocLog;
+import org.printflow.lite.core.jpa.PrintOut;
+import org.printflow.lite.core.jpa.Printer;
+import org.printflow.lite.core.jpa.User;
+import org.printflow.lite.core.jpa.UserAccount;
+import org.printflow.lite.core.jpa.UserGroup;
+import org.printflow.lite.core.json.rpc.AbstractJsonRpcMethodResponse;
+import org.printflow.lite.core.json.rpc.JsonRpcMethodResult;
+import org.printflow.lite.core.json.rpc.JsonRpcResult;
+import org.printflow.lite.core.json.rpc.impl.ResultPosDeposit;
+import org.printflow.lite.core.json.rpc.impl.ResultPosSales;
+import org.printflow.lite.core.outbox.OutboxInfoDto.OutboxJobDto;
+import org.printflow.lite.core.print.proxy.ProxyPrintException;
+import org.printflow.lite.core.print.proxy.ProxyPrintJobChunk;
+import org.printflow.lite.core.print.proxy.ProxyPrintJobChunkInfo;
+import org.printflow.lite.core.services.helpers.AccountTrxInfoSet;
+import org.printflow.lite.core.services.helpers.AccountingException;
+import org.printflow.lite.core.services.helpers.ProxyPrintCostDto;
+import org.printflow.lite.core.services.helpers.ProxyPrintCostParms;
+import org.printflow.lite.ext.papercut.PaperCutException;
+import org.printflow.lite.ext.papercut.PaperCutServerProxy;
+
+/**
+ * Accounting services supporting the pay-per-print solution.
+ *
+ * @author Rijk Ravestein
+ *
+ */
+public interface AccountingService extends StatefulService {
+
+    enum VoucherRedeemEnum {
+        /** */
+        INVALID,
+        /** */
+        USER_UNKNOWN,
+        /** */
+        OK
+    }
+
+    /**
+     * Key of entry in message.xml file.
+     */
+    String MSG_KEY_POS_USER_UNKNOWN = "msg-pos-user-unknown";
+
+    /**
+     * Key of entry in message.xml file.
+     */
+    String MSG_KEY_POS_AMOUNT_ERROR = "msg-pos-amount-error";
+
+    /**
+     * Key of entry in message.xml file.
+     */
+    String MSG_KEY_POS_AMOUNT_INVALID = "msg-pos-amount-invalid";
+
+    /**
+     * Gets the accounting parameters for a {@link User}. A {@link UserAccount}
+     * is lazy created when needed.
+     *
+     * @param user
+     *            The {@link User}.
+     * @return The {@link UserAccountingDto}.
+     */
+    UserAccountingDto getUserAccounting(User user);
+
+    /**
+     * Create a {@link UserAccountingDto} object.
+     *
+     * @param balance
+     *            The balance amount.
+     * @param restricted
+     *            {@code true} when restricted.
+     * @param useGlobalOverdraft
+     *            {@code true} when using global overdraft default.
+     * @param overdraft
+     *            The overdraft amount.
+     * @return The {@link UserAccountingDto} object.
+     */
+    UserAccountingDto createUserAccounting(BigDecimal balance,
+            Boolean restricted, Boolean useGlobalOverdraft,
+            BigDecimal overdraft);
+
+    /**
+     * Gets the initial accounting parameters for a member from a
+     * {@link UserGroup}.
+     *
+     * @param group
+     *            The {@link UserGroup}.
+     * @return The {@link UserAccountingDto}.
+     */
+    UserAccountingDto getInitialUserAccounting(UserGroup group);
+
+    /**
+     * Sets the initial accounting parameters for a member in a
+     * {@link UserGroup} from the {@link UserAccountingDto}.
+     *
+     * @param group
+     *            The {@link UserGroup}.
+     * @param dto
+     *            The {@link UserAccountingDto}.
+     * @throws ParseException
+     *             A error occurred parsing an amount string to a number.
+     */
+    void setInitialUserAccounting(UserGroup group, UserAccountingDto dto)
+            throws ParseException;
+
+    /**
+     * Gets the formatted balance of a {@link User}.
+     * <p>
+     * Note: {@link UserAccount} is NOT lazy created.
+     * </p>
+     *
+     * @param user
+     *            The non-null {@link User}.
+     * @param locale
+     *            The {@link Locale} for formatting.
+     * @param currencySymbol
+     *            The currency symbol (can be {@code null}).
+     * @return Zero balance when {@link UserAccount} is NOT present.
+     */
+    String getFormattedUserBalance(User user, Locale locale,
+            String currencySymbol);
+
+    /**
+     * Gets the formatted balance of an active (non-deleted) user.
+     * <p>
+     * Note: {@link UserAccount} is NOT lazy created.
+     * </p>
+     *
+     * @param userId
+     *            The unique user id.
+     * @param locale
+     *            The {@link Locale} for formatting.
+     * @param currencySymbol
+     *            The currency symbol (can be {@code null}).
+     * @return Zero balance when {@link UserAccount} is NOT present (yet).
+     */
+    String getFormattedUserBalance(String userId, Locale locale,
+            String currencySymbol);
+
+    /**
+     * Formats a user balance (using the right number of decimals).
+     *
+     * @param balance
+     *            The user balance.
+     * @param locale
+     *            The {@link Locale}.
+     * @param currencySymbol
+     *            The currency symbol.
+     * @return The formatted balance.
+     */
+    String formatUserBalance(BigDecimal balance, Locale locale,
+            String currencySymbol);
+
+    /**
+     * Gets the {@link Account} information of a {@link User} meant for display.
+     * A {@link UserAccount} is lazy created when needed.
+     *
+     * @param user
+     *            The {@link User}.
+     * @param locale
+     *            The {@link Locale} used for formatting financial data.
+     * @param currencySymbol
+     *            {@code null} or empty when not applicable.
+     * @return The {@link AccountDisplayInfoDto} object.
+     */
+    AccountDisplayInfoDto getAccountDisplayInfo(User user, Locale locale,
+            String currencySymbol);
+
+    /**
+     * Gets the PaperCut account information of a {@link User} meant for
+     * display.
+     *
+     * @param proxy
+     *            PaperCut server proxy.
+     * @param user
+     *            The {@link User}.
+     * @param locale
+     *            The {@link Locale} used for formatting financial data.
+     * @param currencySymbol
+     *            {@code null} or empty when not applicable.
+     * @return The {@link AccountDisplayInfoDto} object.
+     */
+    AccountDisplayInfoDto getAccountDisplayInfo(PaperCutServerProxy proxy,
+            User user, Locale locale, String currencySymbol);
+
+    /**
+     * Gets the shared {@link Account} information of an {@link Account} meant
+     * for display.
+     *
+     * @param account
+     *            The shared {@link Account}.
+     * @param locale
+     *            The {@link Locale} used for formatting financial data.
+     * @param currencySymbol
+     *            {@code null} or empty when not applicable.
+     * @return The {@link SharedAccountDisplayInfoDto} object.
+     */
+    SharedAccountDisplayInfoDto getSharedAccountDisplayInfo(Account account,
+            Locale locale, String currencySymbol);
+
+    /**
+     * Logically deletes a user group account.
+     *
+     * @param groupName
+     *            The name of the User Group account to delete.
+     * @return The JSON-RPC Return message (either a result or an error);
+     */
+    AbstractJsonRpcMethodResponse deleteUserGroupAccount(String groupName);
+
+    /**
+     * Updates or creates a shared {@link Account} from user input.
+     * <p>
+     * Note: A difference in account balance in decimal range beyond
+     * {@link IConfigProp.Key#FINANCIAL_USER_BALANCE_DECIMALS} is considered
+     * irrelevant.
+     * </p>
+     *
+     * @param dto
+     *            {@link SharedAccountDisplayInfoDto} object
+     * @return The JSON-RPC Return message (either a result or an error);
+     */
+    AbstractJsonRpcMethodResponse
+            lazyUpdateSharedAccount(SharedAccountDisplayInfoDto dto);
+
+    /**
+     * Gets global financial information meant for display.
+     *
+     * @param locale
+     *            The {@link Locale} used for formatting financial data.
+     * @param currencySymbol
+     *            {@code null} or empty when not applicable.
+     * @return The {@link FinancialDisplayInfoDto} object.
+     */
+    FinancialDisplayInfoDto getFinancialDisplayInfo(Locale locale,
+            String currencySymbol);
+
+    /**
+     * Sets the accounting parameters for a {@link User}. A {@link UserAccount}
+     * is lazy created when needed.
+     * <p>
+     * Note: A difference in user balance in decimal range beyond
+     * {@link IConfigProp.Key#FINANCIAL_USER_BALANCE_DECIMALS} is considered
+     * irrelevant.
+     * </p>
+     *
+     * @param user
+     *            The {@link User}.
+     * @param dto
+     *            The accounting parameters.
+     * @return The {@link AbstractJsonRpcMethodResponse}.
+     */
+    AbstractJsonRpcMethodResponse setUserAccounting(User user,
+            UserAccountingDto dto);
+
+    /**
+     * Gets the {@link PrinterDao.CostMediaAttr} of the default media.
+     *
+     * @return
+     */
+    PrinterDao.CostMediaAttr getCostMediaAttr();
+
+    /**
+     * Gets the {@link PrinterDao.CostMediaAttr} of the IPP media.
+     *
+     * @param ippMediaName
+     *            The name of the IPP media.
+     * @return
+     */
+    PrinterDao.CostMediaAttr getCostMediaAttr(String ippMediaName);
+
+    /**
+     * Gets the {@link PrinterDao.MediaSourceAttr} of the IPP media-source.
+     *
+     * @param ippMediaSourceName
+     *            The name of the IPP media-source.
+     * @return The attribute.
+     */
+    PrinterDao.MediaSourceAttr getMediaSourceAttr(String ippMediaSourceName);
+
+    /**
+     * Calculates the cost for a proxy print request.
+     *
+     * @param printer
+     *            The proxy {@link Printer}.
+     * @param costParms
+     *            The {@link ProxyPrintCostParms}.
+     * @return The {@link ProxyPrintCostDto}.
+     */
+    ProxyPrintCostDto calcProxyPrintCost(Printer printer,
+            ProxyPrintCostParms costParms);
+
+    /**
+     * Calculates the cost for each individual {@link ProxyPrintJobChunk} in the
+     * {@link ProxyPrintJobChunkInfo}.
+     * <p>
+     * If a {@link User} is provided, this method checks if total cost exceeds
+     * user's credit limit: when exceeded a {@link ProxyPrintException} is
+     * thrown.
+     * </p>
+     *
+     * @param locale
+     *            The {@link Locale} used for the message in a
+     *            {@link ProxyPrintException},
+     * @param currencySymbol
+     *            The currency symbol.
+     * @param userCheckCreditLimit
+     *            The {@link User} who is charged for costs and to whom a credit
+     *            limit applies. If {@code null} no credit limit is checked.
+     * @param printer
+     *            The {@link Printer}.
+     * @param costParms
+     *            The {@link ProxyPrintCostParms}.
+     * @param jobChunkInfo
+     *            The {@link ProxyPrintJobChunkInfo}.
+     * @return The calculated cost total (sum of all chunks).
+     * @throws ProxyPrintException
+     *             When total cost exceeds user's credit limit.
+     */
+    ProxyPrintCostDto calcProxyPrintCost(Locale locale, String currencySymbol,
+            User userCheckCreditLimit, Printer printer,
+            ProxyPrintCostParms costParms, ProxyPrintJobChunkInfo jobChunkInfo)
+            throws ProxyPrintException;
+
+    /**
+     * Checks if cost exceeds user's credit limit: when exceeded a
+     * {@link ProxyPrintException} is thrown.
+     *
+     * @param user
+     *            The {@link User}.
+     * @param cost
+     *            The cost.
+     * @param locale
+     *            The {@link Locale} used for the message in a
+     *            {@link ProxyPrintException},
+     * @param currencySymbol
+     *            The currency symbol.
+     * @throws ProxyPrintException
+     *             When total cost exceeds user's credit limit.
+     */
+    void validateProxyPrintUserCost(User user, BigDecimal cost, Locale locale,
+            String currencySymbol) throws ProxyPrintException;
+
+    /**
+     * Gets the {@link UserAccount} account of an active (non-deleted) user.
+     *
+     * @param userId
+     *            The unique user id.
+     * @param accountType
+     *            The {@link Account.AccountTypeEnum}.
+     * @return {@code null} when not found.
+     */
+    UserAccount getActiveUserAccount(String userId,
+            Account.AccountTypeEnum accountType);
+
+    /**
+     * Gets the {@link Account} account of a {@link UserGroup} by group name.
+     *
+     * @param groupName
+     *            The user group name.
+     * @return {@code null} when not found.
+     */
+    Account getActiveUserGroupAccount(String groupName);
+
+    /**
+     * Gets the {@link UserAccount} account of a {@link User}. The
+     * {@link UserAccount} and related {@link Account} are ad-hoc created when
+     * they do not exist.
+     *
+     * @param user
+     *            The {@link User}.
+     * @param accountType
+     *            The {@link Account.AccountTypeEnum}.
+     * @return The {@link UserAccount}.
+     */
+    UserAccount lazyGetUserAccount(User user,
+            Account.AccountTypeEnum accountType);
+
+    /**
+     * Gets the {@link Account} account of a {@link UserGroup}. The
+     * {@link Account} is ad-hoc created when it does not exist.
+     *
+     * @param userGroup
+     *            The {@link UserGroup}.
+     * @return The {@link Account}.
+     */
+    Account lazyGetUserGroupAccount(UserGroup userGroup);
+
+    /**
+     * Gets an <i>active</i> shared {@link Account} by name. If it does not
+     * exist it is created according to the offered template.
+     * <p>
+     * Note: the template MUST be of type {@link AccountTypeEnum#SHARED}.
+     * </p>
+     *
+     * @param accountName
+     *            The unique active account name.
+     * @param accountTemplate
+     *            The template used to created a new {@link Account}.
+     * @return The {@link Account}.
+     */
+    Account lazyGetSharedAccount(String accountName, Account accountTemplate);
+
+    /**
+     * Creates a single {@link AccountTrx} of
+     * {@link AccountTrxTypeEnum#PRINT_OUT} at the {@link DocLog} container of
+     * the {@link PrintOut} and updates the {@link Account}.
+     *
+     * @param account
+     *            The {@link Account} to update.
+     * @param printOut
+     *            The {@link PrintOut} to be accounted for.
+     */
+    void createAccountTrx(Account account, PrintOut printOut);
+
+    /**
+     * Uses the {@link AccountTrxInfoSet} to create {@link AccountTrx} objects
+     * of {@link AccountTrx.AccountTrxTypeEnum} and update each corresponding
+     * {@link Account} in the database.
+     *
+     * @param accountTrxInfoSet
+     *            The {@link AccountTrxInfoSet}.
+     * @param docLog
+     *            The {@link DocLog} to be accounted for.
+     * @param trxType
+     *            The {@link AccountTrxTypeEnum} of the {@link AccountTrx}.
+     */
+    void createAccountTrxs(AccountTrxInfoSet accountTrxInfoSet, DocLog docLog,
+            AccountTrxTypeEnum trxType);
+
+    /**
+     * Creates a list of {@link AccountTrx} objects to be used for UI display
+     * purposes only.
+     *
+     * @param outboxJob
+     *            {@link OutboxJobDto}.
+     * @return List of UI account transactions.
+     */
+    List<AccountTrx> createAccountTrxsUI(OutboxJobDto outboxJob);
+
+    /**
+     * Updates the {@link AccountTrx} and the {@link Account} balance, and
+     * optionally attaches the {@link AccountTrx} to another {@link DocLog}.
+     *
+     * @param trx
+     *            The {@link AccountTrx} to update.
+     * @param trxAmount
+     *            The transaction amount.
+     * @param trxDocLog
+     *            If {@code null} the {@link AccountTrx#setDocLog(DocLog)}
+     *            method of the transaction is <i>not</i> executed.
+     */
+    void chargeAccountTrxAmount(AccountTrx trx, BigDecimal trxAmount,
+            DocLog trxDocLog);
+
+    /**
+     * Calculates the weighted amount in the context of the weight total.
+     *
+     * @param amount
+     *            The amount to weigh.
+     * @param weightTotal
+     *            The weight total.
+     * @param weight
+     *            The mathematical weight of the transaction in the context of a
+     *            transaction set.
+     * @param weightUnit
+     *            The weight unit.
+     * @param scale
+     *            The scale (precision).
+     * @return The weighted amount.
+     */
+    BigDecimal calcWeightedAmount(BigDecimal amount, int weightTotal,
+            int weight, int weightUnit, int scale);
+
+    /**
+     * Redeems a voucher.
+     *
+     * @param dto
+     *            The {@link AccountVoucherRedeemDto}.
+     * @return redeem status.
+     */
+    VoucherRedeemEnum redeemVoucher(AccountVoucherRedeemDto dto);
+
+    /**
+     * Deposits funds as transacted at a point of sale.
+     *
+     * @param dto
+     *            The {@link PosDepositDto}.
+     * @return Use {@link AbstractJsonRpcMethodResponse#asResult()},
+     *         {@link JsonRpcMethodResult#getResult()} and
+     *         {@link JsonRpcResult#data(Class)} with Class
+     *         {@link ResultPosDeposit} to get the result data.
+     */
+    AbstractJsonRpcMethodResponse depositFunds(PosDepositDto dto);
+
+    /**
+     * Charges a sale as transacted at a point of sale.
+     *
+     * @param dto
+     *            The {@link PosSalesDto}.
+     * @return Use {@link AbstractJsonRpcMethodResponse#asResult()},
+     *         {@link JsonRpcMethodResult#getResult()} and
+     *         {@link JsonRpcResult#data(Class)} with Class
+     *         {@link ResultPosSales} to get the result data.
+     */
+    AbstractJsonRpcMethodResponse chargePosSales(PosSalesDto dto);
+
+    /**
+     * Charges a sale as transacted at a point of sale to PaperCut Personal User
+     * Account.
+     *
+     * @param proxy
+     *            PaperCut server proxy.
+     * @param dto
+     *            The {@link PosSalesDto}.
+     * @return Use {@link AbstractJsonRpcMethodResponse#asResult()},
+     *         {@link JsonRpcMethodResult#getResult()} and
+     *         {@link JsonRpcResult#data(Class)} with Class
+     *         {@link ResultPosSales} to get the result data.
+     */
+    AbstractJsonRpcMethodResponse chargePosSales(PaperCutServerProxy proxy,
+            PosSalesDto dto);
+
+    /**
+     * Accepts funds from a Payment Gateway: an {@link AccountTrx} is created
+     * and the user {@link Account} is incremented.
+     *
+     * @param lockedUser
+     *            The requesting {@link User} as locked by the caller (can be
+     *            {@code null} when user is unknown).
+     * @param dto
+     *            The {@link UserPaymentGatewayDto}
+     * @param orphanedPaymentAccount
+     *            The {@link Account} to add funds on when the requesting
+     *            {@link User} of the transaction is unknown.
+     */
+    void acceptFundsFromGateway(User lockedUser, UserPaymentGatewayDto dto,
+            Account orphanedPaymentAccount);
+
+    /**
+     * Accepts funds from a Payment Gateway: a PaperCut transaction is created.
+     *
+     * @param proxy
+     *            PaperCut server proxy.
+     * @param dto
+     *            The {@link UserPaymentGatewayDto}
+     * @throws PaperCutException
+     */
+    void acceptFundsFromGateway(PaperCutServerProxy proxy,
+            UserPaymentGatewayDto dto) throws PaperCutException;
+
+    /**
+     * Creates pending funds from a Payment Gateway: an {@link AccountTrx} is
+     * created but the user {@link Account} is <i>not</i> incremented.
+     *
+     * @param lockedUser
+     *            The {@link User} as locked by the caller.
+     * @param dto
+     *            The {@link UserPaymentGatewayDto}
+     */
+    void createPendingFundsFromGateway(User lockedUser,
+            UserPaymentGatewayDto dto);
+
+    /**
+     * Accepts pending funds from a Payment Gateway: the {@link AccountTrx} is
+     * updated <i>and</i> the user {@link Account} is incremented.
+     *
+     * @param trx
+     *            The {@link AccountTrx} to acknowledge.
+     * @param dto
+     *            The {@link UserPaymentGatewayDto}
+     * @throws AccountingException
+     *             When invariant is violated.
+     */
+    void acceptPendingFundsFromGateway(AccountTrx trx,
+            UserPaymentGatewayDto dto) throws AccountingException;
+
+    /**
+     * Creates the DTO of a {@link AccountTrxTypeEnum#DEPOSIT} transaction.
+     *
+     * @param accountTrxId
+     *            The id of the {@link AccountTrx}.
+     * @return The {@link PosDepositReceiptDto}.
+     */
+    PosDepositReceiptDto createPosDepositReceiptDto(Long accountTrxId);
+
+    /**
+     * Creates the DTO of a {@link AccountTrxTypeEnum#PURCHASE} transaction.
+     *
+     * @param accountTrxId
+     *            The id of the {@link AccountTrx}.
+     * @return The {@link PosDepositReceiptDto}.
+     */
+    PosDepositReceiptDto createPosDepositInvoiceDto(Long accountTrxId);
+
+    /**
+     * Checks if cost can be charged to account, according to account balance
+     * and credit policy.
+     *
+     * @param account
+     *            The {@link Account} to charge to.
+     * @param cost
+     *            The cost to charge.
+     * @return {@code true} if cost can be charged.
+     */
+    boolean isBalanceSufficient(Account account, BigDecimal cost);
+
+    /**
+     * Changes the base application currency. This action creates financial
+     * transactions to align each account to the new currency.
+     * <p>
+     * NOTE: Use {@link ReadWriteLockEnum#DATABASE_READONLY} and
+     * {@link ReadWriteLockEnum#setWriteLock(boolean)} scope for this method.
+     * </p>
+     *
+     * @param batchCommitter
+     *            The {@link DaoBatchCommitter}.
+     * @param currencyFrom
+     *            The current base {@link Currency}.
+     * @param currencyTo
+     *            The new base {@link Currency}.
+     * @param exchangeRate
+     *            The exchange rate.
+     * @return The JSON-RPC Return message (either a result or an error);
+     */
+    AbstractJsonRpcMethodResponse changeBaseCurrency(
+            DaoBatchCommitter batchCommitter, Currency currencyFrom,
+            Currency currencyTo, double exchangeRate);
+
+    /**
+     * Transfers credit from one user account to another.
+     *
+     * @param dto
+     *            The {@link UserCreditTransferDto}.
+     * @return The JSON-RPC Return message (either a result or an error);
+     */
+    AbstractJsonRpcMethodResponse transferUserCredit(UserCreditTransferDto dto);
+
+    /**
+     * Creates a new shared {@link Account} object with default values (from a
+     * template).
+     *
+     * @param name
+     *            The name of the account.
+     * @param parent
+     *            The shared {@link Account} parent.
+     * @return Shared account.
+     */
+    Account createSharedAccountTemplate(String name, Account parent);
+
+    /**
+     * Creates an {@link AccountTrx} for an {@link Account} when relevant
+     * difference in balance is determined.
+     * <p>
+     * Note: A difference in user balance in decimal range beyond
+     * {@link IConfigProp.Key#FINANCIAL_USER_BALANCE_DECIMALS} is considered
+     * irrelevant.
+     * </p>
+     *
+     * @param account
+     *            The {@link Account} to set the balance in
+     * @param balanceNew
+     *            The new balance amount.
+     * @param comment
+     *            The comment for the {@link AccountTrx}.
+     *
+     * @return {@code null} if no transaction is created because new balance
+     *         does not differ from current balance.
+     */
+    AccountTrx checkCreateAccountTrx(Account account, BigDecimal balanceNew,
+            String comment);
+
+    /**
+     * Calculates the cost per printed copy.
+     *
+     * @param totalCost
+     *            The cost total of all copies.
+     * @param copies
+     *            The number of printed copies (can't be zero).
+     * @return Cost per copy.
+     */
+    BigDecimal calcCostPerPrintedCopy(BigDecimal totalCost, int copies);
+
+    /**
+     * Calculates the number of printed copies.
+     * <p>
+     * Note: result can be negative, depending on sign of input parameters.
+     * </p>
+     *
+     * @param cost
+     *            The cost.
+     * @param costPerCopy
+     *            The cost per copy (can't be zero).
+     * @param scale
+     *            The scale of the returned value.
+     * @return Number of printed copies.
+     */
+    BigDecimal calcPrintedCopies(BigDecimal cost, BigDecimal costPerCopy,
+            int scale);
+
+    /**
+     * Get the Pos Sales Locations from cache, sorted by location name.
+     *
+     * @return The sorted locations, or empty when no locations are defined or
+     *         locations are disabled.
+     */
+    Collection<PosSalesLocationDto> getPosSalesLocationsByName();
+
+    /**
+     * Get the Pos Sales Shops from cache, sorted by shop name.
+     *
+     * @return The sorted shops, or empty when no shops are defined or shops are
+     *         disabled.
+     */
+    Collection<PosSalesShopDto> getPosSalesShopsByName();
+
+    /**
+     * Get the Pos Sales Items from cache, sorted by item name.
+     *
+     * @return The sorted items, or empty when no items are defined or items are
+     *         disabled.
+     */
+    Collection<PosSalesItemDto> getPosSalesItemsByName();
+
+    /**
+     * Get the Pos Sales Prices from cache, sorted by price name.
+     *
+     * @return The sorted prices, or empty when no items are defined or prices
+     *         are disabled.
+     */
+    Collection<PosSalesPriceDto> getPosSalesPricesByName();
+}

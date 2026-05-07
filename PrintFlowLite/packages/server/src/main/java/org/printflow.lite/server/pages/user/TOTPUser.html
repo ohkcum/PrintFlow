@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<div data-role="header" data-theme="b">
+	<h1 wicket:id="header" />
+</div>
+
+<div class="ui-content">
+
+	<center>
+		<div class="sp-txt-wrap sp-txt-info" wicket:id="title" />
+	</center>
+
+	<div id="page-user-totp-content" />
+
+	<div>
+		<button id="user-totp-apply-btn"
+			class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-check"
+			wicket:id="button-apply" />
+
+		<a href="#" id="user-totp-cancel-btn"
+			class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-back"
+			data-rel="back" data-direction="reverse" wicket:id="button-cancel" />
+
+		<button id="user-totp-replace-popup-btn"
+			class="ui-btn ui-mini ui-btn-inline ui-btn-icon-left ui-icon-refresh"
+			wicket:id="button-replace" />
+	</div>
+
+</div>
+
+<div data-role="popup" id="user-totp-replace-popup"
+	data-overlay-theme="a" data-theme="a" data-dismissible="false"
+	data-arrow="t">
+	    
+	<div class="ui-content">
+		<h4 class="ui-title" wicket:id="prompt-totp-replace" />
+
+		<p class="sp-txt-warn" wicket:id="warn-totp-replace" />
+
+		<a href="#" id="user-totp-replace-btn-no" wicket:id="button-no"
+			class="ui-btn ui-btn-inline" data-rel="back" />
+		<!--  -->
+		<button id="user-totp-replace-btn" wicket:id="button-yes"
+			class="ui-btn ui-mini ui-btn-inline" />
+	</div>
+</div>
+
+<wicket:remove>
+	<!-- 
+THIS POPUP MUST BE PRESENT IN EVERY PAGE AND DIALOG 
+-->
+</wicket:remove>
+<div data-role="popup" data-position-to="window"
+	class="sp-msg-popup ui-content" />
+</html>

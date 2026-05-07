@@ -1,0 +1,20 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: PrintFlowLite PostScript Printer Driver
+Upstream-Contact: Datraverse B.V. <info@datraverse.com>
+Source: https://gitlab.com/printflowlite/printflowlite-ppd/
+
+Files: client/win/win7/makefile client/win/win7/makefile.inc client/win/win7/sources
+Copyright: (c) 2016 Datraverse BV <info@datraverse.com>
+License: CC0-1.0
+
+Files: client/win/win7/resource.h client/win/win7/OEMUI.rc
+Copyright: (c) 2016 Datraverse BV <info@datraverse.com>
+License: AGPL-3.0-or-later
+
+Files: client/win/win7/PRINTFLOWLITE_OEMUI.def client/win/win7/PRINTFLOWLITE.ppd
+Copyright: (c) 2016 Datraverse BV <info@datraverse.com>
+License: AGPL-3.0-or-later
+
+Files: nl.po client/win/win7/res/printflowlite-*.ico
+Copyright: (c) 2016 Datraverse BV <info@datraverse.com>
+License: CC-BY-SA-4.0

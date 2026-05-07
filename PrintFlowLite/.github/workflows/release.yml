@@ -1,0 +1,109 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 1.7.1)'
+        required: true
+        type: string
+      notes:
+        description: 'Release notes'
+        required: false
+        type: string
+
+env:
+  JAVA_VERSION: '17'
+
+jobs:
+  build-release:
+    name: Build Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build all packages
+        run: mvn clean install -DskipTests --batch-mode
+
+      - name: Upload server WAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: printflowlite-server-${{ inputs.version }}
+          path: packages/server/target/printflowlite-server-*.war
+
+      - name: Upload client JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: printflowlite-client-${{ inputs.version }}
+          path: packages/client/target/app/bin/printflowlite-client
+          if-no-files-found: warn
+
+      - name: Upload PPD artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: printflowlite-ppd-${{ inputs.version }}
+          path: packages/ppd/
+          if-no-files-found: warn
+
+  create-release:
+    name: Create GitHub Release
+    needs: build-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download server artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: printflowlite-server-${{ inputs.version }}
+          path: artifacts/server
+
+      - name: Download client artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: printflowlite-client-${{ inputs.version }}
+          path: artifacts/client
+
+      - name: Create Release
+        uses: softprops/action-ghrelease@v2
+        with:
+          tag_name: v${{ inputs.version }}
+          name: PrintFlowLite ${{ inputs.version }}
+          draft: true
+          prerelease: ${{ contains(inputs.version, 'rc') }}
+          files: |
+            artifacts/server/*.war
+            artifacts/client/**
+          body: |
+            ## PrintFlowLite ${{ inputs.version }}
+
+            ${{ inputs.notes || 'Release ' + inputs.version }}
+
+            ### Downloads
+            - `printflowlite-server-*.war` — Web Server (deploy to servlet container)
+            - `printflowlite-client` — Desktop Client Application
+
+            ### Installation
+
+            See the [Getting Started guide](docs/getting-started.md) for installation instructions.
+
+            ### Docker
+
+            Docker images are available separately. See [packages/docker/](packages/docker/).
+
+            ### What's Changed
+
+            See [CHANGELOG.md](CHANGELOG.md) for detailed changes.

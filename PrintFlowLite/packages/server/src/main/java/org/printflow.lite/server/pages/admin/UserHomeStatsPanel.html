@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+	<!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<wicket:panel>
+	<div>
+		<span wicket:id="user-count" />
+		<wicket:enclosure child="user-home-count">&nbsp;
+        <span wicket:id="user-home-count-span"> <img
+				style="margin-bottom: -1px;" wicket:id="img-user" src="" height="16" />
+				<span wicket:id="user-home-count" />
+			</span>
+		</wicket:enclosure>
+
+		<wicket:enclosure child="user-registration-count-pending">&nbsp;
+        <span wicket:id="user-registration-count-pending-span"> <img
+				style="margin-bottom: -1px;"
+				wicket:id="img-user-registration-count-pending" src="" height="16" /> <span
+				wicket:id="user-registration-count-pending" />
+			</span>
+		</wicket:enclosure>
+
+		<wicket:enclosure child="user-registration-count-expired">&nbsp;
+        <span wicket:id="user-registration-count-expired-span"> <img
+				style="margin-bottom: -1px;"
+				wicket:id="img-user-registration-count-expired" src="" height="16" /> <span
+				wicket:id="user-registration-count-expired" />
+			</span>
+		</wicket:enclosure>
+
+		<wicket:enclosure child="stats-cleanup-count">&nbsp;
+            <span wicket:id="stats-cleanup-count-span"><img
+				style="margin-bottom: -1px;" wicket:id="img-stats-cleanup" src=""
+				height="16" /> <span class="sp-txt-info"
+				wicket:id="stats-cleanup-count" /></span>
+		</wicket:enclosure>
+
+		<wicket:enclosure child="stats-unknown-count">&nbsp;
+            <span wicket:id="stats-unknown-count-span"><img
+				style="margin-bottom: -1px;" wicket:id="img-stats-unknown" src=""
+				height="14" /> <span class="sp-txt-info"
+				wicket:id="stats-unknown-count" /></span>
+		</wicket:enclosure>
+
+		<wicket:enclosure child="stats-inbox-count">&nbsp;
+			<span wicket:id="stats-inbox-count-span"><img
+				style="margin-bottom: -1px;" wicket:id="img-stats-inbox" src=""
+				height="14" /> <span class="sp-txt-info"
+				wicket:id="stats-inbox-count" /></span>
+			<wicket:enclosure child="stats-inbox-size">
+			&nbsp;<small class="sp-txt-info" wicket:id="stats-inbox-size" />
+			</wicket:enclosure>
+		</wicket:enclosure>
+		<wicket:enclosure child="stats-outbox-count">&nbsp;
+			<span wicket:id="stats-outbox-count-span"><img
+				style="margin-bottom: -1px;" wicket:id="img-stats-outbox" src=""
+				height="14" /> <span class="sp-txt-info"
+				wicket:id="stats-outbox-count" /> </span>
+			<wicket:enclosure child="stats-outbox-size">
+				&nbsp;<small class="sp-txt-info" wicket:id="stats-outbox-size" />
+			</wicket:enclosure>
+		</wicket:enclosure>
+		<wicket:enclosure child="stats-date">&nbsp;&nbsp;&nbsp; <small
+				wicket:id="stats-date" />
+		</wicket:enclosure>
+		<wicket:enclosure child="btn-userhome-refresh">
+			<a wicket:id="btn-userhome-refresh" id="sp-btn-userhome-clean"
+				title="refresh">
+				&nbsp;<img src="/glyphicons/glyphicons_081_refresh.png" height="12"
+					style="opacity: .6;" />
+			</a>
+		</wicket:enclosure>
+	</div>
+</wicket:panel>
+
+</html>

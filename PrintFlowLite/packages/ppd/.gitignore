@@ -1,0 +1,7 @@
+# SPDX-FileCopyrightText: (c) 2018 Datraverse BV <info@datraverse.com>
+# SPDX-License-Identifier: CC0-1.0
+
+ppd/
+/.project
+/.cproject
+/.settings

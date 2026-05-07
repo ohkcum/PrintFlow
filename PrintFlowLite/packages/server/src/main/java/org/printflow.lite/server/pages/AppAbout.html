@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:remove>
+    <!--
+This file is part of the PrintFlowLite project <https://PrintFlowLite.org>
+Copyright (c) 2020 Datraverse B.V. | Author: Rijk Ravestein 
+
+SPDX-FileCopyrightText: © 2020 Datraverse BV <info@datraverse.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+PrintFlowLite is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+-->
+</wicket:remove>
+
+<div data-role="header" data-theme="b">
+	<h1>
+		<wicket:message key="title" />
+	</h1>
+</div>
+
+<div class="ui-content">
+
+	<label wicket:id="inject" />
+
+	<wicket:enclosure child="app-version">
+		<h3 wicket:id="app-version" />
+		<p class="sp-txt-wrap">
+			<span wicket:id="app-slogan" /> Services.
+		</p>
+		<wicket:panel wicket:id="PrintFlowLite-info" />
+	</wicket:enclosure>
+
+	<wicket:enclosure child="PrintFlowLite-info-after-inject">
+		<div style="font-size: small;">
+			<hr />
+			<p>
+				Powered by <span wicket:id="app-product-name" /> <span
+					wicket:id="app-product-slogan" /> <span
+					wicket:id="app-product-version" />
+			</p>
+			<wicket:panel wicket:id="PrintFlowLite-info-after-inject" />
+		</div>
+	</wicket:enclosure>
+
+	<div>
+		<a href="#" class="ui-btn ui-btn-inline ui-icon-back ui-btn-icon-left"
+			id="button-appinfo-cancel" data-rel="back" data-direction="reverse"
+			wicket:id="button-back" />
+	</div>
+</div>
+</html>

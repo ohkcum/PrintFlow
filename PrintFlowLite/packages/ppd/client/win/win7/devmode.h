@@ -1,0 +1,70 @@
+//
+// This file is part of the PrintFlowLite project <https://www.printflowlite.local>.
+// Copyright (c) 2016 Datraverse B.V.
+// Author: Rijk Ravestein.
+//
+// SPDX-FileCopyrightText: © 2016 Datraverse BV <info@datraverse.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+// For more information, please contact Datraverse B.V. at this
+// address: info@datraverse.com
+//
+
+// --------------------------------------------------------------------
+// Define common data types, and external function prototypes
+// for devmode functions.
+// --------------------------------------------------------------------
+
+#pragma once
+
+////////////////////////////////////////////////////////
+//      OEM Devmode Defines
+////////////////////////////////////////////////////////
+
+#define OEM_SIGNATURE   'MSFT'
+#define OEM_VERSION     0x00000001L
+
+////////////////////////////////////////////////////////
+//      OEM Devmode Type Definitions
+////////////////////////////////////////////////////////
+
+//
+// This structure must be prefixed by OEM_DMEXTRAHEADER
+//    Plug-ins must implement the IPrintOemUI::DevMode method
+//
+typedef struct tagOEMDEV
+{
+    OEM_DMEXTRAHEADER   dmOEMExtra;
+    DWORD               dwDriverData;
+    DWORD               dwAdvancedData;
+
+    //
+    //Private DevMode Members
+    //
+
+} OEMDEV, *POEMDEV;
+
+typedef const OEMDEV *PCOEMDEV;
+
+
+/////////////////////////////////////////////////////////
+//        ProtoTypes
+/////////////////////////////////////////////////////////
+
+HRESULT hrOEMDevMode(DWORD dwMode, POEMDMPARAM pOemDMParam);
+BOOL ConvertOEMDevmode(PCOEMDEV pOEMDevIn, POEMDEV pOEMDevOut);
+BOOL MakeOEMDevmodeValid(POEMDEV pOEMDevmode);
+
