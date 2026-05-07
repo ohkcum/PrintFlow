@@ -1,0 +1,40 @@
+{
+  "name": "@printflow/auth",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./service": {
+      "import": "./dist/service.js",
+      "types": "./dist/service.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "dev": "tsc --watch --project tsconfig.json",
+    "lint": "eslint src --ext .ts",
+    "type-check": "tsc --noEmit",
+    "test": "vitest",
+    "test:unit": "vitest run"
+  },
+  "dependencies": {
+    "@printflow/common": "workspace:*",
+    "@printflow/db": "workspace:*",
+    "better-auth": "^1.0.0",
+    "@otplib/preset-default": "^12.0.1",
+    "drizzle-orm": "^0.40.1",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@printflow/tsconfig": "workspace:*",
+    "@types/node": "^22.0.0",
+    "vitest": "^3.1.1"
+  }
+}

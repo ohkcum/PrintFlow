@@ -1,0 +1,45 @@
+{
+  "name": "printflow",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev --parallel",
+    "dev:api": "npm run dev --filter=@printflow/api",
+    "dev:web": "npm run dev --filter=@printflow/web",
+    "lint": "turbo lint",
+    "type-check": "turbo type-check",
+    "test": "turbo test",
+    "test:unit": "turbo test:unit",
+    "db:generate": "npm run db:generate --filter=@printflow/db",
+    "db:migrate": "npm run db:migrate --filter=@printflow/db",
+    "db:studio": "npm run db:studio --filter=@printflow/db",
+    "db:seed": "npm run db:seed --filter=@printflow/db",
+    "docker:up": "docker compose -f infra/docker/docker-compose.yml up -d",
+    "docker:down": "docker compose -f infra/docker/docker-compose.yml down"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "turbo": "^2.5.3",
+    "typescript": "^5.7.2",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.1.1"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.9.0"
+  },
+  "packageManager": "pnpm@10.9.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "dependencies": {
+    "@zxing/browser": "^0.2.0",
+    "@zxing/library": "^0.23.0",
+    "i18next": "^26.0.9",
+    "i18next-browser-languagedetector": "^8.2.1",
+    "react-i18next": "^17.0.6",
+    "recharts": "^2.15.4"
+  }
+}

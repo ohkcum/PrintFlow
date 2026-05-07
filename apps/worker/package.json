@@ -1,0 +1,32 @@
+{
+  "name": "@printflow/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsx build.ts",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "lint": "eslint src --ext .ts",
+    "type-check": "tsc --noEmit",
+    "test": "vitest",
+    "test:unit": "vitest run"
+  },
+  "dependencies": {
+    "@printflow/common": "workspace:*",
+    "@printflow/db": "workspace:*",
+    "bullmq": "^5.41.0",
+    "dotenv": "^16.5.0",
+    "ioredis": "^5.6.1",
+    "pino": "^10.0.0",
+    "pino-pretty": "^13.0.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@printflow/tsconfig": "workspace:*",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5.7.2",
+    "vitest": "^3.1.1"
+  }
+}

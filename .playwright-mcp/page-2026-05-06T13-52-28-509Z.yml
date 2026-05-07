@@ -1,0 +1,22 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - img [ref=e5]
+    - heading "PrintFlow" [level=1] [ref=e9]
+    - paragraph [ref=e10]: Secure Pull Printing Portal
+  - generic [ref=e11]:
+    - heading "Sign in to your account" [level=2] [ref=e12]
+    - generic [ref=e13]:
+      - generic [ref=e14]:
+        - generic [ref=e15]: Username
+        - textbox "Username" [ref=e16]:
+          - /placeholder: Enter your username
+      - generic [ref=e17]:
+        - generic [ref=e18]: Password
+        - textbox "Password" [ref=e19]:
+          - /placeholder: Enter your password
+      - button "Sign In" [ref=e20] [cursor=pointer]
+    - paragraph [ref=e22]:
+      - text: "Default:"
+      - code [ref=e23]: admin
+      - text: /
+      - code [ref=e24]: admin123

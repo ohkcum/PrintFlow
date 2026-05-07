@@ -1,0 +1,15 @@
+{
+  "overview": "Overview",
+  "monthlyStats": "Monthly Statistics",
+  "dailyPrints": "Daily Prints (Last 30 Days)",
+  "topPrinters": "Top Printers",
+  "topUsers": "Top Users",
+  "trxByType": "Transactions by Type",
+  "ticketsByStatus": "Tickets by Status",
+  "jobs": "Jobs",
+  "pages": "Pages",
+  "cost": "Cost",
+  "printJobs": "Print Jobs",
+  "revenue": "Revenue",
+  "noData": "No data available"
+}

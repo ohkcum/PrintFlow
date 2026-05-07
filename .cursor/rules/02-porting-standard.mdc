@@ -1,0 +1,76 @@
+---
+description: Standards for porting from PrintFlowLite
+alwaysApply: false
+globs: "PrintFlow/packages/**/*.ts" "PrintFlow/apps/**/*.ts"
+---
+
+# Porting Standard: PrintFlowLite → PrintFlow
+
+When porting features from PrintFlowLite Java code to PrintFlow TypeScript, follow these rules:
+
+## 1. Read the Source First
+
+Before implementing any feature, find the corresponding PrintFlowLite source:
+- Auth/Sessions → `SpSession.java`, `UserService.java`, `RestAuthFilter.java`
+- User Management → `UserService.java`, `UserGroupService.java`, `UserCardService.java`
+- SafePages → `DocIn.java`, `DocStoreService.java`, `InboxService.java`
+- Print Release → `ProxyPrintService.java`, `PrintOutService.java`
+- IPP Printing → `IppPrintServer.java`
+- Page Editor → `jquery.printflowlite-canvas-editor.js`
+- Financial → `AccountingService.java`, `AccountService.java`, `AccountVoucherService.java`
+- Job Tickets → `JobTicketService.java`, `WebAppJobTickets.java`
+- Reports → `RestReportsService.java`
+- Email → `EmailService.java`
+- PDF → `PdfOutService.java`
+- LibreOffice → `SOfficeService.java`
+- PGP → `lib/pgp/pdf/PGPHelper.java`
+
+## 2. Preserve Logic, Not Syntax
+
+- Port the **business logic**, not the Java syntax
+- Use TypeScript idioms: `async/await`, `Map`, `Set`, arrow functions
+- Use Drizzle ORM instead of JPA — map entities to schema tables 1:1
+- Use Zod for validation instead of Java bean validation
+
+## 3. Database Schema Naming
+
+Table names in PrintFlow Drizzle schema **MUST match PrintFlowLite**:
+- `tbl_user` ← `User.java`
+- `tbl_session` ← `SpSession.java`
+- `tbl_user_account` ← `UserAccount.java`
+- `tbl_printer` ← `Printer.java`
+- `tbl_doc_in` ← `DocIn.java`
+- `tbl_doc_log` ← `DocLog.java`
+
+## 4. Error Handling
+
+Port error codes from PrintFlowLite:
+- `INVALID_CREDENTIALS`, `ACCOUNT_INACTIVE`, `TOTP_REQUIRED`, `TOTP_INVALID`
+- `USERNAME_EXISTS`, `USER_NOT_FOUND`, `INVALID_PASSWORD`
+
+## 5. Comment the Source
+
+Add a comment at the top of every ported file:
+```typescript
+// Ported from PrintFlowLite: <OriginalFile.java>
+// Original logic: <brief description>
+```
+
+## 6. What NOT to Port
+
+Skip these from PrintFlowLite:
+- Apache Wicket UI components (replace with Next.js)
+- Java Servlet filters (replace with Fastify middleware)
+- CometD WebSocket (replace with tRPC + SSE)
+- Java-specific crypto (replace with Node.js `crypto`)
+- JasperReports (replace with Recharts)
+- BouncyCastle PGP (replace with `openpgp` library)
+- YubiKey TOTP (replace with `otplib`)
+- Java IPP (replace with `node-ipp`)
+
+## 7. Keep Working Tests
+
+Every ported feature **MUST have tests** before considering complete:
+- Unit tests for business logic
+- API tests for endpoints
+- Tests run via `pnpm test` in the monorepo root

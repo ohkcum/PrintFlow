@@ -1,0 +1,122 @@
+---
+description: PrintFlow monorepo structure and conventions
+alwaysApply: false
+globs: "PrintFlow/**/*"
+---
+
+# PrintFlow Monorepo Structure & Conventions
+
+## Directory Layout
+
+```
+PrintFlow/                          # Workspace root (pnpm-workspace.yaml)
+├── apps/
+│   ├── api/                       # Fastify REST API server
+│   │   └── src/
+│   │       ├── index.ts           # App factory (createApp)
+│   │       ├── logger.ts         # Pino logger setup
+│   │       ├── middleware/
+│   │       │   └── auth.ts        # Session validation middleware
+│   │       └── routers/           # Route modules
+│   │           ├── auth.ts        # POST /register, /login, /logout, /me, /totp/*
+│   │           ├── users.ts       # User CRUD, cards, groups
+│   │           ├── printers.ts    # Printer list, groups, details
+│   │           ├── documents.ts   # SafePages (docIn), logs
+│   │           ├── accounts.ts    # Balance, transactions, vouchers
+│   │           └── config.ts      # Config properties
+│   ├── web/                       # Next.js 15 frontend
+│   │   └── src/app/               # App Router pages
+│   │       ├── page.tsx           # → /user redirect
+│   │       ├── login/page.tsx
+│   │       ├── user/page.tsx      # User portal (SafePages, upload)
+│   │       └── admin/             # Admin section
+│   │           ├── page.tsx       # Dashboard
+│   │           └── layout.tsx     # Admin sidebar layout
+│   └── worker/                    # BullMQ job processor
+│       └── src/
+│           └── index.ts           # Entry point (stubbed)
+├── packages/
+│   ├── auth/                      # Authentication service
+│   │   └── src/
+│   │       ├── service.ts        # AuthService (register, login, TOTP)
+│   │       ├── session.ts         # SessionManager (create, validate, revoke)
+│   │       ├── password.ts        # Password hashing (PBKDF2-SHA512)
+│   │       └── totp.ts            # TOTP service (HMAC-SHA1)
+│   ├── common/                    # Shared types and utilities
+│   │   └── src/
+│   │       ├── config.ts         # AppConfig Zod schema + getAppConfig()
+│   │       ├── api-response.ts    # successResponse, errorResponse, paginatedResponse
+│   │       ├── pagination.ts      # PaginatedResult type
+│   │       ├── upload.ts          # UploadedFile type
+│   │       ├── enums.ts          # (split into separate files)
+│   │       └── user-role.ts      # UserRole enum + helpers
+│   ├── db/                        # Database layer
+│   │   └── src/
+│   │       ├── drizzle.ts        # createDrizzle() + schema
+│   │       ├── connection.ts      # postgres connection
+│   │       ├── schema/           # Drizzle tables
+│   │       │   ├── users.ts      # users, userAccounts, userGroups, etc.
+│   │       │   ├── printers.ts   # printers, printerGroups, ippQueues, etc.
+│   │       │   ├── documents.ts  # docIn, docOut, docLog, printIn, pdfOut
+│   │       │   ├── financial.ts   # accounts, accountTrx, vouchers, POS
+│   │       │   ├── system.ts     # configProperties, sequences, appLogs
+│   │       │   └── index.ts      # Barrel exports
+│   │       └── seed/
+│   │           └── index.ts      # Database seed script
+│   └── api-client/               # tRPC client (stubbed)
+│       └── src/
+│           ├── index.ts
+│           └── trpc-client.ts
+├── infra/docker/                 # Docker setup
+│   ├── docker-compose.yml
+│   ├── Dockerfile.api
+│   └── Dockerfile.worker
+├── .cursor/rules/                # Cursor AI rules
+│   ├── 01-context.mdc
+│   ├── 02-porting-standard.mdc
+│   └── 03-monorepo-conventions.mdc
+└── REFACTOR-PLAN.md             # Master plan
+```
+
+## Conventions
+
+### Package Scripts
+
+| Command | Description |
+|---------|-------------|
+| `pnpm install` | Install all workspace dependencies |
+| `pnpm test` | Run all tests (Turbo) |
+| `pnpm build` | Build all packages |
+| `pnpm dev` | Dev mode (all apps) |
+| `pnpm lint` | Lint all packages |
+| `pnpm type-check` | Type-check all packages |
+| `pnpm db:generate` | Generate Drizzle migrations |
+| `pnpm db:migrate` | Run Drizzle migrations |
+| `pnpm db:seed` | Seed database |
+| `pnpm docker:up` | Start Docker services |
+
+### Package Dependencies
+
+- **Internal packages**: use `workspace:*` (e.g., `"@printflow/common": "workspace:*"`)
+- **vitest config**: every package needs `vitest.config.ts` with `passWithNoTests: true`
+- **tsconfig**: extends `@printflow/tsconfig/tsconfig.json`
+
+### API Conventions
+
+- All routers return `ApiResponse<T>` via `successResponse()` / `errorResponse()`
+- Auth middleware sets `request.userId`, `request.userName`, `request.roles`
+- Zod validation on all request bodies and params
+- Error codes: `INVALID_CREDENTIALS`, `USERNAME_EXISTS`, `TOTP_REQUIRED`, etc.
+
+### Naming Conventions
+
+- Database tables: `snake_case` (e.g., `user_name`, `date_created`)
+- TypeScript: `camelCase` for vars/funcs, `PascalCase` for types/classes
+- Files: `kebab-case.ts`
+- API routes: `kebab-case.ts` (e.g., `printers.ts` not `printersRouter.ts`)
+
+### Testing
+
+- Test files: `*.test.ts` next to source
+- Run tests: `pnpm test` (root) or `pnpm test` (per package)
+- vitest globals: `true` (no import needed)

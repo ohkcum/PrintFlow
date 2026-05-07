@@ -1,0 +1,199 @@
+---
+description: Smart MCP tool selection - agentmemory, codebase-memory, and playwright
+alwaysApply: true
+---
+
+# MCP Tools — Smart Selection Guide
+
+This project has 3 MCP servers enabled. Use the right tool for each situation.
+
+---
+
+## 1. Agent Memory (`agentmemory`) — Long-term & Session Memory
+
+**Use when:** You need to remember decisions, patterns, or context across sessions.
+
+### Decision Matrix
+
+| Situation | Tool |
+|-----------|------|
+| Save an architecture decision or important insight | `memory_save` |
+| Recall a decision made in a previous session | `memory_recall` |
+| Find past patterns, bugs, or conventions | `memory_smart_search` |
+| List recent sessions | `memory_sessions` |
+
+### Examples of When to Act
+
+- Before making a significant refactor, call `memory_recall` to check if this was discussed before.
+- After making an architectural decision, call `memory_save` with `type: "architecture"` so future sessions know the rationale.
+- When fixing a bug, call `memory_recall` to check if this bug was encountered before.
+- When establishing a new coding pattern, call `memory_save` with `type: "pattern"` and relevant `files`.
+- When user mentions "remember when we...", call `memory_recall` to retrieve the context.
+
+### `memory_save` — what to save
+
+- **Architecture decisions** — why a specific approach was chosen
+- **Bug patterns** — non-obvious bugs with their root causes
+- **Coding conventions** — project-specific patterns not captured elsewhere
+- **Workflow insights** — what worked well or poorly in this project
+
+### `memory_recall` — what to search
+
+- "password hashing bcrypt" — find previous discussions on auth
+- "monorepo setup" — recall decisions about project structure
+- "API design REST" — find past API conventions
+- File names and function names from previous sessions
+
+---
+
+## 2. Codebase Memory (`codebase-memory-mcp`) — Graph-based Code Analysis
+
+**Use when:** You need to understand code structure, relationships, dependencies, or find code. **Use this INSTEAD OF grep/glob for structural queries.**
+
+### Decision Matrix
+
+| Situation | Tool |
+|-----------|------|
+| Find functions/classes by name or concept | `search_graph` |
+| Find who calls a function (callers) | `trace_path(direction="inbound")` |
+| Find what a function calls (callees) | `trace_path(direction="outbound")` |
+| Full call context (both directions) | `trace_path(direction="both")` |
+| Track how data flows through the code | `trace_path(mode="data_flow")` |
+| Find cross-service HTTP/async calls | `trace_path(mode="cross_service")` |
+| Find dead code (unused functions) | `search_graph(max_degree=0, exclude_entry_points=true)` |
+| Find high fan-out (functions calling too many things) | `search_graph(min_degree=10, direction="outbound")` |
+| Find high fan-in (functions called by many things) | `search_graph(min_degree=10, direction="inbound")` |
+| Map git diff to affected symbols | `detect_changes` |
+| Write custom graph queries | `query_graph` (Cypher) |
+| Understand node/edge types in graph | `get_graph_schema` |
+| Read source code of a specific function | `get_code_snippet` |
+| Get overall project architecture | `get_architecture` |
+| Index a new codebase | `index_repository` |
+| Text search (when graph is unavailable) | `search_code` |
+
+### Examples of When to Act
+
+- **"Where is X defined?"** → `search_graph(query="X")` or `search_graph(name_pattern=".*X.*")`
+- **"Who calls this function?"** → `trace_path(function_name="X", direction="inbound", depth=3)`
+- **"What does this function call?"** → `trace_path(function_name="X", direction="outbound", depth=2)`
+- **"Trace the full call chain for X"** → `trace_path(function_name="X", direction="both", depth=5)`
+- **"Show me how data flows from request to DB"** → `trace_path(function_name="handleRequest", mode="data_flow")`
+- **"Find all unused functions"** → `search_graph(max_degree=0, exclude_entry_points=true)`
+- **"Find functions that call too many things"** → `search_graph(min_degree=10, relationship="CALLS", direction="outbound")`
+- **"What changed in this branch and how does it impact?"** → `detect_changes(since="HEAD~10")`
+- **"How does this service communicate with that service?"** → `trace_path(function_name="X", mode="cross_service")`
+- **"Find all HTTP endpoints"** → `search_graph(label="Route")`
+- **"Find all database queries"** → `search_graph(label="Function", name_pattern=".*query.*|.*select.*|.*insert.*")`
+- **"Show me all files in the auth module"** → `search_graph(label="Folder", name_pattern=".*auth.*")`
+
+### Search Modes for `search_graph`
+
+1. **Natural language** (`query=`) — BM25 ranked full-text search. Best for concept discovery.
+   - Example: `query="update settings"` finds `updateCloudSettings`, `updateUserSettings`
+2. **Regex pattern** (`name_pattern=`) — Exact regex match on function/class names.
+   - Example: `name_pattern=".*Handler.*"` finds all handlers
+3. **Semantic** (`semantic_query=[...]`) — Vector search bridging vocabulary gaps.
+   - Example: `semantic_query=["send","pubsub","publish"]` finds "publish" even when you search "send"
+
+### `trace_path` Modes
+
+- **`calls`** (default) — Follow CALLS edges. Standard caller/callee analysis.
+- **`data_flow`** — Follow CALLS + DATA_FLOWS with arg expressions at each hop. Shows how values propagate.
+- **`cross_service`** — Follow HTTP_CALLS + ASYNC_CALLS + DATA_FLOWS through Route nodes. For microservice tracing.
+
+### Risk Classification
+
+Use `trace_path(risk_labels=true)` to add CRITICAL/HIGH/MEDIUM/LOW classification based on hop distance. Useful for impact analysis before making changes.
+
+### Gotchas
+
+- `search_graph` results default to 10 — check `has_more` and use `offset` for pagination.
+- `trace_path` needs exact function names — use `search_graph(name_pattern=...)` first to find the exact name.
+- `query_graph` has a 200-row cap — use `search_graph` with degree filters for counting.
+- `detect_changes` maps git diff to affected symbols — use before refactoring to understand impact.
+
+---
+
+## 3. Playwright (`user-playwright`) — Browser Automation
+
+**Use when:** You need to interact with a web page, take screenshots, inspect DOM, monitor network, or automate browser actions.
+
+### Decision Matrix
+
+| Situation | Tool |
+|-----------|------|
+| Open a URL | `browser_navigate` |
+| Go back in browser history | `browser_navigate_back` |
+| Click an element | `browser_click` |
+| Hover over an element | `browser_hover` |
+| Type text into an input | `browser_type` |
+| Fill a form (all fields at once) | `browser_fill_form` |
+| Select dropdown option | `browser_select_option` |
+| Drag and drop | `browser_drag` or `browser_drop` |
+| Upload a file | `browser_file_upload` |
+| Press a keyboard key or shortcut | `browser_press_key` |
+| Mouse click at specific coordinates | `browser_mouse_click_xy` |
+| Mouse move to coordinates | `browser_mouse_move_xy` |
+| Mouse drag to coordinates | `browser_mouse_drag_xy` |
+| Scroll the page | `browser_mouse_wheel` |
+| Take a screenshot | `browser_take_screenshot` |
+| Get accessibility tree (better than screenshot) | `browser_snapshot` |
+| Get element's bounding box | `browser_snapshot(boxes=true)` |
+| Run JavaScript in the page | `browser_evaluate` |
+| Run JavaScript (unsafe, arbitrary code) | `browser_run_code_unsafe` |
+| Monitor console messages | `browser_console_messages` |
+| Capture single network request | `browser_network_request` |
+| Capture all network requests | `browser_network_requests` |
+| Wait for an element to appear | `browser_wait_for` |
+| Handle alert/dialog popups | `browser_handle_dialog` |
+| Resize browser viewport | `browser_resize` |
+| Get open tabs | `browser_tabs` |
+| Close the browser | `browser_close` |
+
+### Examples of When to Act
+
+- **"Open this URL and show me the page"** → `browser_navigate` + `browser_snapshot`
+- **"Take a screenshot of the current page"** → `browser_take_screenshot`
+- **"Click the login button"** → `browser_click` with element selector
+- **"Fill in the login form"** → `browser_fill_form` with field:value map
+- **"Wait for the dashboard to load"** → `browser_wait_for` with element selector
+- **"Check for console errors"** → `browser_console_messages`
+- **"Find all network requests to /api/"** → `browser_network_requests` then filter
+- **"Get the DOM element's exact position"** → `browser_snapshot(boxes=true)`
+- **"Extract data from the page using JS"** → `browser_evaluate` with extraction code
+- **"Test if the page handles alert dialogs"** → `browser_handle_dialog`
+- **"Check responsive design"** → `browser_resize` with different viewport sizes
+
+### `browser_snapshot` vs `browser_take_screenshot`
+
+- **`browser_snapshot`** — Returns accessibility tree (structured DOM). Better for finding elements, understanding layout, getting element positions. Use this as the primary inspection tool.
+- **`browser_take_screenshot`** — Returns visual image. Use when you need to show the user what the page looks like.
+
+### Best Practices
+
+- Always `browser_snapshot` after `browser_navigate` to understand the page structure.
+- Use `browser_wait_for` before interacting with elements that load asynchronously.
+- Use `browser_network_requests` with a URL filter to find specific API calls.
+- Use `browser_resize` to test responsive behavior (e.g., mobile viewport 375x667).
+
+---
+
+## Smart Tool Selection Summary
+
+When you catch yourself about to:
+
+| Instead of | Use |
+|-----------|-----|
+| Grep for "who calls this" | `trace_path(direction="inbound")` |
+| Grep for "what does this call" | `trace_path(direction="outbound")` |
+| Manual file search for functions | `search_graph` |
+| Walking the call stack manually | `trace_path(direction="both")` |
+| Looking for unused code manually | `search_graph(max_degree=0)` |
+| Checking git diff impact manually | `detect_changes` |
+| Manually opening browser to inspect | `browser_navigate` + `browser_snapshot` |
+| Taking manual screenshots | `browser_take_screenshot` |
+| Manually clicking through a web UI | Playwright interaction tools |
+| Forgetting what was decided before | `memory_recall` |
+| Not saving important decisions | `memory_save` |
+
+Always prefer MCP tools over manual file traversal or grep when the corresponding MCP tool exists.

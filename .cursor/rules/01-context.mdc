@@ -1,0 +1,34 @@
+---
+description: Read project context before making changes
+alwaysApply: true
+---
+
+# Project Context Rule
+
+Before making ANY changes, implementing features, or creating plans, you MUST read the project context files first.
+
+## Required Reading Order
+
+1. **FIRST**: Read `PrintFlow/REFACTOR-PLAN.md` — the master plan for this project. This tells you:
+   - What phase we are on
+   - What features need to be ported
+   - Which PrintFlowLite source files to reference
+   - Current status of each phase
+
+2. **THEN**: Read relevant source files in `PrintFlow/` before implementing anything
+
+3. **THEN**: If the feature involves porting from PrintFlowLite, read the corresponding Java files from:
+   - `d:\CodeLinhTinh\PrintFlow\PrintFlowLite\` — the source of truth
+
+## What This Prevents
+
+- ❌ Designing features from scratch instead of porting from PrintFlowLite
+- ❌ Creating duplicate implementations
+- ❌ Missing feature parity with PrintFlowLite
+- ❌ Planning without understanding what already exists
+
+## Why This Matters
+
+PrintFlow is a **port from PrintFlowLite**, not a new design.
+The REFACTOR-PLAN.md and PrintFlowLite source are the ground truth.
+If you don't read them first, you will make mistakes.
